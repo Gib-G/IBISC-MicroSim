@@ -1,0 +1,3 @@
+[submodule "Submodules/Chai3D"]
+	path = Submodules/Chai3D
+	url = https://github.com/Gib-G/chai3d.git

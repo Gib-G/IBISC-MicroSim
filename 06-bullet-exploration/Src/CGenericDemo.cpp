@@ -5,13 +5,6 @@ using namespace std;
 #include <CBullet.h>
 //---------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-// DECLARED MACROS
-//------------------------------------------------------------------------------
-// convert to resource path
-#define RESOURCE_PATH(p)    (char*)((a_resourceRoot+string(p)).c_str())
-
-
 //===========================================================================
 /*!
     Constructor of cGenericDemo.
@@ -104,11 +97,7 @@ cGenericDemo::cGenericDemo(const string a_resourceRoot,
     m_base = new cMultiMesh();
     m_bulletWorld->addChild(m_base);
     
-    bool fileload = m_base->loadFromFile(RESOURCE_PATH("../resources/models/base/base.obj"));
-    if (!fileload)
-    {
-        fileload = m_base->loadFromFile("../../../bin/resources/models/base/base.obj");
-    }
+    bool fileload = m_base->loadFromFile(ROOT_DIR "Resources/Models/Base/base.obj");
     if (!fileload)
     {
         printf("Error - 3D Model failed to load correctly.\n");

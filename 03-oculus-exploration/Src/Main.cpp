@@ -113,10 +113,6 @@ int main(int argc, char** argv)
     cout << "[q] - Exit application" << endl;
     cout << endl << endl;
 
-    // parse first arg to try and locate resources
-    string resourceRoot = string(argv[0]).substr(0, string(argv[0]).find_last_of("/\\") + 1);
-
-
     //--------------------------------------------------------------------------
     // SETUP DISPLAY CONTEXT
     //--------------------------------------------------------------------------
@@ -228,10 +224,10 @@ int main(int argc, char** argv)
     //-----------------------------------------------------------------------
 
     // setup demos
-    m_demo1 = new cDemo1(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    m_demo2 = new cDemo2(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    m_demo3 = new cDemo3(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    m_demo4 = new cDemo4(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
+    m_demo1 = new cDemo1(EXECUTABLE_DIR, numDevices, m_hapticDevice0, m_hapticDevice1);
+    m_demo2 = new cDemo2(EXECUTABLE_DIR, numDevices, m_hapticDevice0, m_hapticDevice1);
+    m_demo3 = new cDemo3(EXECUTABLE_DIR, numDevices, m_hapticDevice0, m_hapticDevice1);
+    m_demo4 = new cDemo4(EXECUTABLE_DIR, numDevices, m_hapticDevice0, m_hapticDevice1);
 
     // set object stiffness in demos
     m_demo1->setStiffness(maxStiffness);

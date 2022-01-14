@@ -138,15 +138,6 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
-
-//------------------------------------------------------------------------------
-// DECLARED MACROS
-//------------------------------------------------------------------------------
-
-// convert to resource path
-#define RESOURCE_PATH(p)    (char*)((resourceRoot+string(p)).c_str())
-
-
 //------------------------------------------------------------------------------
 // DECLARED FUNCTIONS
 //------------------------------------------------------------------------------
@@ -199,8 +190,6 @@ int main(int argc, char** argv)
 	cout << "[q] - Exit application" << endl;
 	cout << endl << endl;
 
-	// parse first arg to try and locate resources
-	string resourceRoot = string(argv[0]).substr(0, string(argv[0]).find_last_of("/\\") + 1);
 	cStereoMode stereoMode = C_STEREO_DISABLED;
 
 	// fullscreen mode
@@ -505,13 +494,6 @@ int main(int argc, char** argv)
 	fileload = object->loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_model.obj");
 	if (!fileload)
 	{
-		cout << resourceRoot << "\n";
-#if defined(_MSVC)
-		fileload = object->loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_model.obj");
-#endif
-	}
-	if (!fileload)
-	{
 		cout << "Error - 3D Model failed to load correctly." << endl;
 		close();
 		return (-1);
@@ -580,13 +562,6 @@ int main(int argc, char** argv)
 	// set the position of the target at the center of the world
 	target->setLocalPos(.2, 0.2, 0.0);
 	fileload = target->loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_hole_model.obj");
-	if (!fileload)
-	{
-		cout << resourceRoot;
-#if defined(_MSVC)
-		fileload = target->loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_hole_model.obj");
-#endif
-	}
 	if (!fileload)
 	{
 		cout << "Error - 3D Model failed to load correctly." << endl;
@@ -735,9 +710,9 @@ int main(int argc, char** argv)
 	fileload = vertexShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.vert");
 	if (!fileload)
 	{
-#if defined(_MSVC)
-		fileload = vertexShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.vert");
-#endif
+		std::cout << "Failed to load vertex shader's source file\n";
+		close();
+		return 1;
 	}
 
 	// create fragment shader
@@ -747,9 +722,9 @@ int main(int argc, char** argv)
 	fileload = fragmentShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.frag");
 	if (!fileload)
 	{
-#if defined(_MSVC)
-		fileload = fragmentShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.frag");
-#endif
+		std::cout << "Failed to load fragment shader's source file\n";
+		close();
+		return 1;
 	}
 
 	// create program shader
@@ -793,12 +768,6 @@ int main(int argc, char** argv)
 	cTexture2dPtr textureSpace = cTexture2d::create();
 
 	fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
-	if (!fileload)
-	{
-#if defined(_MSVC)
-		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
-#endif
-	}
 	if (!fileload)
 	{
 		cout << "Error - Texture image failed to load correctly." << endl;

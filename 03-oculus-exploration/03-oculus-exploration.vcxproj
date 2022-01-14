@@ -94,7 +94,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -112,7 +112,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -130,7 +130,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";WIN64</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -148,7 +148,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";WIN64</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN64</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

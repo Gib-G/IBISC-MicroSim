@@ -1,40 +1,3 @@
-//==============================================================================
-/*
-	Software License Agreement (BSD License)
-	Copyright (c) 2003-2016, CHAI3D.
-	(www.chai3d.org)
-	All rights reserved.
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions
-	are met:
-	* Redistributions of source code must retain the above copyright
-	notice, this list of conditions and the following disclaimer.
-	* Redistributions in binary form must reproduce the above
-	copyright notice, this list of conditions and the following
-	disclaimer in the documentation and/or other materials provided
-	with the distribution.
-	* Neither the name of CHAI3D nor the names of its contributors may
-	be used to endorse or promote products derived from this software
-	without specific prior written permission.
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-	FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-	COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-	INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-	BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-	CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-	LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-	ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
-	\author    <http://www.chai3d.org>
-	\author    Francois Conti
-	\version   3.2.0 $Rev: 1659 $
-*/
-//==============================================================================
-
-//------------------------------------------------------------------------------
 #include <chai3d.h>
 //------------------------------------------------------------------------------
 #include <GLFW/glfw3.h>
@@ -173,15 +136,6 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
-
-//------------------------------------------------------------------------------
-// DECLARED MACROS
-//------------------------------------------------------------------------------
-
-// convert to resource path
-#define RESOURCE_PATH(p)    (char*)((resourceRoot+string(p)).c_str())
-
-
 //------------------------------------------------------------------------------
 // DECLARED FUNCTIONS
 //------------------------------------------------------------------------------
@@ -245,8 +199,6 @@ int main(int argc, char** argv)
 	cout << "[h] - Print this message" << endl;
 	cout << endl << endl;
 
-	// parse first arg to try and locate resources
-	string resourceRoot = string(argv[0]).substr(0, string(argv[0]).find_last_of("/\\") + 1);
 	cStereoMode stereoMode = C_STEREO_DISABLED;
 
 	// fullscreen mode
@@ -506,11 +458,11 @@ int main(int argc, char** argv)
 
 	// set graphic properties
 	canvas->m_texture = cTexture2d::create();
-	fileload = canvas->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/grid.jpg"));
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/grid.jpg"); // Images/grid.jpg
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = canvas->m_texture->loadFromFile("../../../bin/resources/images/grid.jpg");
+		fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/grid.jpg");
 #endif
 	}
 	if (!fileload)
@@ -573,11 +525,11 @@ int main(int argc, char** argv)
 	//Individual timer textures
 	//--------------------------------------------------------------
 	timer1->m_texture = cTexture2d::create();
-	fileload = timer1->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/0.png"));
+	fileload = timer1->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png"); // Images/0.png
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = timer1->m_texture->loadFromFile("../../../bin/resources/images/0.png");
+		fileload = timer1->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png");
 #endif
 	}
 	if (!fileload)
@@ -590,11 +542,11 @@ int main(int argc, char** argv)
 	// enable texture rendering 
 	timer1->setUseTexture(true);
 	timer2->m_texture = cTexture2d::create();
-	fileload = timer2->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/0.png"));
+	fileload = timer2->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png"); // Images/0.png
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = timer2->m_texture->loadFromFile("../../../bin/resources/images/0.png");
+		fileload = timer2->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png");
 #endif
 	}
 	if (!fileload)
@@ -607,11 +559,11 @@ int main(int argc, char** argv)
 	// enable texture rendering 
 	timer2->setUseTexture(true);
 	timer3->m_texture = cTexture2d::create();
-	fileload = timer3->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/0.png"));
+	fileload = timer3->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = timer3->m_texture->loadFromFile("../../../bin/resources/images/0.png");
+		fileload = timer3->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png");
 #endif
 	}
 	if (!fileload)
@@ -624,11 +576,11 @@ int main(int argc, char** argv)
 	// enable texture rendering 
 	timer3->setUseTexture(true);
 	timer4->m_texture = cTexture2d::create();
-	fileload = timer4->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/0.png"));
+	fileload = timer4->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = timer4->m_texture->loadFromFile("../../../bin/resources/images/0.png");
+		fileload = timer4->m_texture->loadFromFile(ROOT_DIR "Resources/Images/0.png");
 #endif
 	}
 	if (!fileload)
@@ -665,11 +617,11 @@ int main(int argc, char** argv)
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	resetButton->m_texture = cTexture2d::create();
-	fileload = resetButton->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/resetButton.png"));
+	fileload = resetButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/resetButton.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = resetButton->m_texture->loadFromFile("../../../bin/resources/images/resetButton.png");
+		fileload = resetButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/resetButton.png");
 #endif
 	}
 	if (!fileload)
@@ -717,11 +669,11 @@ int main(int argc, char** argv)
 	saveButton->setMaterial(mat);
 	// set graphic properties
 	saveButton->m_texture = cTexture2d::create();
-	fileload = saveButton->m_texture->loadFromFile(RESOURCE_PATH("../resources/images/saveButton.png"));
+	fileload = saveButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/saveButton.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = saveButton->m_texture->loadFromFile("../../../bin/resources/images/saveButton.png");
+		fileload = saveButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/saveButton.png");
 #endif
 	}
 	if (!fileload)
@@ -756,11 +708,11 @@ int main(int argc, char** argv)
 	cShaderPtr vertexShader = cShader::create(C_VERTEX_SHADER);
 
 	// load vertex shader from file
-	fileload = vertexShader->loadSourceFile("../resources/shaders/bump.vert");
+	fileload = vertexShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.vert");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = vertexShader->loadSourceFile("../../../bin/resources/shaders/bump.vert");
+		fileload = vertexShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.vert");
 #endif
 	}
 
@@ -768,11 +720,11 @@ int main(int argc, char** argv)
 	cShaderPtr fragmentShader = cShader::create(C_FRAGMENT_SHADER);
 
 	// load fragment shader from file
-	fileload = fragmentShader->loadSourceFile("../resources/shaders/bump.frag");
+	fileload = fragmentShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.frag");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = fragmentShader->loadSourceFile("../../../bin/resources/shaders/bump.frag");
+		fileload = fragmentShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.frag");
 #endif
 	}
 
@@ -816,11 +768,11 @@ int main(int argc, char** argv)
 	// create a texture
 	cTexture2dPtr textureSpace = cTexture2d::create();
 
-	fileload = textureSpace->loadFromFile(RESOURCE_PATH("../resources/images/sky.jpg"));
+	fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = textureSpace->loadFromFile("../../../bin/resources/images/sky.jpg");
+		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
 #endif
 	}
 	if (!fileload)
@@ -829,7 +781,7 @@ int main(int argc, char** argv)
 		close();
 		return (-1);
 	}
-	savePath = RESOURCE_PATH("");
+	
 	// apply texture to object
 	globe->setTexture(textureSpace);
 
@@ -1144,7 +1096,6 @@ void updateHaptics(void)
 	// angular velocity of object
 	cVector3d angVel(0.0, 0.2, 0.3);
 
-	string resourceRoot = savePath;
 	// reset clock 
 	cMode state[MAX_DEVICES];
 	cGenericObject* selectedObject[MAX_DEVICES];
@@ -1278,12 +1229,11 @@ void updateHaptics(void)
 				cout << "> Canvas has been erased.            \r";
 			}
 			else if (tool[i]->isInContact(saveButton) && button == true) {
-				canvas->m_texture->m_image->saveToFile(RESOURCE_PATH("../resources/images/myPicture.jpg"));
+				canvas->m_texture->m_image->saveToFile(ROOT_DIR "Resources/Images/myPicture.jpg");
 				for (int k = 0; k < numHapticDevices; k++) {
 					std::ofstream myfile;
-					stringstream test;
-					test << "../resources/images/test_Arm" << i + 1 << ".csv";
-					myfile.open(RESOURCE_PATH(test.str()));
+					std::cout << "Saving trajectory into /Resources/CSV/trajectory.csv\n";
+					myfile.open(ROOT_DIR "Resources/CSV/trajectory.csv");
 					for (std::map<float, cVector3d>::iterator it = posData[i].begin(); it != posData[i].end(); ++it)
 						myfile << it->first << ',' << it->second << '\n';
 					myfile.close();

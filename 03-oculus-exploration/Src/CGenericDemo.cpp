@@ -5,13 +5,6 @@ using namespace std;
 #include <CODE.h>
 //---------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-// DECLARED MACROS
-//------------------------------------------------------------------------------
-// convert to resource path
-#define RESOURCE_PATH(p)    (char*)((a_resourceRoot+string(p)).c_str())
-
-
 //===========================================================================
 /*!
 	Constructor of cGenericDemo.
@@ -93,11 +86,7 @@ cGenericDemo::cGenericDemo(const string a_resourceRoot,
 	m_base = new cMultiMesh();
 	m_world->addChild(m_base);
 
-	bool fileload = m_base->loadFromFile(RESOURCE_PATH("../resources/models/base/base.obj"));
-	if (!fileload)
-	{
-		fileload = m_base->loadFromFile("../../../bin/resources/models/base/base.obj");
-	}
+	bool fileload = m_base->loadFromFile(ROOT_DIR "Resources/Models/Base/base.obj");
 	if (!fileload)
 	{
 		printf("Error - 3D Model failed to load correctly.\n");
@@ -219,13 +208,7 @@ cGenericDemo::cGenericDemo(const string a_resourceRoot,
 	// create a texture
 	cTexture2dPtr textureGround = cTexture2d::create();
 
-	fileload = textureGround->loadFromFile(RESOURCE_PATH("../resources/images/blue-square.jpg"));
-	if (!fileload)
-	{
-#if defined(_MSVC)
-		fileload = textureGround->loadFromFile("../../../bin/resources/images/blue-square.jpg");
-#endif
-	}
+	fileload = textureGround->loadFromFile(ROOT_DIR "Resources/Images/blue-square.jpg");
 	if (!fileload)
 	{
 		cout << "Error - Texture image failed to load correctly." << endl;
@@ -291,13 +274,7 @@ cGenericDemo::cGenericDemo(const string a_resourceRoot,
 	// create a texture
 	cTexture2dPtr textureGlobe = cTexture2d::create();
 
-	fileload = textureGlobe->loadFromFile(RESOURCE_PATH("../resources/images/sky.jpg"));
-	if (!fileload)
-	{
-#if defined(_MSVC)
-		fileload = textureGlobe->loadFromFile("../../../bin/resources/images/sky.jpg");
-#endif
-	}
+	fileload = textureGlobe->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
 	if (!fileload)
 	{
 		cout << "Error - Texture image failed to load correctly." << endl;

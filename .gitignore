@@ -1,2 +1,7 @@
+# Visual Studio files
+
 /**/*.vs
+
+# Build directories
+
 /**/Build/

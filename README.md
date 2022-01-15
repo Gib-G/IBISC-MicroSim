@@ -2,14 +2,14 @@
 
 Microsurgery training VR simulator built with CHAI3D.
 
-# Structure du repo
+# Structure du dépôt
 
-Dans toute la suite, `/` désigne la racine de ce dossier.
+Dans toute la suite, `/` désigne la racine de ce dépôt/dossier.
 
 **NE PAS MODIFIER L'EMPLACEMENT DE LA SOLUTION `/MicroSim.sln`** : Les paramètres de configuration des projets qu'elle contient, et des macros utilisées dans 
 le code source dépendent de son emplacement à la racine de ce dossier !
 
-La solution `/MicroSim.sln` contient tous les projets sur lesquels vous avez travaillez jusque-là. Pour modifier ces projets, il suffit donc d'ouvrir `MicroSim.sln`.
+La solution `/MicroSim.sln` contient tous les projets sur lesquels vous avez travaillé jusque-là. Pour modifier ces projets, il suffit donc d'ouvrir `MicroSim.sln`.
 
 **Si vous voulez ajouter de nouveaux projets à la solution, ou si vous avez besoin de faire de la config, demandez-moi !**
 
@@ -18,8 +18,8 @@ Tous les projets dans `/MicroSim.sln` sont déjà configurés comme il faut.
 Ne pas toucher aux projets CHAI3D, CHAI3D-\*, et glfw : ces projets permettent de générer les dépendances dont les autres projets ont besoin. J'appelle "projets de dépendance" 
 ces projets.
 
-Le répertoire `/Submodules/` contient le code source de Chai3D en tant que sous-module de ce repo (voir [ici](https://git-scm.com/book/fr/v2/Utilitaires-Git-Sous-modules)) pour 
-plus d'informations sur les sous-modules Git. Les projets de dépendance se trouvent dans ce sous-modules. Si vous ouvrez `MicroSim.sln` sans avoir récupéré le contenu 
+Le répertoire `/Submodules/` contient le code source de Chai3D en tant que sous-module de ce dépôt (voir [ici](https://git-scm.com/book/fr/v2/Utilitaires-Git-Sous-modules) pour 
+plus d'informations sur les sous-modules Git). Les projets de dépendance se trouvent dans ce sous-modules. Si vous ouvrez `MicroSim.sln` sans avoir récupéré le contenu 
 du sous-module Chai3D au préalable, ces projets ne seront pas trouvés par Visual Studio. Plus d'informations sur comment récupérer ce sous-module plus bas.
 
 Chaque projet (hors projets de dépendance) inclu dans la solution `/MicroSim.sln` possède un dossier à son nom à la racine de ce dossier (exemple : `/MicroGrid/` pour le projet 
@@ -37,21 +37,52 @@ J'ai changé les noms des projets. Voilà les correspondances :
 J'ai aussi ajouté un projet vierge (`TemplateProject`) dans lequel il y a la possibilité d'utiliser Oculus, Bullet, et ODE.
 
 Le répertoire `/Resources/` contient toutes les resources utilisées par les différents projets (images, shaders, modèles 3D, etc...). Il regroupe tout ce qui était éparpillé 
-dans plusieurs répertoires `resources/` dans le repo Git original. <br>
+dans plusieurs répertoires `resources/` dans le dépôt Git original. <br>
 **Toutes les ressources sont à déposer dans ce dossier !** <br>
-**Si ce dossier `/Resources/` devient trop volumineux, faites-moi signe ! Il y a aussi la possibilité de le gérer comme un sous-module de ce repo (comme Chai3D).**
+**Si ce dossier `/Resources/` devient trop volumineux, faites-moi signe ! Il y a aussi la possibilité de le gérer comme un sous-module de ce dépôt (comme Chai3D).**
 
 # Workflow
 
-**Ce repo possède une branche `backup` qui contient la version initiale de la solution configurée comme il faut. Merci de ne pas y toucher.**
+**Ce dépôt possède une branche `backup` qui contient la version initiale de la solution configurée comme il faut. Merci de ne pas y toucher.**
 
-- Cloner le repo sans les sous-modules : utiliser `git clone`.
-- Cloner le repo en récupérant le contenu des sous-modules (Chai3D) : utiliser `git clone --recurse-submodule`.
-- Récupérer le contenu des sous-modules après avoir cloné le repo : utiliser `git submodule update --init --recursive` (**ATTENTION : SI VOUS N'AVEZ PAS UTILISÉ 
-`git clone --recurse-submodule` AU PRÉALABLE, BIEN ATTENDRE QUE LA COMMANDE SE TERMINE ! On peut avoir l'impression qu'elle plante au moment de cloner les sous-modules. Ce n'est pas le cas. 
-Le sous-module Chai3D est juste énorme, et Git n'affiche pas la progression du "clônage" après avoir invoqué `git submodule update --init --recursive`.**).
-- Récupérer d'éventuelles modifications apportées aux sous-modules : utiliser `git submodule update --remote` (Fetch et merge le contenu de la branche `master` du sous-module).
-- Même chose, mais pendant un `pull` : utiliser `git pull --recurse-submodule`.
+### TL;DR
+
+Faire :
+
+`git clone --recurse-submodule <url> [<emplacement>]`
+
+ou `git clone <url> [<emplacement>]`, puis `git submodule update --init`.
+
+Utiliser `git submodule update --init` à tout moment pour synchroniser l'état des sous-modules avec leur état au dernier commit sur **ce dépôt**.
+
+Si besoin de récupérer des versions plus récentes des sous-modules que celles sur **ce dépôt**, utiliser `git submodule update --remote`.
+
+Toutes les commandes `git submodule` sont à exécuter depuis la racine du dépôt (`/`).
+
+### Dans le détail
+
+- Cloner le dépôt sans les sous-modules : utiliser `git clone`.
+
+---
+
+- Cloner le dépôt en récupérant le contenu des sous-modules (Chai3D) au dernier commit sur **ce dépôt** (et pas sur les dépôts respectifs des sous-modules) : utiliser `git clone --recurse-submodule`.
+
+---
+
+- Même chose que la commande précédente, mais après un clônage : utiliser `git submodule update --init`.
+
+**ATTENTION : Cette commande peut mettre du temps à s'exécuter du fait de la taille de Chai3D ! Comme elle n'affiche pas son état de progression (comme `git clone` par exemple), on peut avoir l'impression qu'elle plante (`Cloning into '<chemin>/Submodules/Chai3D'...`). Ce n'est pas le cas. Bien attendre que la commande se termine.**
+
+---
+
+- Même chose que les deux commandes précédentes mais pendant un `pull/fetch` : utiliser `git pull/fetch --recurse-submodule`.
+
+---
+
+- Récupérer les dernières versions des sous-modules **depuis leurs dépôts respectectifs** : utiliser `git submodule update --remote`. Cette commande est équivalente à faire un `git pull` dans le répertoire de chaque sous-module (`git submodule foreach git pull`). La branche des sous-modules tirée est `master` par défaut.
+Cette commande sert à mettre à jour ce dépôt pour utiliser une version plus récente de ses sous-modules.
+
+---
 
 Sinon, rien ne change.
 
@@ -59,7 +90,7 @@ Sinon, rien ne change.
 
 Pour chaque projet (sauf les projets de dépendance), j'ai ajouté des macros contenant des chemins utiles :
 
-- `ROOT_DIR` : Le chemin vers la racine de ce repo (`/`), là où se trouve la solution.
+- `ROOT_DIR` : Le chemin vers la racine de ce dépôt (`/`), là où se trouve la solution.
 - `PROJECT_DIR` : Le chemin vers le répertoire contenant le fichier projet (`*.vcxproj`) du projet courant.
 - `EXECUTABLE_DIR` : Le chemin vers le répertoire dans lequel l'exécutable du projet courant est généré. Remplace `resourcesRoot`.
 

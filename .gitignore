@@ -4,5 +4,5 @@
 
 # Build directories
 
-/**/Build/
+/**/Build/*/*
 !/*/Build/*/*/hdPhantom64.dll

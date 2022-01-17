@@ -14,14 +14,17 @@ const int MAX_DEVICES = 2;
 double toolRadius;
 //game variables
 int numCube = 14;
-float errorPercent;
+float errorPixel;
 float totalColoredPixels;
+float errorPercent = 0;
 float greenPixels;
 float goalPixels;
+float correctPercent = 0;
 float cubesize;
 int pattern = 0;
 int MAX_PATTERN = 1;
 cColorb errorColor;
+bool start = false;
 //Paint variables
 const double K_INK = 30;
 double K_SIZE = 10;
@@ -175,6 +178,99 @@ void moveCamera(void);
 */
 //==============================================================================
 
+void DisplayTimer(float time) {
+	std::stringstream temp;
+	temp << (int)time;
+	string str = temp.str();
+	cout << str << endl;
+	bool fileload=false;
+	string folder = ROOT_DIR "Resources\\Images\\";
+	for (int i = 0; i < str.length(); i++) {
+		string stringnum = folder + str[str.length()-1-i] + ".png";
+		switch (i) {
+		case(0):
+			fileload = timer1->m_texture->loadFromFile(stringnum);
+			timer1->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		case(1):
+			fileload = timer2->m_texture->loadFromFile(stringnum);
+			timer2->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		case(2):
+			fileload = timer3->m_texture->loadFromFile(stringnum);
+			timer3->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		case(3):
+			fileload = timer4->m_texture->loadFromFile(stringnum);
+			timer4->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		}
+		if (!fileload)
+		{
+			cout << "Error - Texture image failed to load correctly : " << stringnum << endl;
+		}
+	}
+	for (int j = str.length(); j < 4; j++) {
+		string stringnum = folder + "0.png";
+		switch (j) {
+		case(0):
+			fileload = timer1->m_texture->loadFromFile(stringnum);
+			timer1->m_texture->markForUpdate();
+			break;
+		case(1):
+			fileload = timer2->m_texture->loadFromFile(stringnum);
+			timer2->m_texture->markForUpdate();
+			break;
+		case(2):
+			fileload = timer3->m_texture->loadFromFile(stringnum);
+			timer3->m_texture->markForUpdate();
+			break;
+		case(3):
+			fileload = timer4->m_texture->loadFromFile(stringnum);
+			timer4->m_texture->markForUpdate();
+			break;
+		}
+		if (!fileload)
+		{
+			cout << "Error - Texture image failed to load correctly." << endl;
+		}
+
+	}
+}
+
+void GetResult() {
+	errorColor.setRed();
+	errorPixel = 0;
+	totalColoredPixels = 0;
+	greenPixels = 0;
+	for (int k = 0; k < 1024; k++) {
+		for (int l = 0; l < 1024; l++) {
+			// get color at location
+			cColorb getcolor;
+			canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
+			if (getcolor == errorColor || getcolor == paintColor) {
+				if (getcolor == errorColor) {
+					errorPixel++;
+				}
+				if (getcolor == paintColor) {
+					greenPixels++;
+				}
+				totalColoredPixels++;
+			}
+		}
+	}
+	bool hit = false;
+	errorPercent = (totalColoredPixels ? errorPixel / totalColoredPixels * 100 : 0);
+	correctPercent = greenPixels / goalPixels * 100;
+	cout.precision(10);
+	cout << "Pourcentage d'erreurs : " << errorPercent << "%" << endl;
+	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
+	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+}
 int main(int argc, char** argv)
 {
 	//--------------------------------------------------------------------------
@@ -826,7 +922,7 @@ int main(int argc, char** argv)
 		currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		timerNum += deltaTime;
+		if(start) timerNum += deltaTime;
 		if (!camSim) {
 			// start rendering
 			oculusVR.onRenderStart();
@@ -942,30 +1038,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 		cout << "> Canvas has been erased.            \r";
 	}
 	if (a_key == GLFW_KEY_F) {
-		errorColor.setRed();
-		errorPercent = 0;
-		totalColoredPixels = 0;
-		greenPixels = 0;
-		goalPixels = 0;
-		for (int k = 0; k < 1024; k++) {
-			for (int l = 0; l < 1024; l++) {
-				// get color at location
-				cColorb getcolor;
-				canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
-				if (getcolor == errorColor || getcolor == paintColor) {
-					if (getcolor == errorColor) {
-						errorPercent++;
-					}
-					totalColoredPixels++;
-				}
-			}
-		}
-		bool hit = false;
-		ResetCanvas(pattern);
-		cout.precision(10);
-		cout << "Pourcentage d'erreurs : " << (totalColoredPixels ? errorPercent / totalColoredPixels * 100 : 0) << "%" << endl;
-		cout << "Pourcentage de complétion : " << greenPixels / goalPixels * 100 << "%" << endl;
-		cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+		GetResult();
 	}
 
 	if (a_key == GLFW_KEY_4) {
@@ -1063,6 +1136,10 @@ void mouseMotionCallback(GLFWwindow* a_window, double a_posX, double a_posY)
 	}
 }
 
+bool CompareVectors(cVector3d v1, cVector3d v2) {
+	if (v1.x() != v2.x() || v1.y() != v2.y() || v1.z() != v2.z()) return false;
+	else return true;
+}
 //------------------------------------------------------------------------------
 
 void close(void)
@@ -1095,16 +1172,17 @@ void updateHaptics(void)
 {
 	// angular velocity of object
 	cVector3d angVel(0.0, 0.2, 0.3);
-
 	// reset clock 
 	cMode state[MAX_DEVICES];
 	cGenericObject* selectedObject[MAX_DEVICES];
 	cTransform world_T_object[MAX_DEVICES];
+	cVector3d InitialPos[MAX_DEVICES];
 
 	for (int i = 0; i < numHapticDevices; i++)
 	{
 		state[i] = IDLE;
 		selectedObject[i] = NULL;
+		InitialPos[i] = tool[i]->getDeviceGlobalPos();
 	}
 	cTransform tool_T_object[MAX_DEVICES];
 	cTransform tool_T_world[MAX_DEVICES];
@@ -1120,7 +1198,7 @@ void updateHaptics(void)
 	// simulation in now running
 	simulationRunning = true;
 	simulationFinished = false;
-
+	timerNum = 0;
 	// main haptic simulation loop
 	while (simulationRunning)
 	{
@@ -1142,7 +1220,9 @@ void updateHaptics(void)
 		frequencyCounter.signal(1);
 		for (int i = 0; i < numHapticDevices; i++)
 		{
-
+			if (!start && CompareVectors(tool[i]->getDeviceGlobalPos(), InitialPos[i])) {
+				start = true;
+			}
 
 			/////////////////////////////////////////////////////////////////////
 			// HAPTIC FORCE COMPUTATION
@@ -1161,7 +1241,6 @@ void updateHaptics(void)
 			//force[i] = 5 * tool[i]->getDeviceGlobalForce().length();
 			// send forces to haptic device
 			tool[i]->applyToDevice();
-
 
 			// get status of user switch
 			bool button = tool[i]->getUserSwitch(0);
@@ -1229,12 +1308,17 @@ void updateHaptics(void)
 				cout << "> Canvas has been erased.            \r";
 			}
 			else if (tool[i]->isInContact(saveButton) && button == true) {
+				GetResult();
 				canvas->m_texture->m_image->saveToFile(ROOT_DIR "Resources/Images/myPicture.jpg");
+				DisplayTimer(timerNum);
 				for (int k = 0; k < numHapticDevices; k++) {
 					std::ofstream myfile;
 					std::cout << "Saving trajectory into /Resources/CSV/trajectory.csv\n";
 					myfile.open(ROOT_DIR "Resources/CSV/trajectory.csv");
-					for (std::map<float, cVector3d>::iterator it = posData[i].begin(); it != posData[i].end(); ++it)
+					myfile << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" <<" , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
+					std::map<float, cVector3d>::iterator it = posData[i].begin();
+					myfile << it->first << " , " << it->second << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
+					for (it; it != posData[i].end(); ++it)
 						myfile << it->first << ',' << it->second << '\n';
 					myfile.close();
 				}
@@ -1321,6 +1405,7 @@ void ResetCanvas(int pattern) {
 				}
 			}
 		}
+		timerNum = 0;
 		canvas->m_texture->markForUpdate();
 		break;
 	}

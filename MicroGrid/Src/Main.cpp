@@ -976,7 +976,7 @@ int main(int argc, char** argv)
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		if (start) {
-			timerNum += deltaTime
+			timerNum += deltaTime;
 		}
 		if (!camSim) {
 			// start rendering

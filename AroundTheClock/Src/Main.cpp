@@ -100,7 +100,8 @@ cLabel* labelRates;
 
 bool previousframecaught;
 cMatrix3d startrotGripper;
-
+cVector3d startposGripper;
+cVector3d startposCube;
 cMatrix3d startrotCube;
 
 //---------------------------------------------------------------------------
@@ -116,6 +117,7 @@ cODEGenericBody* ODEBody1;
 cODEGenericBody* ODEBody2;
 cMesh* object0;
 cMesh* object1;
+cMultiMesh* object2;
 // ODE objects
 cODEGenericBody* ODEGPlane0;
 cODEGenericBody* ODEGPlane1;
@@ -382,9 +384,9 @@ int main(int argc, char* argv[])
     tool->setWorkspaceRadius(1.3);
 
     // define a radius for the virtual tool contact points (sphere)
-    double toolRadius = 0.06;
+    double toolRadius = 0.02;
     tool->setRadius(toolRadius, toolRadius);
-
+    tool->setGripperWorkspaceScale(0.25);
     // enable if objects in the scene are going to rotate of translate
     // or possibly collide against the tool. If the environment
     // is entirely static, you can set this parameter to "false"
@@ -453,37 +455,45 @@ int main(int argc, char* argv[])
     // create a virtual mesh  that will be used for the geometry representation of the dynamic body
     object0 = new cMesh();
     object1 = new cMesh();
-    cMesh* object2 = new cMesh();
+    object2 = new cMultiMesh();
 
     // create a cube mesh
     double size = 0.40;
-    cCreateBox(object0, size, size, size);
+    cCreateBox(object0, size*2, size*0.1, size*0.1);
     object0->createAABBCollisionDetector(toolRadius);
-
-    cCreateBox(object1, size, size, size);
+    
+    cCreateRing(object1, 0.01 , 0.1);
     object1->createAABBCollisionDetector(toolRadius);
 
-    cCreateBox(object2, size, size, size);
+    //cCreateBox(object2, size, size, size);
+    bool fileload;
+    fileload = object2->loadFromFile("../Resources/Models/Needle/needle_model.obj");
+    if (!fileload) {
+        cout << "arg";
+        TCHAR NPath[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, NPath);
+        cout << NPath;
+    }
     object2->createAABBCollisionDetector(toolRadius);
 
     // define some material properties for each cube
     cMaterial mat0, mat1, mat2;
     mat0.setRedIndian();
     mat0.setStiffness(0.3 * maxStiffness);
-    mat0.setDynamicFriction(0.6);
-    mat0.setStaticFriction(0.6);
+    mat0.setDynamicFriction(3);
+    mat0.setStaticFriction(3);
     object0->setMaterial(mat0);
 
     mat1.setBlueRoyal();
     mat1.setStiffness(0.3 * maxStiffness);
-    mat1.setDynamicFriction(0.6);
-    mat1.setStaticFriction(0.6);
+    mat1.setDynamicFriction(3);
+    mat1.setStaticFriction(3);
     object1->setMaterial(mat1);
 
     mat2.setGreenDarkSea();
     mat2.setStiffness(0.3 * maxStiffness);
-    mat2.setDynamicFriction(0.6);
-    mat2.setStaticFriction(0.6);
+    mat2.setDynamicFriction(3);
+    mat2.setStaticFriction(3);
     object2->setMaterial(mat2);
 
     // add mesh to ODE object
@@ -493,9 +503,9 @@ int main(int argc, char* argv[])
 
     // create a dynamic model of the ODE object. Here we decide to use a box just like
     // the object mesh we just defined
-    ODEBody0->createDynamicBox(size, size, size);
-    ODEBody1->createDynamicBox(size, size, size);
     ODEBody2->createDynamicBox(size, size, size);
+    ODEBody1->createDynamicMesh();
+    ODEBody0->createDynamicBox(size*2, size*0.1, size*0.1);
 
     // define some mass properties for each cube
     ODEBody0->setMass(0.05);
@@ -504,8 +514,7 @@ int main(int argc, char* argv[])
 
     // set position of each cube
     ODEBody0->setLocalPos(0.0, -0.6, -0.5);
-    ODEBody1->setLocalPos(0.0, 0.6, -0.5);
-    ODEBody2->setLocalPos(0.0, 0.0, -0.5);
+    ODEBody2->setLocalPos(0.0, 0.0, -5);
 
     // rotate central cube 45 degrees around z-axis
     //ODEBody0->rotateAboutGlobalAxisDeg(0,0,1, 45);
@@ -517,20 +526,20 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////
 
     // we create 6 static walls to contains the 3 cubes within a limited workspace
-    ODEGPlane0 = new cODEGenericBody(ODEWorld);
+  //  ODEGPlane0 = new cODEGenericBody(ODEWorld);
     ODEGPlane1 = new cODEGenericBody(ODEWorld);
-    ODEGPlane2 = new cODEGenericBody(ODEWorld);
-    ODEGPlane3 = new cODEGenericBody(ODEWorld);
-    ODEGPlane4 = new cODEGenericBody(ODEWorld);
-    ODEGPlane5 = new cODEGenericBody(ODEWorld);
+   // ODEGPlane2 = new cODEGenericBody(ODEWorld);
+  //  ODEGPlane3 = new cODEGenericBody(ODEWorld);
+   // ODEGPlane4 = new cODEGenericBody(ODEWorld);
+  //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
 
     w = 1.0;
-    ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
+    //ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
     ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -w), cVector3d(0.0, 0.0, 1.0));
-    ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
-    ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
-    ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
-    ODEGPlane5->createStaticPlane(cVector3d(-0.8 * w, 0.0, 0.0), cVector3d(1.0, 0.0, 0.0));
+   // ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
+   // ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
+  //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
+   // ODEGPlane5->createStaticPlane(cVector3d(-0.8 * w, 0.0, 0.0), cVector3d(1.0, 0.0, 0.0));
 
 
     //////////////////////////////////////////////////////////////////////////
@@ -758,6 +767,9 @@ void updateHaptics(void)
     // main haptic simulation loop
     while (simulationRunning)
     {
+
+        ODEBody1->setLocalPos(0.0, 0, 0);
+        ODEBody1->setLocalRot(cMatrix3d(1, 0, 1, M_PI));
         /////////////////////////////////////////////////////////////////////
         // SIMULATION TIME
         /////////////////////////////////////////////////////////////////////
@@ -797,8 +809,6 @@ void updateHaptics(void)
         // DYNAMIC SIMULATION
         /////////////////////////////////////////////////////////////////////
 
-        ODEBody1->setLocalPos(cVector3d(0, 0.4, 0));
-        ODEBody2->setLocalPos(cVector3d(0, -0.4, 0));
         // for each interaction point of the tool we look for any contact events
         // with the environment and apply forces accordingly
         bool caught = true;
@@ -807,30 +817,64 @@ void updateHaptics(void)
         {
             // get pointer to next interaction point of tool
             cHapticPoint* interactionPoint = tool->getHapticPoint(i);
+            //bool temp = false;
+            //for (int j = 0; j < object2->getNumMeshes();j++) {
+            //    if (interactionPoint->isInContact( object2->getMesh(j) )) {
+            //        temp = true;
+            //    }
+            //}
+            //if (!temp) {
+            //    caught = false;
+            //}
             if (!interactionPoint->isInContact(object0)) {
                 caught = false;
             }
 
             if (caught && i == 1) {
                 if (!previousframecaught) {
-                    startrotGripper.copyfrom(tool->getDeviceLocalRot());
-                    startrotCube = ODEBody0->getGlobalRot();
+                    startrotGripper.copyfrom(tool->getDeviceGlobalRot());
+                    startrotCube.copyfrom(ODEBody0->getLocalRot());
+                    startposGripper.copyfrom(tool->getDeviceLocalPos());
+                    startposCube.copyfrom(ODEBody0->getLocalPos());
                     previousframecaught = true;
                     ODEWorld->setGravity(cVector3d(0, 0, 0));
                 }
-                cMatrix3d invert;
-                startrotGripper.copyto(invert);
-                invert.invert();
-                cMatrix3d toollocalrot;
-                toollocalrot.copyfrom(tool->getDeviceLocalRot());
-                cVector3d rotvec = toAxisAngleVec(invert * toollocalrot);
-                double rotangle = toAxisAngleAngle(invert * toollocalrot);
-                if (isnan(rotangle)) {
-                    rotangle = 0;
-                }
-                ODEBody0->rotateAboutGlobalAxisRad(rotvec, rotangle * 1.5);
-                startrotGripper = toollocalrot;
-                //ODEBody0->setLocalRot(startrotCube * invert* toollocalrot);
+                cMatrix3d ObjT0Invert;
+                cMatrix3d ArmT;
+                cMatrix3d ArmT0Invert;
+                cMatrix3d ObjT0;
+                ObjT0Invert.copyfrom(startrotCube);
+                ObjT0Invert.invert();
+                ArmT.copyfrom(tool->getDeviceLocalRot());
+                ArmT0Invert.copyfrom(startrotGripper);
+                ArmT0Invert.invert();
+                ObjT0.copyfrom(startrotCube);
+
+                ODEBody0->setLocalRot(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+
+                //cMatrix3d invert;
+                //startrotGripper.copyto(invert);
+                //invert.invert();
+                //cMatrix3d toollocalrot;
+                //toollocalrot.copyfrom(tool->getDeviceGlobalRot());
+                //cVector3d rotvec = toAxisAngleVec(invert * toollocalrot);
+                //double rotangle = toAxisAngleAngle(invert * toollocalrot);
+                //if (isnan(rotangle) ) {
+                //    rotangle = 0;
+                //}
+
+                //ODEBody0->setLocalPos(startposCube + tool->getDeviceLocalPos() - startposGripper);
+                //ODEBody0->setLocalRot(startrotCube);
+                //ODEBody0->rotateAboutGlobalAxisRad(rotvec, rotangle );
+                //startrotGripper.copyfrom(toollocalrot);
+                //startrotCube.copyfrom(ODEBody0->getLocalRot());
+                //startposGripper.copyfrom(tool->getDeviceLocalPos());
+                ////startposCube.copyfrom(ODEBody0->getLocalPos());
+                //cMatrix3d temp;
+                //temp.copyfrom(ODEBody0->getLocalRot());
+                //temp.invert();
+                //cMatrix3d temp2;
+                //ODEBody1->setLocalRot(  temp * toollocalrot * startrotCube  * invert* toollocalrot  );
 
             }
             if (!caught && i == 1) {
@@ -848,22 +892,19 @@ void updateHaptics(void)
                 // look for the parent that will point to the ODE object itself.
                 cGenericObject* object = collisionEvent->m_object->getOwner()->getOwner();
 
+                
                 // cast to ODE object
                 cODEGenericBody* ODEobject = dynamic_cast<cODEGenericBody*>(object);
 
                 // if ODE object, we apply interaction forces
-                if (ODEobject != NULL)
+                if (ODEobject != NULL )
                 {
+
                     ODEobject->addExternalForceAtPoint(-3 * interactionPoint->getLastComputedForce(),
                         collisionEvent->m_globalPos);
                 }
             }
 
-
-            if (i == 1) {
-                ODEBody1->rotateAboutLocalAxisDeg(cVector3d(0, 0, 1), 0.1);
-                ODEBody2->rotateAboutLocalAxisDeg(cVector3d(0, 0, 1), 0.1);
-            }
         }
 
         // update simulation
@@ -885,6 +926,7 @@ cVector3d toAxisAngleVec(cMatrix3d m) {
     if ((abs(m(0, 1) - m(1, 0)) < epsilon)
         && (abs(m(0, 2) - m(2, 0)) < epsilon)
         && (abs(m(1, 2) - m(2, 1)) < epsilon)) {
+        cout << "en dessous" << endl;
         // singularity found
         // first check for identity matrix which must have +1 for all terms
         //  in leading diagonaland zero in other terms

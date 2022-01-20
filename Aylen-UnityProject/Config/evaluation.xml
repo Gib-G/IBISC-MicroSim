@@ -1,0 +1,9 @@
+<EvaluationConfig>
+  <TCPserverAddr>127.0.0.1</TCPserverAddr>
+  <UDPlisteningAddr>127.0.0.1</UDPlisteningAddr>
+  <TCPport>29910</TCPport>
+  <UDPport>29900</UDPport>
+  <COMport>5</COMport>
+  <BaudRateSerial>115200</BaudRateSerial>
+  <TrainingSessionDuration>20</TrainingSessionDuration>
+</EvaluationConfig>

@@ -1,0 +1,42 @@
+<UserInformation>
+	<Identifier>1</Identifier>
+
+	<Group>CONTROL</Group>
+	<Group>EXPERIMENTAL</Group>
+
+	<SessionType>PRE_TEST</SessionType>
+	<SessionType>POST_TEST</SessionType>
+	<SessionType>RETENTION_TEST</SessionType>
+	<SessionType>TRAINING</SessionType>
+
+	<FirstCondition>HI5_HAND</FirstCondition>
+	<FirstCondition>NO_HAND</FirstCondition>
+
+	<ToRunCondition>HI5_HAND</ToRunCondition>
+	<ToRunCondition>NO_HAND</ToRunCondition>
+
+	<TotalTrainingSessions>10</TotalTrainingSessions>
+
+	<TrainingSessionsDone>0</TrainingSessionsDone>
+
+	<HandType>0</HandType>
+	<HandType>1</HandType>
+	<HandType>2</HandType>
+			
+	<SessionFinished>false</SessionFinished>
+
+	<ExperimentFinished>false</ExperimentFinished>
+
+	<LogInformation>false</LogInformation>
+
+	<Language>EN</Language>
+	<Language>ES</Language>
+	<Language>FR</Language>
+	
+	<SessionInformation>
+		<TotalTrials>3</TotalTrials>
+		<CurrentTrial>0</CurrentTrial>
+		<TotalCubes>6</TotalCubes>
+		<CurrentWorkingCube>0</CurrentWorkingCube>
+	</SessionInformation>
+</UserInformation>

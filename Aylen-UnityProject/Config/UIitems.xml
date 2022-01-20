@@ -1,0 +1,319 @@
+<UIItemsCollection>
+ 	<UITextItems>
+ 		<UITextItem Id="GENERIC" Language="EN">
+ 			<TextMessage> </TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="GENERIC" Language="ES">
+ 			<TextMessage> </TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="GENERIC" Language="FR">
+ 			<TextMessage> </TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="PARTICIPANT" Language="EN">
+ 			<TextMessage>Participant:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="PARTICIPANT" Language="ES">
+ 			<TextMessage>Participante:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="PARTICIPANT" Language="FR">
+ 			<TextMessage>Participant :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="GROUP" Language="EN">
+ 			<TextMessage>Group:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="GROUP" Language="ES">
+ 			<TextMessage>Grupo:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="GROUP" Language="FR">
+ 			<TextMessage>Groupe :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONDITION" Language="EN">
+ 			<TextMessage>Condition:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONDITION" Language="ES">
+ 			<TextMessage>Condición:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONDITION" Language="FR">
+ 			<TextMessage>Condition :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="START" Language="EN">
+ 			<TextMessage>Start Simulation</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="START" Language="ES">
+ 			<TextMessage>Comenzar la Simulación</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="START" Language="FR">
+ 			<TextMessage>Démarrer la Simulation</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONFIGURATION" Language="EN">
+ 			<TextMessage>Configuration</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONFIGURATION" Language="ES">
+ 			<TextMessage>Configuración</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONFIGURATION" Language="FR">
+ 			<TextMessage>Configuration</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LANGUAGE" Language="EN">
+ 			<TextMessage>Language:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LANGUAGE" Language="ES">
+ 			<TextMessage>Idioma:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LANGUAGE" Language="FR">
+ 			<TextMessage>Language :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SERIAL_TITLE" Language="EN">
+ 			<TextMessage>Serial configuration:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SERIAL_TITLE" Language="ES">
+ 			<TextMessage>Configuración serial:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SERIAL_TITLE" Language="FR">
+ 			<TextMessage>Configuration série :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="COM_PORT" Language="EN">
+ 			<TextMessage>COM port:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="COM_PORT" Language="ES">
+ 			<TextMessage>Puerto COM:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="COM_PORT" Language="FR">
+ 			<TextMessage>Port COM :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="BAUDRATE" Language="EN">
+ 			<TextMessage>Baud rate:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="BAUDRATE" Language="ES">
+ 			<TextMessage>Baud rate:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="BAUDRATE" Language="FR">
+ 			<TextMessage>Débit :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SERVER_TITLE" Language="EN">
+ 			<TextMessage>Server configuration:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SERVER_TITLE" Language="ES">
+ 			<TextMessage>Configuración del servidor:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SERVER_TITLE" Language="FR">
+ 			<TextMessage>Configuration du serveur :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="IP_ADDRESS" Language="EN">
+ 			<TextMessage>IP address:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="IP_ADDRESS" Language="ES">
+ 			<TextMessage>Dirección IP:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="IP_ADDRESS" Language="FR">
+ 			<TextMessage>Adresse IP :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="TCP_PORT" Language="EN">
+ 			<TextMessage>TCP port:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="TCP_PORT" Language="ES">
+ 			<TextMessage>Puerto TCP:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="TCP_PORT" Language="FR">
+ 			<TextMessage>Port TCP :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="UDP_PORT" Language="EN">
+ 			<TextMessage>UDP port:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="UDP_PORT" Language="ES">
+ 			<TextMessage>Puerto UDP:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="UDP_PORT" Language="FR">
+ 			<TextMessage>Port UDP :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CALIBRATION" Language="EN">
+ 			<TextMessage>Hand calibration</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CALIBRATION" Language="ES">
+ 			<TextMessage>Calibración de la mano</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CALIBRATION" Language="FR">
+ 			<TextMessage>Calibration de la main</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LOGTEXT" Language="EN">
+ 			<TextMessage>Save log</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LOGTEXT" Language="ES">
+ 			<TextMessage>Guardar registro</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LOGTEXT" Language="FR">
+ 			<TextMessage>Enregistrer le journal</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="DEBUG" Language="EN">
+ 			<TextMessage>Activate debug</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="DEBUG" Language="ES">
+ 			<TextMessage>Activar depuración</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="DEBUG" Language="FR">
+ 			<TextMessage>Activer le débogage</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LEFT" Language="EN">
+ 			<TextMessage>Left</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LEFT" Language="ES">
+ 			<TextMessage>Izquierda</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="LEFT" Language="FR">
+ 			<TextMessage>Gauche</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="RIGHT" Language="EN">
+ 			<TextMessage>Right</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="RIGHT" Language="ES">
+ 			<TextMessage>Derecha</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="RIGHT" Language="FR">
+ 			<TextMessage>Droite</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="MALE" Language="EN">
+ 			<TextMessage>Male</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="MALE" Language="ES">
+ 			<TextMessage>Masculina</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="MALE" Language="FR">
+ 			<TextMessage>Masculine</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="FEMALE" Language="EN">
+ 			<TextMessage>Female</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="FEMALE" Language="ES">
+ 			<TextMessage>Femenina</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="FEMALE" Language="FR">
+ 			<TextMessage>Féminine</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="ENGLISH" Language="EN">
+ 			<TextMessage>English</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="ENGLISH" Language="ES">
+ 			<TextMessage>Inglés</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="ENGLISH" Language="FR">
+ 			<TextMessage>Anglais</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SPANISH" Language="EN">
+ 			<TextMessage>Spanish</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SPANISH" Language="ES">
+ 			<TextMessage>Español</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SPANISH" Language="FR">
+ 			<TextMessage>Espagnol</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="FRENCH" Language="EN">
+ 			<TextMessage>French</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="FRENCH" Language="ES">
+ 			<TextMessage>Francés</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="FRENCH" Language="FR">
+ 			<TextMessage>Français</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="HI5_HAND" Language="EN">
+ 			<TextMessage>Hi5 Hand</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="HI5_HAND" Language="ES">
+ 			<TextMessage>Hi5 Hand</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="HI5_HAND" Language="FR">
+ 			<TextMessage>Hi5 Hand</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="NO_HAND" Language="EN">
+ 			<TextMessage>No Hand</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="NO_HAND" Language="ES">
+ 			<TextMessage>No Hand</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="NO_HAND" Language="FR">
+ 			<TextMessage>No Hand</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONTROL_GROUP" Language="EN">
+ 			<TextMessage>Control Group</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONTROL_GROUP" Language="ES">
+ 			<TextMessage>Grupo de Control</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="CONTROL_GROUP" Language="FR">
+ 			<TextMessage>Groupe de Contrôle</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="EXPERIMENTAL_GROUP" Language="EN">
+ 			<TextMessage>Experimental Group</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="EXPERIMENTAL_GROUP" Language="ES">
+ 			<TextMessage>Grupo Experimental</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="EXPERIMENTAL_GROUP" Language="FR">
+ 			<TextMessage>Groupe Expérimental</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="HELP_PARTICIPANT" Language="EN">
+ 			<TextMessage>Enter id...</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="HELP_PARTICIPANT" Language="ES">
+ 			<TextMessage>Introduzca id...</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="HELP_PARTICIPANT" Language="FR">
+ 			<TextMessage>Entrez id...</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="TRAINING_SESSION" Language="EN">
+ 			<TextMessage>Training</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="TRAINING_SESSION" Language="ES">
+ 			<TextMessage>Entrenamiento</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="TRAINING_SESSION" Language="FR">
+ 			<TextMessage>Entraînement</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="PRE_TEST" Language="EN">
+ 			<TextMessage>Pre-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="PRE_TEST" Language="ES">
+ 			<TextMessage>Pre-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="PRE_TEST" Language="FR">
+ 			<TextMessage>Pre-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="POST_TEST" Language="EN">
+ 			<TextMessage>Post-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="POST_TEST" Language="ES">
+ 			<TextMessage>Post-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="POST_TEST" Language="FR">
+ 			<TextMessage>Post-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="RETENTION_TEST" Language="EN">
+ 			<TextMessage>Retention-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="RETENTION_TEST" Language="ES">
+ 			<TextMessage>Retention-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="RETENTION_TEST" Language="FR">
+ 			<TextMessage>Retention-Test</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SESSION" Language="EN">
+ 			<TextMessage>Session:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SESSION" Language="ES">
+ 			<TextMessage>Sesión:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="SESSION" Language="FR">
+ 			<TextMessage>Session :</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="MY_IP" Language="EN">
+ 			<TextMessage>My IP addr.:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="MY_IP" Language="ES">
+ 			<TextMessage>Mi dir. IP:</TextMessage>
+ 		</UITextItem>
+ 		<UITextItem Id="MY_IP" Language="FR">
+ 			<TextMessage>Mon adr. IP :</TextMessage>
+ 		</UITextItem>
+ 	</UITextItems>
+</UIItemsCollection>

@@ -18,11 +18,14 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Src\main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{7aebf1c2-d2e6-484f-8a66-2d8c0b6b02fb}</ProjectGuid>
-    <RootNamespace>AroundTheClock</RootNamespace>
+    <ProjectGuid>{bf6c418f-415d-4044-a236-6e044082a4e5}</ProjectGuid>
+    <RootNamespace>AylenTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -96,15 +99,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Aylen-PickAndPlace\Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Aylen-PickAndPlace\Build\$(Configuration)\$(PlatformShortName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;pick-and-place.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,34 +117,32 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Aylen-PickAndPlace\Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Aylen-PickAndPlace\Build\$(Configuration)\$(PlatformShortName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;pick-and-place.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN64</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Aylen-PickAndPlace\Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Aylen-PickAndPlace\Build\$(Configuration)\$(PlatformShortName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;pick-and-place.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,24 +151,20 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN64</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ROOT_DIR=R"($(SolutionDir))";PROJECT_DIR=R"($(ProjectDir))";EXECUTABLE_DIR=R"($(OutDir))";WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Aylen-PickAndPlace\Src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\src\;$(SolutionDir)Submodules\Chai3D\modules\ODE\external\ODE\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Aylen-PickAndPlace\Build\$(Configuration)\$(PlatformShortName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;pick-and-place.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Src\Main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

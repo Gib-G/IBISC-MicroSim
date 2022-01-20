@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 //---------------------------------------------------------------------------
 using namespace chai3d;
-using namespace std; // Pas bien ça... :(
+using namespace std; // Pas bien Ã§a... :(
 //---------------------------------------------------------------------------
 #include <CODE.h>
 #include <stdlib.h>
@@ -423,7 +423,7 @@ int main(int argc, char* argv[])
 
     //cCreateBox(object2, size, size, size);
     bool fileload;
-    fileload = object2->loadFromFile("../Resources/Models/Needle/needle_model.obj"); // À remplacer par loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_model.obj") !
+    fileload = object2->loadFromFile("../Resources/Models/Needle/needle_model.obj"); // Ã€ remplacer par loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_model.obj") !
     if (!fileload) {
         cout << "arg";
         TCHAR NPath[MAX_PATH];

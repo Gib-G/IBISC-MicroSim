@@ -14,14 +14,17 @@ const int MAX_DEVICES = 2;
 double toolRadius;
 //game variables
 int numCube = 14;
-float errorPercent;
+float errorPixel;
 float totalColoredPixels;
+float errorPercent = 0;
 float greenPixels;
 float goalPixels;
+float correctPercent = 0;
 float cubesize;
 int pattern = 0;
 int MAX_PATTERN = 1;
 cColorb errorColor;
+bool start = false;
 //Paint variables
 const double K_INK = 30;
 double K_SIZE = 10;
@@ -64,8 +67,8 @@ cMesh* canvas;
 cMesh* board;
 cMesh* timer1, * timer2, * timer3, * timer4;
 cMultiMesh* timer;
-cMesh* plusButton;
-cMesh* minusButton;
+cMesh* startButton;
+cMesh* changeButton;
 cMesh* resetButton;
 cMesh* saveButton;
 // copy of blank canvas texture
@@ -160,6 +163,14 @@ void updateHaptics(void);
 
 void ResetCanvas(int pattern);
 
+void Start(void);
+
+void SaveCanvas(void);
+
+void ResetSim(int pattern);
+
+void ChangePattern(void);
+
 bool PaintCanvas(int x, int y, int pattern);
 
 void moveCamera(void);
@@ -175,6 +186,99 @@ void moveCamera(void);
 */
 //==============================================================================
 
+void DisplayTimer(float time) {
+	std::stringstream temp;
+	temp << (int)time;
+	string str = temp.str();
+	cout << str << endl;
+	bool fileload=false;
+	string folder = ROOT_DIR "Resources\\Images\\";
+	for (int i = 0; i < str.length(); i++) {
+		string stringnum = folder + str[str.length()-1-i] + ".png";
+		switch (i) {
+		case(0):
+			fileload = timer1->m_texture->loadFromFile(stringnum);
+			timer1->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		case(1):
+			fileload = timer2->m_texture->loadFromFile(stringnum);
+			timer2->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		case(2):
+			fileload = timer3->m_texture->loadFromFile(stringnum);
+			timer3->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		case(3):
+			fileload = timer4->m_texture->loadFromFile(stringnum);
+			timer4->m_texture->markForUpdate();
+			cout << stringnum << endl;
+			break;
+		}
+		if (!fileload)
+		{
+			cout << "Error - Texture image failed to load correctly : " << stringnum << endl;
+		}
+	}
+	for (int j = str.length(); j < 4; j++) {
+		string stringnum = folder + "0.png";
+		switch (j) {
+		case(0):
+			fileload = timer1->m_texture->loadFromFile(stringnum);
+			timer1->m_texture->markForUpdate();
+			break;
+		case(1):
+			fileload = timer2->m_texture->loadFromFile(stringnum);
+			timer2->m_texture->markForUpdate();
+			break;
+		case(2):
+			fileload = timer3->m_texture->loadFromFile(stringnum);
+			timer3->m_texture->markForUpdate();
+			break;
+		case(3):
+			fileload = timer4->m_texture->loadFromFile(stringnum);
+			timer4->m_texture->markForUpdate();
+			break;
+		}
+		if (!fileload)
+		{
+			cout << "Error - Texture image failed to load correctly." << endl;
+		}
+
+	}
+}
+
+void GetResult() {
+	errorColor.setRed();
+	errorPixel = 0;
+	totalColoredPixels = 0;
+	greenPixels = 0;
+	for (int k = 0; k < 1024; k++) {
+		for (int l = 0; l < 1024; l++) {
+			// get color at location
+			cColorb getcolor;
+			canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
+			if (getcolor == errorColor || getcolor == paintColor) {
+				if (getcolor == errorColor) {
+					errorPixel++;
+				}
+				if (getcolor == paintColor) {
+					greenPixels++;
+				}
+				totalColoredPixels++;
+			}
+		}
+	}
+	bool hit = false;
+	errorPercent = (totalColoredPixels ? errorPixel / totalColoredPixels * 100 : 0);
+	correctPercent = greenPixels / goalPixels * 100;
+	cout.precision(10);
+	cout << "Pourcentage d'erreurs : " << errorPercent << "%" << endl;
+	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
+	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+}
 int main(int argc, char** argv)
 {
 	//--------------------------------------------------------------------------
@@ -594,7 +698,6 @@ int main(int argc, char** argv)
 	timer4->setUseTexture(true);
 	//----------------------------------------------------------------------
 	//----------------------------------------------------------------------
-
 	resetButton = new cMesh();
 	world->addChild(resetButton);
 	cMaterial mat;
@@ -616,6 +719,7 @@ int main(int argc, char** argv)
 	mat.setStiffness(0.3 * maxStiffness);
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
+	resetButton->setMaterial(mat);
 	resetButton->m_texture = cTexture2d::create();
 	fileload = resetButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/resetButton.png");
 	if (!fileload)
@@ -641,24 +745,6 @@ int main(int argc, char** argv)
 	// compute collision detection algorithm
 	resetButton->createAABBCollisionDetector(toolRadius);
 
-
-	/*plusButton = new cMesh();
-	world->addChild(plusButton);
-	cCreatePanel(plusButton, .25, .25, .1, 8, cVector3d(-.4, -1.1, -0.8), cMatrix3d(cVector3d(0, 1, 0), 1.22173), cColorf(255, 255, 0));
-	plusButton->setMaterial(mat);
-	plusButton->setUseTexture(true);
-	plusButton->setUseCulling(false, true);
-	plusButton->m_material->setYellow();
-	plusButton->createAABBCollisionDetector(toolRadius);
-
-	minusButton = new cMesh();
-	world->addChild(minusButton);
-	cCreatePanel(plusButton, .25, .25, .1, 8, cVector3d(-.4, -1.1, -1.2), cMatrix3d(cVector3d(0, 1, 0), 1.22173), cColorf(255, 255, 0));
-	minusButton->setMaterial(mat);
-	minusButton->setUseTexture(true);
-	minusButton->setUseCulling(false, true);
-	minusButton->m_material->setYellow();
-	minusButton->createAABBCollisionDetector(toolRadius);*/
 
 	saveButton = new cMesh();
 	world->addChild(saveButton);
@@ -695,7 +781,70 @@ int main(int argc, char** argv)
 	saveButton->createAABBCollisionDetector(toolRadius);
 
 
+	startButton = new cMesh();
+	world->addChild(startButton);
+	cCreatePanel(startButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
+	startButton->translate(cVector3d(.2, -.525, -0.45));
+	startButton->setMaterial(mat);
+	startButton->m_texture = cTexture2d::create();
+	fileload = startButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/startButton.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = startButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/startButton.png");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
 
+	startButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	startButton->setUseTexture(true);
+
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	startButton->setUseCulling(false, true);
+
+
+	// compute collision detection algorithm
+	startButton->createAABBCollisionDetector(toolRadius);
+
+	changeButton = new cMesh();
+	world->addChild(changeButton);
+	cCreatePanel(changeButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
+	changeButton->translate(cVector3d(.2, -.005, -0.45));
+	changeButton->setMaterial(mat);
+	changeButton->m_texture = cTexture2d::create();
+	fileload = changeButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/1.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = changeButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/1.png");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
+
+	changeButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	changeButton->setUseTexture(true);
+
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	changeButton->setUseCulling(false, true);
+
+
+	// compute collision detection algorithm
+	changeButton->createAABBCollisionDetector(toolRadius);
+
+	changeButton->translate(cVector3d(0.1, 0.3, -0.8));
+	startButton->translate(cVector3d(0.1, 0.3, -0.8));
 	saveButton->translate(cVector3d(0.1, 0.3, -0.8));
 	resetButton->translate(cVector3d(0.1, 0.3, -0.8));
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
@@ -826,7 +975,9 @@ int main(int argc, char** argv)
 		currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		timerNum += deltaTime;
+		if (start) {
+			timerNum += deltaTime;
+		}
 		if (!camSim) {
 			// start rendering
 			oculusVR.onRenderStart();
@@ -942,30 +1093,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 		cout << "> Canvas has been erased.            \r";
 	}
 	if (a_key == GLFW_KEY_F) {
-		errorColor.setRed();
-		errorPercent = 0;
-		totalColoredPixels = 0;
-		greenPixels = 0;
-		goalPixels = 0;
-		for (int k = 0; k < 1024; k++) {
-			for (int l = 0; l < 1024; l++) {
-				// get color at location
-				cColorb getcolor;
-				canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
-				if (getcolor == errorColor || getcolor == paintColor) {
-					if (getcolor == errorColor) {
-						errorPercent++;
-					}
-					totalColoredPixels++;
-				}
-			}
-		}
-		bool hit = false;
-		ResetCanvas(pattern);
-		cout.precision(10);
-		cout << "Pourcentage d'erreurs : " << (totalColoredPixels ? errorPercent / totalColoredPixels * 100 : 0) << "%" << endl;
-		cout << "Pourcentage de complétion : " << greenPixels / goalPixels * 100 << "%" << endl;
-		cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+		GetResult();
 	}
 
 	if (a_key == GLFW_KEY_4) {
@@ -1063,6 +1191,10 @@ void mouseMotionCallback(GLFWwindow* a_window, double a_posX, double a_posY)
 	}
 }
 
+bool CompareVectors(cVector3d v1, cVector3d v2) {
+	if (v1.x() != v2.x() || v1.y() != v2.y() || v1.z() != v2.z()) return false;
+	else return true;
+}
 //------------------------------------------------------------------------------
 
 void close(void)
@@ -1095,16 +1227,21 @@ void updateHaptics(void)
 {
 	// angular velocity of object
 	cVector3d angVel(0.0, 0.2, 0.3);
-
 	// reset clock 
 	cMode state[MAX_DEVICES];
 	cGenericObject* selectedObject[MAX_DEVICES];
 	cTransform world_T_object[MAX_DEVICES];
+	cVector3d InitialPos[MAX_DEVICES];
+	bool touching[MAX_DEVICES];
+	bool pressed[MAX_DEVICES];
 
 	for (int i = 0; i < numHapticDevices; i++)
 	{
 		state[i] = IDLE;
 		selectedObject[i] = NULL;
+		InitialPos[i] = tool[i]->getDeviceGlobalPos();
+		pressed[i] = false;
+		touching[i] = false;
 	}
 	cTransform tool_T_object[MAX_DEVICES];
 	cTransform tool_T_world[MAX_DEVICES];
@@ -1120,7 +1257,7 @@ void updateHaptics(void)
 	// simulation in now running
 	simulationRunning = true;
 	simulationFinished = false;
-
+	timerNum = 0;
 	// main haptic simulation loop
 	while (simulationRunning)
 	{
@@ -1142,8 +1279,6 @@ void updateHaptics(void)
 		frequencyCounter.signal(1);
 		for (int i = 0; i < numHapticDevices; i++)
 		{
-
-
 			/////////////////////////////////////////////////////////////////////
 			// HAPTIC FORCE COMPUTATION
 			/////////////////////////////////////////////////////////////////////
@@ -1161,7 +1296,6 @@ void updateHaptics(void)
 			//force[i] = 5 * tool[i]->getDeviceGlobalForce().length();
 			// send forces to haptic device
 			tool[i]->applyToDevice();
-
 
 			// get status of user switch
 			bool button = tool[i]->getUserSwitch(0);
@@ -1220,26 +1354,33 @@ void updateHaptics(void)
 					canvas->m_texture->markForUpdate();
 				}
 			}
-			if (tool[i]->isInContact(resetButton) && button == true) {
-
-				// copy original image of canvas to texture
-				ResetCanvas(pattern);
-
-				// update console message
-				cout << "> Canvas has been erased.            \r";
+			////////////////////////////////////////////////////////////////////
+			//INTERACTIONS WITH BUTTONS
+			////////////////////////////////////////////////////////////////////
+			if (tool[i]->getHapticPoint(0)->getNumCollisionEvents()>0) {
+				touching[i] = true;
 			}
-			else if (tool[i]->isInContact(saveButton) && button == true) {
-				canvas->m_texture->m_image->saveToFile(ROOT_DIR "Resources/Images/myPicture.jpg");
-				for (int k = 0; k < numHapticDevices; k++) {
-					std::ofstream myfile;
-					std::cout << "Saving trajectory into /Resources/CSV/trajectory.csv\n";
-					myfile.open(ROOT_DIR "Resources/CSV/trajectory.csv");
-					for (std::map<float, cVector3d>::iterator it = posData[i].begin(); it != posData[i].end(); ++it)
-						myfile << it->first << ',' << it->second << '\n';
-					myfile.close();
-				}
+			else {
+				touching[i] = false;
+				pressed[i] = false;
 			}
-			posData[i].insert(pair<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos()));
+			if (tool[i]->isInContact(resetButton) && button == true && !pressed[i]) {
+				ResetSim(pattern);
+				pressed[i] = true;
+			}
+			else if (tool[i]->isInContact(saveButton) && button == true && !pressed[i]) {
+				SaveCanvas();
+				pressed[i] = true;
+			}
+			else if(tool[i]->isInContact(startButton) && button == true && !pressed[i]) {
+				Start();
+				pressed[i] = true;
+			}
+			else if (tool[i]->isInContact(changeButton) && button == true && !pressed[i]) {
+				ChangePattern();
+				pressed[i] = true;
+			}
+			if(start) posData[i].insert(pair<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos()));
 		}
 	}
 
@@ -1285,7 +1426,51 @@ void moveCamera() {
 	camera->setLocalPos(cameraPos);
 
 }
+void SaveCanvas() {
+	GetResult();
+	canvas->m_texture->m_image->saveToFile(ROOT_DIR "Resources/Images/myPicture.jpg");
+	string path = ROOT_DIR "Resources/CSV/trajectory-Arm_";
+	DisplayTimer(timerNum);
+	for (int k = 0; k < numHapticDevices; k++) {
+		std::stringstream temp;
+		temp << path << k << ".csv";
+		std::ofstream myfile;
+		std::cout << "Saving trajectory into /Resources/CSV/trajectory-Arm_"<<k<<".csv\n";
+		myfile.open(temp.str());
+		myfile << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
+		std::map<float, cVector3d>::iterator it = posData[k].begin();
+		myfile << it->first << " , " << it->second << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
+		it++;
+		for (it; it != posData[k].end(); ++it)
+			myfile << it->first << ',' << it->second << '\n';
+		myfile.close();
+	}
+}
+void ResetSim(int pattern) {
+	if (start) {
+		startButton->setEnabled(true);
+		changeButton->setEnabled(true);
+		start = false;
+		timerNum = 0;
+		DisplayTimer(timerNum);
+	}
+	ResetCanvas(pattern);
+}
+
+void ChangePattern() {
+	pattern = (pattern != MAX_PATTERN ? pattern + 1 : 0);
+	ResetCanvas(pattern);
+	std::stringstream temp;
+	bool fileload = false;
+	string folder = ROOT_DIR "Resources\\Images\\";
+	temp << folder << pattern + 1 << ".png";
+	fileload = changeButton->m_texture->loadFromFile(temp.str());
+	changeButton->m_texture->markForUpdate();
+}
 void ResetCanvas(int pattern) {
+	for (int k = 0; k < numHapticDevices; k++) {
+		posData[k].clear();
+	}
 	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
 	switch (pattern) {
@@ -1324,6 +1509,14 @@ void ResetCanvas(int pattern) {
 		canvas->m_texture->markForUpdate();
 		break;
 	}
+}
+
+void Start() {
+	timerNum = 0;
+	start = true;
+	ResetCanvas(pattern);
+	startButton->setEnabled(false);
+	changeButton->setEnabled(false);
 }
 bool PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;

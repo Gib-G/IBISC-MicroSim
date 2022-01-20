@@ -98,7 +98,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>D:\Utilisateurs\Gibril\Documents\TSP\3A-JIN\PFE\NewTemplate\Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,7 +117,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>D:\Utilisateurs\Gibril\Documents\TSP\3A-JIN\PFE\NewTemplate\Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +136,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>D:\Utilisateurs\Gibril\Documents\TSP\3A-JIN\PFE\NewTemplate\Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,7 +155,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <AdditionalIncludeDirectories>D:\Utilisateurs\Gibril\Documents\TSP\3A-JIN\PFE\NewTemplate\Submodules\Chai3D\modules\BULLET\external\bullet\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\include\;$(SolutionDir)Submodules\Chai3D\external\glew\include\;$(SolutionDir)Submodules\Chai3D\external\Eigen\;$(SolutionDir)Submodules\Chai3D\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\src\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\external\oculusSDK\LibOVR\Include\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\src\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\external\bullet\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

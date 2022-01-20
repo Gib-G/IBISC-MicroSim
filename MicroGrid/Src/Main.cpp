@@ -1473,6 +1473,7 @@ void ResetCanvas(int pattern) {
 	}
 	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
+	cout << pattern << endl;
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
@@ -1523,7 +1524,7 @@ bool PaintCanvas(int x, int y, int pattern) {
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
-			if (x <= 1024 - cubesize * (j + 1) && x >= 1024 - cubesize * j && y >= 1024 - cubesize * (j + 1) && y <= 1024 - cubesize * j) {
+			if (x >= 1024 - cubesize * (j + 1) && x <= 1024 - cubesize * j && y >= 1024 - cubesize * (j + 1) && y <= 1024 - cubesize * j) {
 				hit = true;
 				break;
 			}

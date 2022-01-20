@@ -1,55 +1,11 @@
-//===========================================================================
-/*
-    Software License Agreement (BSD License)
-    Copyright (c) 2003-2016, CHAI3D
-    (www.chai3d.org)
-
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions
-    are met:
-
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-
-    * Redistributions in binary form must reproduce the above
-    copyright notice, this list of conditions and the following
-    disclaimer in the documentation and/or other materials provided
-    with the distribution.
-
-    * Neither the name of CHAI3D nor the names of its contributors may
-    be used to endorse or promote products derived from this software
-    without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    POSSIBILITY OF SUCH DAMAGE.
-
-    \author    <http://www.chai3d.org>
-    \author    Francois Conti
-    \version   3.2.0 $Rev: 2007 $
-*/
-//===========================================================================
-
-//---------------------------------------------------------------------------
-#include "chai3d.h"
+#include <chai3d.h>
 //---------------------------------------------------------------------------
 #include <GLFW/glfw3.h>
 //---------------------------------------------------------------------------
 using namespace chai3d;
-using namespace std;
+using namespace std; // Pas bien ça... :(
 //---------------------------------------------------------------------------
-#include "CODE.h"
+#include <CODE.h>
 #include <stdlib.h>
 //---------------------------------------------------------------------------
 
@@ -459,15 +415,15 @@ int main(int argc, char* argv[])
 
     // create a cube mesh
     double size = 0.40;
-    cCreateBox(object0, size*2, size*0.1, size*0.1);
+    cCreateBox(object0, size * 2, size * 0.1, size * 0.1);
     object0->createAABBCollisionDetector(toolRadius);
-    
-    cCreateRing(object1, 0.01 , 0.1);
+
+    cCreateRing(object1, 0.01, 0.1);
     object1->createAABBCollisionDetector(toolRadius);
 
     //cCreateBox(object2, size, size, size);
     bool fileload;
-    fileload = object2->loadFromFile("../Resources/Models/Needle/needle_model.obj");
+    fileload = object2->loadFromFile("../Resources/Models/Needle/needle_model.obj"); // À remplacer par loadFromFile(ROOT_DIR "Resources/Models/Needle/needle_model.obj") !
     if (!fileload) {
         cout << "arg";
         TCHAR NPath[MAX_PATH];
@@ -505,7 +461,7 @@ int main(int argc, char* argv[])
     // the object mesh we just defined
     ODEBody2->createDynamicBox(size, size, size);
     ODEBody1->createDynamicMesh();
-    ODEBody0->createDynamicBox(size*2, size*0.1, size*0.1);
+    ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
 
     // define some mass properties for each cube
     ODEBody0->setMass(0.05);
@@ -528,25 +484,25 @@ int main(int argc, char* argv[])
     // we create 6 static walls to contains the 3 cubes within a limited workspace
   //  ODEGPlane0 = new cODEGenericBody(ODEWorld);
     ODEGPlane1 = new cODEGenericBody(ODEWorld);
-   // ODEGPlane2 = new cODEGenericBody(ODEWorld);
-  //  ODEGPlane3 = new cODEGenericBody(ODEWorld);
-   // ODEGPlane4 = new cODEGenericBody(ODEWorld);
-  //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
+    // ODEGPlane2 = new cODEGenericBody(ODEWorld);
+   //  ODEGPlane3 = new cODEGenericBody(ODEWorld);
+    // ODEGPlane4 = new cODEGenericBody(ODEWorld);
+   //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
 
     w = 1.0;
     //ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
     ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -w), cVector3d(0.0, 0.0, 1.0));
-   // ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
-   // ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
-  //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
-   // ODEGPlane5->createStaticPlane(cVector3d(-0.8 * w, 0.0, 0.0), cVector3d(1.0, 0.0, 0.0));
+    // ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
+    // ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
+   //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
+    // ODEGPlane5->createStaticPlane(cVector3d(-0.8 * w, 0.0, 0.0), cVector3d(1.0, 0.0, 0.0));
 
 
-    //////////////////////////////////////////////////////////////////////////
-    // GROUND
-    //////////////////////////////////////////////////////////////////////////
+     //////////////////////////////////////////////////////////////////////////
+     // GROUND
+     //////////////////////////////////////////////////////////////////////////
 
-    // create a mesh that represents the ground
+     // create a mesh that represents the ground
     cMesh* ground = new cMesh();
     ODEWorld->addChild(ground);
 
@@ -892,12 +848,12 @@ void updateHaptics(void)
                 // look for the parent that will point to the ODE object itself.
                 cGenericObject* object = collisionEvent->m_object->getOwner()->getOwner();
 
-                
+
                 // cast to ODE object
                 cODEGenericBody* ODEobject = dynamic_cast<cODEGenericBody*>(object);
 
                 // if ODE object, we apply interaction forces
-                if (ODEobject != NULL )
+                if (ODEobject != NULL)
                 {
 
                     ODEobject->addExternalForceAtPoint(-3 * interactionPoint->getLastComputedForce(),
@@ -1079,4 +1035,3 @@ double toAxisAngleAngle(cMatrix3d m) {
     z = (m(1, 0) - m(0, 1)) / s;
     return angle;
 }
-

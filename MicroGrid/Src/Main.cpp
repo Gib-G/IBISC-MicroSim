@@ -30,7 +30,11 @@ const double K_INK = 30;
 double K_SIZE = 10;
 int BRUSH_SIZE = 600;
 float timerNum = 0.0f;
-map<float, cVector3d> posData[MAX_DEVICES];
+string NumCandidate;
+tuple<float, cVector3d> posData[MAX_DEVICES];
+std::ofstream myfile[MAX_DEVICES];
+std::ofstream tempfile[MAX_DEVICES];
+string pathname;
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 // CHAI3D
@@ -1195,6 +1199,12 @@ bool CompareVectors(cVector3d v1, cVector3d v2) {
 	if (v1.x() != v2.x() || v1.y() != v2.y() || v1.z() != v2.z()) return false;
 	else return true;
 }
+
+void SaveData() {
+	for (int k = 0; k < numHapticDevices; k++) {
+		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
+	}
+}
 //------------------------------------------------------------------------------
 
 void close(void)
@@ -1209,6 +1219,7 @@ void close(void)
 	for (int i = 0; i < numHapticDevices; i++)
 	{
 		tool[i]->stop();
+		if (tempfile[i].is_open()) tempfile[i].close();
 	}
 
 	// delete resources
@@ -1234,7 +1245,7 @@ void updateHaptics(void)
 	cVector3d InitialPos[MAX_DEVICES];
 	bool touching[MAX_DEVICES];
 	bool pressed[MAX_DEVICES];
-
+	std::stringstream streamstr;
 	for (int i = 0; i < numHapticDevices; i++)
 	{
 		state[i] = IDLE;
@@ -1242,6 +1253,12 @@ void updateHaptics(void)
 		InitialPos[i] = tool[i]->getDeviceGlobalPos();
 		pressed[i] = false;
 		touching[i] = false;
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_";
+		pathname = streamstr.str();
+		streamstr << i << ".csv";
+		tempfile[i].open(streamstr.str());
+		streamstr.str("");
+		streamstr.clear();
 	}
 	cTransform tool_T_object[MAX_DEVICES];
 	cTransform tool_T_world[MAX_DEVICES];
@@ -1380,8 +1397,9 @@ void updateHaptics(void)
 				ChangePattern();
 				pressed[i] = true;
 			}
-			if(start) posData[i].insert(pair<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos()));
+			if(start) posData[i] = tuple<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos());
 		}
+		if(start) SaveData();
 	}
 
 	// exit haptics thread
@@ -1426,26 +1444,43 @@ void moveCamera() {
 	camera->setLocalPos(cameraPos);
 
 }
+//COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfile
 void SaveCanvas() {
+	std::stringstream temp;
 	GetResult();
-	canvas->m_texture->m_image->saveToFile(ROOT_DIR "Resources/Images/myPicture.jpg");
-	string path = ROOT_DIR "Resources/CSV/trajectory-Arm_";
+	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "CanvasPicture.jpg" << endl;
+	string path = temp.str();
+	canvas->m_texture->m_image->saveToFile(path);
+	temp.str("");
+	temp.clear();
 	DisplayTimer(timerNum);
 	for (int k = 0; k < numHapticDevices; k++) {
-		std::stringstream temp;
-		temp << path << k << ".csv";
-		std::ofstream myfile;
-		std::cout << "Saving trajectory into /Resources/CSV/trajectory-Arm_"<<k<<".csv\n";
-		myfile.open(temp.str());
-		myfile << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
-		std::map<float, cVector3d>::iterator it = posData[k].begin();
-		myfile << it->first << " , " << it->second << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
-		it++;
-		for (it; it != posData[k].end(); ++it)
-			myfile << it->first << ',' << it->second << '\n';
-		myfile.close();
+		tempfile[k].close();
+		std::ifstream readfile;
+		bool firstline = true;
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv\n";
+		std::cout << "temp : "<< temp.str() << endl;
+		myfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+		string line;
+		temp << pathname << k << ".csv";
+		readfile.open(temp.str());
+		temp.str("");
+		temp.clear();
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
+		while (getline(readfile, line)) {
+			if (firstline) {
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
+				firstline = false;
+			}
+			else myfile[k] << line << "\n";
+		}
+		myfile[k].close();
 	}
 }
+
 void ResetSim(int pattern) {
 	if (start) {
 		startButton->setEnabled(true);
@@ -1453,6 +1488,14 @@ void ResetSim(int pattern) {
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);
+	}
+	for (int k = 0; k < numHapticDevices; k++) {
+		std::stringstream temp;
+		tempfile[k].close();
+		temp << pathname << k << ".csv";
+		tempfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
 	}
 	ResetCanvas(pattern);
 }
@@ -1469,7 +1512,7 @@ void ChangePattern() {
 }
 void ResetCanvas(int pattern) {
 	for (int k = 0; k < numHapticDevices; k++) {
-		posData[k].clear();
+		posData[k] = tuple<float, cVector3d>(0, tool[k]->getDeviceGlobalPos());
 	}
 	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;

@@ -35,8 +35,7 @@ tuple<float, cVector3d> posData[MAX_DEVICES];
 std::ofstream myfile[MAX_DEVICES];
 std::ofstream tempfile[MAX_DEVICES];
 string pathname;
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // CHAI3D
 //------------------------------------------------------------------------------
 
@@ -99,6 +98,12 @@ cFrequencyCounter frequencyCounter;
 cThread* hapticsThread;
 
 //STATES
+//------------------------------------------------------------------------------
+// Arduino
+//------------------------------------------------------------------------------
+char com_port[] = "\\\\.\\COM8";
+DWORD COM_BAUD_RATE = CBR_9600;
+SimpleSerial Serial(com_port, COM_BAUD_RATE);
 
 enum MouseStates
 {
@@ -252,6 +257,9 @@ void DisplayTimer(float time) {
 		}
 
 	}
+}
+
+int ReadPort(){
 }
 
 void GetResult() {
@@ -1275,6 +1283,7 @@ void updateHaptics(void)
 	simulationRunning = true;
 	simulationFinished = false;
 	timerNum = 0;
+	int reply_wait_time = 7;
 	// main haptic simulation loop
 	while (simulationRunning)
 	{

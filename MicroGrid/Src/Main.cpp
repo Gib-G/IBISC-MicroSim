@@ -13,6 +13,8 @@ using namespace std;
 const int MAX_DEVICES = 2;
 double toolRadius;
 //game variables
+int Zoom_In = 1;
+int Zoom_Out = 1;
 int numCube = 14;
 float errorPixel;
 float totalColoredPixels;
@@ -96,6 +98,9 @@ cFrequencyCounter frequencyCounter;
 
 // haptic thread
 cThread* hapticsThread;
+
+//Arduino Thread
+cThread* ArduinoThread;
 
 //STATES
 //------------------------------------------------------------------------------
@@ -182,6 +187,8 @@ void ChangePattern(void);
 
 bool PaintCanvas(int x, int y, int pattern);
 
+void ZoomCam(void);
+
 void moveCamera(void);
 
 //==============================================================================
@@ -259,7 +266,26 @@ void DisplayTimer(float time) {
 	}
 }
 
-int ReadPort(){
+void ReadPort(){
+	int reply_wait_time = 1;
+	string incoming;
+	int nb_info = 2;
+	while (!simulationFinished) {
+		if (Serial.connected_) {
+			incoming = Serial.ReadSerialPort(reply_wait_time);
+			if (incoming.length() == 3) {
+				for (int i = 0; i < nb_info; i++) {
+					switch (i) {
+					case(0):Zoom_Out = stoi(incoming.substr(0, 1)); break;
+					case(1):Zoom_In = stoi(incoming.substr(2, 1));  break;
+					}
+				}
+				cout << incoming << endl;
+			}
+			ZoomCam();
+		}
+	}
+	Serial.CloseSerialPort();
 }
 
 void GetResult() {
@@ -963,7 +989,14 @@ int main(int argc, char** argv)
 	// create a thread which starts the main haptics rendering loop
 	hapticsThread = new cThread();
 	hapticsThread->start(updateHaptics, CTHREAD_PRIORITY_HAPTICS);
-
+	if (Serial.connected_) {
+		ArduinoThread = new cThread();
+		ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
+		cout << "Zoom through Arduino enabled" << endl;
+	}
+	else {
+		cout << "No Arduino detected" << endl;
+	}
 	// setup callback when application exits
 	atexit(close);
 
@@ -980,7 +1013,6 @@ int main(int argc, char** argv)
 	{
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
-
 		//deltaTimeCalc
 
 		globe->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 0.001);
@@ -1000,10 +1032,8 @@ int main(int argc, char** argv)
 				// retrieve projection and modelview matrix from oculus
 				cTransform projectionMatrix, modelViewMatrix;
 				oculusVR.onEyeRender(eyeIndex, projectionMatrix, modelViewMatrix);
-
 				camera->m_useCustomProjectionMatrix = true;
 				camera->m_projectionMatrix = projectionMatrix;
-
 				camera->m_useCustomModelViewMatrix = true;
 				camera->m_modelViewMatrix = modelViewMatrix;
 
@@ -1021,6 +1051,7 @@ int main(int argc, char** argv)
 		}
 		else {
 			moveCamera();
+			ZoomCam();
 			camera->renderView(width, height);
 		}
 
@@ -1283,14 +1314,12 @@ void updateHaptics(void)
 	simulationRunning = true;
 	simulationFinished = false;
 	timerNum = 0;
-	int reply_wait_time = 7;
 	// main haptic simulation loop
 	while (simulationRunning)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// SIMULATION TIME
 		/////////////////////////////////////////////////////////////////////
-
 		// stop the simulation clock
 		clock.stop();
 
@@ -1451,7 +1480,24 @@ void moveCamera() {
 	movementVector.mul(moveSpeed);
 	cameraPos.add(movementVector);
 	camera->setLocalPos(cameraPos);
+}
 
+void ZoomCam() {
+	cVector3d cameraPos = camera->getLocalPos();
+	movementVector.zero();
+	if (Zoom_In==0) {
+		movementVector = camera->getLookVector();
+		cout << "zooming" << endl;
+	}
+	else if (Zoom_Out==0) {
+		movementVector = camera->getLookVector();
+		movementVector.negate();
+		cout << "zooming out" << endl;
+	}
+	movementVector.mul(deltaTime);
+	movementVector.mul(moveSpeed);
+	cameraPos.add(movementVector);
+	camera->setLocalPos(cameraPos);
 }
 //COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfile
 void SaveCanvas() {

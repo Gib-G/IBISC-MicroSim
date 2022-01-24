@@ -103,7 +103,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,7 +123,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -139,7 +139,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -159,7 +159,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)Submodules\Chai3D\extras\GLFW\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\OCULUS\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\BULLET\lib\$(Configuration)\$(Platform)\;$(SolutionDir)Submodules\Chai3D\modules\ODE\lib\$(Configuration)\$(Platform)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw.lib;opengl32.lib;glu32.lib;chai3d.lib;chai3d-OCULUS.lib;chai3d-BULLET.lib;chai3d-ODE.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

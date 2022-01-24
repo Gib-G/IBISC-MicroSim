@@ -280,9 +280,8 @@ void ReadPort(){
 					case(1):Zoom_In = stoi(incoming.substr(2, 1));  break;
 					}
 				}
-				cout << incoming << endl;
 			}
-			ZoomCam();
+			if(Zoom_Out==0 || Zoom_In==0) ZoomCam();
 		}
 	}
 	Serial.CloseSerialPort();
@@ -1051,7 +1050,6 @@ int main(int argc, char** argv)
 		}
 		else {
 			moveCamera();
-			ZoomCam();
 			camera->renderView(width, height);
 		}
 
@@ -1263,6 +1261,7 @@ void close(void)
 
 	// delete resources
 	delete hapticsThread;
+	delete ArduinoThread;
 	delete world;
 	delete handler;
 }
@@ -1292,7 +1291,7 @@ void updateHaptics(void)
 		InitialPos[i] = tool[i]->getDeviceGlobalPos();
 		pressed[i] = false;
 		touching[i] = false;
-		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_";
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
 		pathname = streamstr.str();
 		streamstr << i << ".csv";
 		tempfile[i].open(streamstr.str());
@@ -1515,7 +1514,6 @@ void SaveCanvas() {
 		bool firstline = true;
 		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv";
 		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv\n";
-		std::cout << "temp : "<< temp.str() << endl;
 		myfile[k].open(temp.str());
 		temp.str("");
 		temp.clear();

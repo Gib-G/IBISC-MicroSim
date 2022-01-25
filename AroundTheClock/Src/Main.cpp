@@ -61,7 +61,8 @@ cToolGripper* tool[MAX_DEVICES];
 // a label to display the rate [Hz] at which the simulation is running
 cLabel* labelRates;
 
-bool previousframecaught;
+bool previousframecaught[MAX_DEVICES];
+int gripperCatchingIndex = -1;
 cMatrix3d startrotGripper[MAX_DEVICES];
 cVector3d startposGripper[MAX_DEVICES];
 cVector3d startposCube;
@@ -76,10 +77,12 @@ cODEWorld* ODEWorld;
 
 // ODE objects
 cODEGenericBody* ODEBody0;
+cODEGenericBody* ODEBodytest;
 cODEGenericBody* ODEBody1;
 cODEGenericBody* ODEBody2[MAX_DEVICES];
 cODEGenericBody* ODEBody3[MAX_DEVICES];;
 cMesh* object0;
+cMesh* objecttest;
 cMesh* object1;
 cMesh* object2[MAX_DEVICES];
 cMesh* object3[MAX_DEVICES];;
@@ -319,14 +322,14 @@ int main(int argc, char* argv[])
 	//-----------------------------------------------------------------------
 	// HAPTIC DEVICES / TOOLS
 	//-----------------------------------------------------------------------
-	previousframecaught = false;
 	// create a haptic device handler
 	handler = new cHapticDeviceHandler();
 	cHapticDeviceInfo hapticDeviceInfo;
-	double workspaceScaleFactor=1;
+	double workspaceScaleFactor = 1;
 	numHapticDevices = handler->getNumDevices();
 	double toolRadius = 0.02;
 	for (int i = 0; i < numHapticDevices; i++) {
+		previousframecaught[i] = false;
 
 		// get access to the first available haptic device
 		handler->getDevice(hapticDevice[i], i);
@@ -344,7 +347,7 @@ int main(int argc, char* argv[])
 		hapticDevice[i]->setEnableGripperUserSwitch(true);
 		// define a radius for the tool
 		tool[i]->setRadius(toolRadius);
-		tool[i]->setGripperWorkspaceScale(0.25);
+		tool[i]->setGripperWorkspaceScale(.25);
 		tool[i]->setShowContactPoints(true, false);
 		// enable if objects in the scene are going to rotate of translate
 		// or possibly collide against the tool. If the environment
@@ -361,6 +364,7 @@ int main(int argc, char* argv[])
 
 		// start the haptic tool
 		tool[i]->start();
+
 	}
 
 
@@ -409,11 +413,11 @@ int main(int argc, char* argv[])
 	world->addChild(ODEWorld);
 
 	// set some gravity
-	ODEWorld->setGravity(cVector3d(0.00, 0.00, -9.81));
+	ODEWorld->setGravity(cVector3d(0.00, 0.00, -45.81));
 
 	// define damping properties
-	ODEWorld->setAngularDamping(1);
-	ODEWorld->setLinearDamping(0.0002);
+	ODEWorld->setAngularDamping(0.02);
+	ODEWorld->setLinearDamping(0.02);
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -421,16 +425,20 @@ int main(int argc, char* argv[])
 	//////////////////////////////////////////////////////////////////////////
 	// create a new ODE object that is automatically added to the ODE world
 	ODEBody0 = new cODEGenericBody(ODEWorld);
+	ODEBodytest = new cODEGenericBody(ODEWorld);
 	ODEBody1 = new cODEGenericBody(ODEWorld);
 
 	// create a virtual mesh  that will be used for the geometry representation of the dynamic body
 	object0 = new cMesh();
+	objecttest = new cMesh();
 	object1 = new cMesh();
 
 	// create a cube mesh
 	double size = 0.40;
 	cCreateBox(object0, size * 2, size * 0.1, size * 0.1);
+	cCreateBox(objecttest, size * 2, size * 0.1, size * 0.1);
 	object0->createAABBCollisionDetector(toolRadius);
+	objecttest->createAABBCollisionDetector(toolRadius);
 
 	cCreateRing(object1, 0.01, 0.1);
 	object1->createAABBCollisionDetector(toolRadius);
@@ -453,22 +461,27 @@ int main(int argc, char* argv[])
 	mat2.setStiffness(0.3 * maxStiffness);
 	mat2.setDynamicFriction(3);
 	mat2.setStaticFriction(3);
+	objecttest->setMaterial(mat2);
 
 	// add mesh to ODE object
 	ODEBody0->setImageModel(object0);
+	ODEBodytest->setImageModel(objecttest);
 	ODEBody1->setImageModel(object1);
 
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
 	ODEBody1->createDynamicMesh();
 	ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
+	ODEBodytest->createDynamicBox(size * 2, size * 0.1, size * 0.1);
 
 	// define some mass properties for each cube
-	ODEBody0->setMass(0.05);
+	ODEBody0->setMass(0.01);
+	ODEBodytest->setMass(0.01);
 	ODEBody1->setMass(0.05);
 
 	// set position of each cube
 	ODEBody0->setLocalPos(0.0, -0.6, -0.5);
+	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
 
 	for (int i = 0; i < numHapticDevices; i++) {
 		ODEBody2[i] = new cODEGenericBody(ODEWorld);
@@ -740,37 +753,40 @@ void updateHaptics(void)
 	while (simulationRunning)
 	{
 
+		/////////////////////////////////////////////////////////////////////
+		// SIMULATION TIME
+		/////////////////////////////////////////////////////////////////////
+
+		// stop the simulation clock
+		clock.stop();
+
+		// read the time increment in seconds
+		double timeInterval = cClamp(clock.getCurrentTimeSeconds(), 0.0001, 0.001);
+
+		// restart the simulation clock
+		clock.reset();
+		clock.start();
+
+		// signal frequency counter
+		freqCounterHaptics.signal(1);
+
 		ODEBody1->setLocalPos(0.0, 0, 0);
 		ODEBody1->setLocalRot(cMatrix3d(1, 0, 1, M_PI));
+		// compute global reference frames for each object
+		world->computeGlobalPositions(true);
+		bool caught[MAX_DEVICES];
+		int vientdegrip = -1;
 		for (int i = 0; i < numHapticDevices; i++) {
 			ODEBody2[i]->setLocalPos(tool[i]->m_hapticPointFinger->getLocalPosProxy() + ODEBody2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
 			ODEBody2[i]->setLocalRot(tool[i]->getDeviceLocalRot());
 			ODEBody3[i]->setLocalPos(tool[i]->m_hapticPointThumb->getLocalPosProxy() + ODEBody3[i]->getLocalRot() * cVector3d(0.2, 0, 0));
 			ODEBody3[i]->setLocalRot(tool[i]->getDeviceLocalRot());
-			/////////////////////////////////////////////////////////////////////
-			// SIMULATION TIME
-			/////////////////////////////////////////////////////////////////////
-
-			// stop the simulation clock
-			clock.stop();
-
-			// read the time increment in seconds
-			double timeInterval = cClamp(clock.getCurrentTimeSeconds(), 0.0001, 0.001);
-
-			// restart the simulation clock
-			clock.reset();
-			clock.start();
-
-			// signal frequency counter
-			freqCounterHaptics.signal(1);
 
 
 			/////////////////////////////////////////////////////////////////////
 			// HAPTIC FORCE COMPUTATION
 			/////////////////////////////////////////////////////////////////////
 
-			// compute global reference frames for each object
-			world->computeGlobalPositions(true);
 
 
 			// update position and orientation of tool[i]
@@ -781,55 +797,63 @@ void updateHaptics(void)
 
 			// send forces to haptic device
 			tool[i]->applyToDevice();
+			caught[i] = true;
+			int numInteractionPoints = tool[i]->getNumHapticPoints();
+			for (int j = 0; j < numInteractionPoints; j++)
+			{
+				// get pointer to next interaction point of tool[i]
+				cHapticPoint* interactionPoint = tool[i]->getHapticPoint(j);
 
+				if (!interactionPoint->isInContact(object0)) {
+					caught[i] = false;
+				}
+			}
+			if (caught[i] && !previousframecaught[i]) {
+				vientdegrip = i;
+			}
+			if (!caught[i]) {
+				previousframecaught[i] = false;
+			}
+
+		}
+		if (vientdegrip != -1) {
+			gripperCatchingIndex = vientdegrip;
+		}
+		if (gripperCatchingIndex != -1 && !caught[gripperCatchingIndex]) {
+			gripperCatchingIndex = -1;
+			for (int i = 0; i < numHapticDevices; i++) {
+				if (caught[i]) {
+					gripperCatchingIndex = i;
+				}
+			}
+		}
+		if (gripperCatchingIndex == -1) {
+			ODEWorld->setGravity(cVector3d(0, 0, -45.81));
+
+		}
+		for (int i = 0; i < numHapticDevices; i++) {
 			/////////////////////////////////////////////////////////////////////
 			// DYNAMIC SIMULATION
 			/////////////////////////////////////////////////////////////////////
 
 			// for each interaction point of the tool[i] we look for any contact events
 			// with the environment and apply forces accordingly
-			bool caught = true;
 			int numInteractionPoints = tool[i]->getNumHapticPoints();
 			for (int j = 0; j < numInteractionPoints; j++)
 			{
 				// get pointer to next interaction point of tool[i]
 				cHapticPoint* interactionPoint = tool[i]->getHapticPoint(j);
-				//bool temp = false;
-				//for (int j = 0; j < object2->getNumMeshes();j++) {
-				//    if (interactionPoint->isInContact( object2->getMesh(j) )) {
-				//        temp = true;
-				//    }
-				//}
-				//if (!temp) {
-				//    caught = false;
-				//}
-				if (!interactionPoint->isInContact(object0)) {
-					caught = false;
-				}
 
-				if (caught && j == 1) {
-					if (!previousframecaught) {
+
+				if (gripperCatchingIndex == i) {
+					if (vientdegrip == i) {
+						cout << i << endl;
 						startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
 						startrotCube.copyfrom(ODEBody0->getLocalRot());
 						startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());
 						startposCube.copyfrom(ODEBody0->getLocalPos());
-						previousframecaught = true;
+						previousframecaught[i] = true;
 						ODEWorld->setGravity(cVector3d(0, 0, 0));
-					}
-					bool quoitester = false;
-					if (quoitester) {
-						cMatrix3d ObjT0Invert;
-						cMatrix3d ArmT;
-						cMatrix3d ArmT0Invert;
-						cMatrix3d ObjT0;
-						ObjT0Invert.copyfrom(startrotCube);
-						ObjT0Invert.invert();
-						ArmT.copyfrom(tool[i]->getDeviceLocalRot());
-						ArmT0Invert.copyfrom(startrotGripper[i]);
-						ArmT0Invert.invert();
-						ObjT0.copyfrom(startrotCube);
-
-						ODEBody0->setLocalRot(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
 					}
 					else {
 						cMatrix3d ObjT0Invert;
@@ -853,10 +877,6 @@ void updateHaptics(void)
 					}
 
 				}
-				if (!caught && j == 1) {
-					previousframecaught = false;
-					ODEWorld->setGravity(cVector3d(0, 0, -9.81));
-				}
 				// check all contact points
 				int numContacts = interactionPoint->getNumCollisionEvents();
 				for (int k = 0; k < numContacts; k++)
@@ -876,16 +896,16 @@ void updateHaptics(void)
 					if (ODEobject != NULL)
 					{
 
-						ODEobject->addExternalForceAtPoint(-3 * interactionPoint->getLastComputedForce(),
+						ODEobject->addExternalForceAtPoint(-10 * interactionPoint->getLastComputedForce(),
 							collisionEvent->m_globalPos);
 					}
 				}
 
 			}
 
-			// update simulation
-			ODEWorld->updateDynamics(timeInterval);
 		}
+		// update simulation
+		ODEWorld->updateDynamics(timeInterval);
 	}
 
 	// exit haptics thread
@@ -903,7 +923,6 @@ cVector3d toAxisAngleVec(cMatrix3d m) {
 	if ((abs(m(0, 1) - m(1, 0)) < epsilon)
 		&& (abs(m(0, 2) - m(2, 0)) < epsilon)
 		&& (abs(m(1, 2) - m(2, 1)) < epsilon)) {
-		cout << "en dessous" << endl;
 		// singularity found
 		// first check for identity matrix which must have +1 for all terms
 		//  in leading diagonaland zero in other terms

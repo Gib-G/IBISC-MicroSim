@@ -24,6 +24,7 @@ float goalPixels;
 float correctPercent = 0;
 float cubesize;
 int pattern = 0;
+int rotation = 0;
 int MAX_PATTERN = 1;
 cColorb errorColor;
 bool start = false;
@@ -77,6 +78,8 @@ cMesh* startButton;
 cMesh* changeButton;
 cMesh* resetButton;
 cMesh* saveButton;
+cMesh* rotateButton;
+cVector3d canvasPos;
 // copy of blank canvas texture
 cImagePtr canvasOriginal;
 
@@ -180,6 +183,8 @@ void ResetSim(int pattern);
 
 void ChangePattern(void);
 
+void RotateCanvas(void);
+
 bool PaintCanvas(int x, int y, int pattern);
 
 void ZoomCam(void);
@@ -270,7 +275,9 @@ void ReadPort(){
 		string num;
 		cout << "Current Arduino Port : ";
 		getline(cin, num);
-		UpdatePreferences(num);
+		if (num != "") {
+			UpdatePreferences(num);
+		}
 		SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
 		if (Serial.connected_) {
 			cout << "Zoom through Arduino enabled" << endl;
@@ -600,7 +607,7 @@ int main(int argc, char** argv)
 	board->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));
 	world->addChild(board);*/
 	canvas = new cMesh();
-	cCreatePlane(canvas, 1, 1, cVector3d(-0.3, 0, -0.45));
+	cCreatePlane(canvas, 1, 1);
 	world->addChild(canvas);
 	// create collision detector
 	canvas->createBruteForceCollisionDetector();
@@ -755,14 +762,6 @@ int main(int argc, char** argv)
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
 	resetButton->translate(cVector3d(-.7, 0.5, -0.45));
-	/*
-	cFontPtr font = NEW_CFONTCALIBRI20();
-	cLabel* label = new cLabel(font);
-	label->m_fontColor.setBlack();
-	label->setText("Reset");
-	resetButton->addChild(label);*/
-
-	// compute collision detection algorithm
 	mat.setHapticTriangleSides(true, true);
 	mat.setDynamicFriction(0.2);
 	mat.setStaticFriction(0.2);
@@ -893,12 +892,45 @@ int main(int argc, char** argv)
 	// compute collision detection algorithm
 	changeButton->createAABBCollisionDetector(toolRadius);
 
+	rotateButton = new cMesh();
+	world->addChild(rotateButton);
+	cCreatePanel(rotateButton, .3, .3, .1, 8, cVector3d(0, 0, 0), rot);
+	rotateButton->translate(cVector3d(.17, -0.31, -0.45));
+	rotateButton->setMaterial(mat);
+	rotateButton->m_texture = cTexture2d::create();
+	fileload = rotateButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/rotateButton.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = rotateButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/rotateButton.png");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
+
+	rotateButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	rotateButton->setUseTexture(true);
+
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	rotateButton->setUseCulling(false, true);
+
+
+	// compute collision detection algorithm
+	rotateButton->createAABBCollisionDetector(toolRadius);
+
 	changeButton->translate(cVector3d(0.1, 0.3, -0.8));
 	startButton->translate(cVector3d(0.1, 0.3, -0.8));
+	rotateButton->translate(cVector3d(0.1, 0.3, -0.8));
 	saveButton->translate(cVector3d(0.1, 0.3, -0.8));
 	resetButton->translate(cVector3d(0.1, 0.3, -0.8));
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
-	canvas->translate(cVector3d(-0.2, 0.31, -0.8));
+	canvasPos = cVector3d(-0.5, .025, -1.25);
+	canvas->translate(canvasPos);
 	//--------------------------------------------------------------------------
 	// CREATE SHADERS
 	//--------------------------------------------------------------------------
@@ -1188,9 +1220,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 
 	}
 	if (a_key == GLFW_KEY_7) {
-		pattern = (pattern != MAX_PATTERN ? pattern + 1 : 0);
-		ResetCanvas(pattern);
-		cout << "pattern : " << pattern << endl;
+		RotateCanvas();
 	}
 	pressedKey = a_key;
 
@@ -1445,6 +1475,9 @@ void updateHaptics(void)
 				ChangePattern();
 				pressed[i] = true;
 			}
+			else if (tool[i]->isInContact(rotateButton) && button == true && !pressed[i]) {
+				RotateCanvas();
+			}
 			if(start) posData[i] = tuple<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos());
 		}
 		if(start) SaveData();
@@ -1529,10 +1562,16 @@ void SaveCanvas() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "Pattern"<< "\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "Pattern"<< "Rotation du plan" <<"\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
-				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << pattern+1<< "\n";
+				string rotated;
+				switch (rotation) {
+				case(1):rotated = "Droite"; break;
+				case(2):rotated = "Gauche"; break;
+				default:rotated = "Face"; break;
+				}
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << pattern + 1 << rotated<<"\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
@@ -1643,6 +1682,26 @@ bool PaintCanvas(int x, int y, int pattern) {
 		break;
 	}
 	return hit;
+}
+void RotateCanvas() {
+	double rot;
+	switch (rotation) {
+	case(0):
+		rotation++;
+		rot = 90;
+		break;
+	case(1):
+		rotation++;
+		rot = 180;
+		break;
+	case(2):
+		rotation=0;
+		rot = 90;
+		break;
+	}
+	canvas->setLocalPos(0, 0, 0);
+	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), rot);
+	canvas->translate(canvasPos);
 }
 void UpdatePreferences(string ComPort) {
 	std::stringstream temp;

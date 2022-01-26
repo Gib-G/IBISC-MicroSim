@@ -104,7 +104,6 @@ cMesh* testPlane;
 bool crossing = false;
 bool end1 = false;
 bool end2 = false;
-int crossed = 0;
 float sphereSize = 0.01;
 
 //---------------------------------------------------------------------------
@@ -138,7 +137,10 @@ int height = 0;
 // swap interval for the display context (vertical synchronization)
 int swapInterval = 1;
 
+double crossTimer = 0;
 
+//delta time variables
+double timeInterval;
 //------------------------------------------------------------------------------
 // OCULUS RIFT
 //------------------------------------------------------------------------------
@@ -172,6 +174,7 @@ void updateGraphics(void);
 void updateHaptics(void);
 void InitializeNeedleDetect(void);
 void AddDetectionPlane(int i, cODEGenericBody* ring);
+void ComputeCrossing(cMesh* spheres[], cMesh* plane, double deltatime);
 // this function closes the application
 void close(void);
 
@@ -549,11 +552,10 @@ int main(int argc, char* argv[])
 	ODEBodytest->setMass(0.01);
 	ODEBody1->setMass(0.05);
 	InitializeNeedleDetect();
-	AddDetectionPlane(0,ODEBody1);
+	AddDetectionPlane(0, ODEBody1);
 	// set position of each cube
 	ODEBody0->setLocalPos(0.0, -0.6, -0.5);
 	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
-	settings.m_returnMinimalCollisionData;
 
 	for (int i = 0; i < numHapticDevices; i++) {
 		ODEBody2[i] = new cODEGenericBody(ODEWorld);
@@ -643,8 +645,13 @@ int main(int argc, char* argv[])
 	// call window size callback at initialization
 	windowSizeCallback(window, width, height);
 	// recenter oculus
-	camera->setLocalPos(defaultPos);
-	oculusVR.recenterPose();
+	if (!camSim) {
+		camera->setLocalPos(defaultPos);
+		oculusVR.recenterPose();
+	}
+	else {
+		camera->setLocalPos(cVector3d(2.5, 0, 0.3));
+	}
 
 	// main graphic loop
 	while (!glfwWindowShouldClose(window))
@@ -760,6 +767,15 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 		mirroredDisplay = !mirroredDisplay;
 		camera->setMirrorVertical(mirroredDisplay);
 	}
+	// option - toggle vertical mirroring
+	else if (a_key == GLFW_KEY_D)
+	{
+		ODEBody0->translate(cVector3d(0, 0.02, 0));
+	}
+	else if (a_key == GLFW_KEY_A)
+	{
+		ODEBody0->translate(cVector3d(0, -0.02, 0));
+	}
 }
 
 //---------------------------------------------------------------------------
@@ -787,28 +803,39 @@ void close(void)
 
 void AddDetectionPlane(int i, cODEGenericBody* ring) {
 	DetectionPlanes[i] = new cMesh();
-	ring->addChild(DetectionPlanes[i]);
-	cCreatePanel(DetectionPlanes[i], .2, .2, .1, 10);
+	cCreatePanel(DetectionPlanes[i], 1, 1, 1);
 	DetectionPlanes[i]->m_material->setRed();
+	DetectionPlanes[i]->createAABBCollisionDetector(0.02);
+	DetectionPlanes[i]->setShowCollisionDetector(true);
+	DetectionPlanes[i]->setLocalPos(0, 0, -0.9);
 }
 
-void ComputeCrossing(cMesh* spheres[], cMesh* plane) {
+void ComputeCrossing(cMesh* spheres[], cMesh* plane, double deltatime) {
 	cVector3d pos0 = spheres[0]->getGlobalPos();
 	cVector3d pos1 = spheres[1]->getGlobalPos();
 	cVector3d pos2 = spheres[3]->getGlobalPos();
 	cVector3d pos3 = spheres[4]->getGlobalPos();
+	crossTimer += deltatime;
+	if (crossTimer >= 0.5) {
+		cout << pos0.str() << "|" << pos3.str() << "|" << plane->getGlobalPos().str() << "|" << plane->getLocalPos().str() << endl;
+		crossTimer = 0;
+	}
 	if (plane->computeCollisionDetection(pos0, pos3, recorder, settings)) {
+		cout << "touché";
+		plane->m_material->setGreen();
 		crossing = true;
+		crossTimer = 0;
 	}
 	else {
 		if (end1 && end2) {
-			crossed++;
-			cout << "Crossed " << crossed << " times" << endl;
 		}
-		plane->m_material->setRed();
-		crossing = false;
-		end1 = false;
-		end2 = false;
+		if (crossTimer >= 10 && crossing) {
+			cout << "wtf";
+			plane->m_material->setRed();
+			crossing = false;
+			end1 = false;
+			end2 = false;
+		}
 	}
 	if (crossing) {
 		if (plane->computeCollisionDetection(pos0, pos1, recorder, settings)) {
@@ -897,15 +924,16 @@ void updateHaptics(void)
 	while (simulationRunning)
 	{
 
+		DetectionPlanes[0]->setLocalPos(0.0, 0, -0.6);
 		/////////////////////////////////////////////////////////////////////
 		// SIMULATION TIME
 		/////////////////////////////////////////////////////////////////////
 
 		// stop the simulation clock
 		clock.stop();
-		ComputeCrossing(DetectSphere, DetectionPlanes[0]);
 		// read the time increment in seconds
-		double timeInterval = cClamp(clock.getCurrentTimeSeconds(), 0.0001, 0.001);
+		timeInterval = cClamp(clock.getCurrentTimeSeconds(), 0.0001, 0.001);
+		ComputeCrossing(DetectSphere, DetectionPlanes[0], timeInterval);
 
 		// restart the simulation clock
 		clock.reset();
@@ -914,8 +942,6 @@ void updateHaptics(void)
 		// signal frequency counter
 		freqCounterHaptics.signal(1);
 
-		ODEBody1->setLocalPos(0.0, 0, 0);
-		ODEBody1->setLocalRot(cMatrix3d(1, 0, 1, M_PI));
 		// compute global reference frames for each object
 		world->computeGlobalPositions(true);
 		bool caught[MAX_DEVICES];
@@ -1220,11 +1246,12 @@ double toAxisAngleAngle(cMatrix3d m) {
 }
 
 void InitializeNeedleDetect() {
-	float size = 0.4;
+	double size = 0.4;
 	for (int i = 0; i < 5; i++) {
 		DetectSphere[i] = new cMesh();
 		cCreateSphere(DetectSphere[i], sphereSize);
 		ODEBody0->addChild(DetectSphere[i]);
-		DetectSphere[i]->translate(size*(-1+i/2), 0, 0);
+		DetectSphere[i]->translate(size * (-1 + (double)i / (double)2), 0, 0);
+		cout << DetectSphere[i]->getGlobalPos().str() << endl;
 	}
 }

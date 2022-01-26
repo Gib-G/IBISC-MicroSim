@@ -8,20 +8,27 @@
 */
 
 #include <string>
+#include <iostream>
+#include <chrono>
+#include <thread>
 #include <winsock2.h>
 #include <WS2tcpip.h>
-#include <iostream>
+#include "Packet_generated.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
 std::string getAddressString(struct sockaddr* address) {
+
 	char buffer[256]{};
+
 	if (address->sa_family == AF_INET) {
 		inet_ntop(AF_INET, reinterpret_cast<struct sockaddr_in*>(address), buffer, sizeof buffer);
 		return static_cast<std::string>(buffer);
 	}
+
 	inet_ntop(AF_INET6, reinterpret_cast<struct sockaddr_in6*>(address), buffer, sizeof buffer);
 	return static_cast<std::string>(buffer);
+
 }
 
 int main(int argc, char** argv) {
@@ -98,18 +105,26 @@ int main(int argc, char** argv) {
 		std::cout << "Client " << clientAddressString << " connected!" << "\n";
 
 		double x{0};
-		double y{}, z{};
-		std::string message{};
+		flatbuffers::FlatBufferBuilder builder{ 1024 };
+		flatbuffers::Offset<Network::Packet> packet{};
+		uint8_t* message{ nullptr };
 		while (1) {
-			y = cos(x);
-			z = sin(x);
-			x += 0.1;
-			message = std::to_string(y);
-			if (send(clientSocketFd, message.c_str(), sizeof message, 0) == -1) {
+
+			packet = Network::CreatePacket(builder, static_cast<float>(cos(x)));
+			builder.Finish(packet);
+			message = builder.GetBufferPointer();
+
+			if (send(clientSocketFd, reinterpret_cast<char*>(message), builder.GetSize(), 0) == -1) {
 				closesocket(clientSocketFd);
 				std::cout << "Sending failed. Client " << clientAddressString << " probably disconnected" << "\n";
 				break;
 			}
+
+			x += 0.08;
+			// This is some stupid attempt at synchronizing the server with
+			// Unity (targeting a fixed display rate of about 60 fps).
+			std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
 		}
 
 	}

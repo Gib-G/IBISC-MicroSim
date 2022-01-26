@@ -1679,6 +1679,9 @@ char* FetchPreferences() {
 	for (int i = 0; i < comport.length(); i++) {
 		com_port[7 + i] = comport[i];
 	}
+	for (int j = comport.length() + 7; j < 9; j++) {
+		com_port[j] = '\0';
+	}
 	return com_port;
 }
 //------------------------------------------------------------------------------

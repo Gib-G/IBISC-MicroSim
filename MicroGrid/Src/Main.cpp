@@ -137,7 +137,7 @@ double deltaTime;
 double moveSpeed = 1;
 cVector3d movementVector;
 int pressedKey;
-
+bool arduino = false;
 //------------------------------------------------------------------------------
 // OCULUS RIFT
 //------------------------------------------------------------------------------
@@ -167,7 +167,6 @@ void mouseMotionCallback(GLFWwindow* a_window, double a_posX, double a_posY);
 
 // function that closes the application
 void close(void);
-
 // main haptics simulation loop
 void updateHaptics(void);
 
@@ -265,16 +264,14 @@ void ReadPort(){
 	int reply_wait_time = 1;
 	string incoming;
 	int nb_info = 2; 
-	DWORD COM_BAUD_RATE = CBR_115200;
+	DWORD COM_BAUD_RATE = CBR_19200;
 	static SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
 	if(!Serial.connected_){
-		cout << com_port << endl;
 		string num;
 		cout << "Current Arduino Port : ";
 		getline(cin, num);
 		UpdatePreferences(num);
 		SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
-		cout << com_port << endl;
 		if (Serial.connected_) {
 			cout << "Zoom through Arduino enabled" << endl;
 		}
@@ -283,18 +280,14 @@ void ReadPort(){
 		}
 	}
 	while (!simulationFinished && Serial.connected_) {
+		arduino = true;
 		incoming = Serial.ReadSerialPort(reply_wait_time);
 		if (incoming.length() == 3) {
-			for (int i = 0; i < nb_info; i++) {
-				switch (i) {
-				case(0):Zoom_Out = stoi(incoming.substr(0, 1)); break;
-				case(1):Zoom_In = stoi(incoming.substr(2, 1));  break;
-				}
+			Zoom_Out = stoi(incoming.substr(0, 1));
+			Zoom_In = stoi(incoming.substr(2, 1));
 			}
-			if (Zoom_Out == 0 || Zoom_In == 0) ZoomCam();
 		}
-	}
-	Serial.CloseSerialPort();
+	if(Serial.connected_) Serial.CloseSerialPort();
 }
 
 void GetResult() {
@@ -372,9 +365,6 @@ int main(int argc, char** argv)
 	//--------------------------------------------------------------------------
 
 
-	ArduinoThread = new cThread();
-	ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
-	cout << "Launching Arduino Thread" << endl;
 	// initialize GLFW library
 	if (!glfwInit())
 	{
@@ -1012,16 +1002,17 @@ int main(int argc, char** argv)
 	hapticsThread = new cThread();
 	hapticsThread->start(updateHaptics, CTHREAD_PRIORITY_HAPTICS);
 	// setup callback when application exits
+
+	ArduinoThread = new cThread();
+	ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
 	atexit(close);
-
-
 	//--------------------------------------------------------------------------
 	// MAIN GRAPHIC LOOP
 	//--------------------------------------------------------------------------
 
 	// recenter oculus
 	camera->setLocalPos(defaultPos);
-	oculusVR.recenterPose();
+	if(!camSim) oculusVR.recenterPose();
 
 	// main graphic rendering loop
 	while (!glfwWindowShouldClose(window) && !simulationFinished)
@@ -1052,6 +1043,7 @@ int main(int argc, char** argv)
 				camera->m_projectionMatrix = projectionMatrix;
 				camera->m_useCustomModelViewMatrix = true;
 				camera->m_modelViewMatrix = modelViewMatrix;
+				if(arduino) ZoomCam();
 
 				// render world
 				ovrSizei size = oculusVR.getEyeTextureSize(eyeIndex);
@@ -1067,6 +1059,9 @@ int main(int argc, char** argv)
 		}
 		else {
 			moveCamera();
+			if (arduino) {
+				ZoomCam();
+			}
 			camera->renderView(width, height);
 		}
 
@@ -1498,7 +1493,6 @@ void moveCamera() {
 }
 
 void ZoomCam() {
-	cVector3d cameraPos = camera->getLocalPos();
 	movementVector.zero();
 	if (Zoom_In==0) {
 		movementVector = camera->getLookVector();
@@ -1508,11 +1502,10 @@ void ZoomCam() {
 		movementVector.negate();
 	}
 	movementVector.mul(deltaTime);
-	movementVector.mul((double)moveSpeed/10);
-	cameraPos.add(movementVector);
-	camera->setLocalPos(cameraPos);
+	movementVector.mul(moveSpeed);
+	camera->translate(movementVector);
 }
-//COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfile
+//COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfilen
 void SaveCanvas() {
 	std::stringstream temp;
 	GetResult();
@@ -1584,7 +1577,6 @@ void ResetCanvas(int pattern) {
 	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
 	goalPixels = 0;
-	cout << pattern << endl;
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {

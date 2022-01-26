@@ -1,0 +1,7 @@
+namespace Network;
+
+table Packet {
+  number:float = 3.1415;
+}
+
+root_type Packet;

@@ -153,6 +153,7 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
+cVector3d defaultPos = cVector3d(-0.1,0 , 0.5);
 //------------------------------------------------------------------------------
 // DECLARED FUNCTIONS
 //------------------------------------------------------------------------------
@@ -1008,11 +1009,14 @@ int main(int argc, char** argv)
 	//--------------------------------------------------------------------------
 
 	// recenter oculus
+	camera->setLocalPos(defaultPos);
 	oculusVR.recenterPose();
 
 	// main graphic rendering loop
 	while (!glfwWindowShouldClose(window) && !simulationFinished)
 	{
+		OVR::Vector3f tmp = oculusVR.getEyeMVPMatrix(0).GetTranslation();
+		cout << tmp.x << ", " << tmp.y << "," << tmp.z << endl;
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
 		//deltaTimeCalc

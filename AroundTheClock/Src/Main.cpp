@@ -149,7 +149,7 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
-cVector3d defaultPos = cVector3d(-0.1, 0, 0.5);
+cVector3d defaultPos = cVector3d(-0.6, 0, 0.5);
 
 bool camSim;
 //------------------------------------------------------------------------------

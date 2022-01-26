@@ -105,11 +105,6 @@ cThread* ArduinoThread;
 
 //STATES
 //------------------------------------------------------------------------------
-// Arduino
-//------------------------------------------------------------------------------
-char com_port[] = "\\\\.\\COM8";
-DWORD COM_BAUD_RATE = CBR_9600;
-SimpleSerial Serial(com_port, COM_BAUD_RATE);
 enum MouseStates
 {
 	MOUSE_IDLE,
@@ -189,7 +184,8 @@ void ChangePattern(void);
 bool PaintCanvas(int x, int y, int pattern);
 
 void ZoomCam(void);
-
+void UpdatePreferences(string num);
+char* FetchPreferences(void);
 void moveCamera(void);
 
 //==============================================================================
@@ -261,6 +257,11 @@ void DisplayTimer(float time) {
 
 	}
 }
+// Arduino
+//------------------------------------------------------------------------------
+char com_port[] = "\\\\.\\COM ";
+DWORD COM_BAUD_RATE = CBR_9600;
+SimpleSerial Serial(FetchPreferences() , COM_BAUD_RATE);
 
 void ReadPort(){
 	int reply_wait_time = 1;
@@ -312,6 +313,7 @@ void GetResult() {
 	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
 	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
 }
+
 int main(int argc, char** argv)
 {
 	//--------------------------------------------------------------------------
@@ -355,18 +357,18 @@ int main(int argc, char** argv)
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
 	//--------------------------------------------------------------------------
-	SimpleSerial Serial(com_port, COM_BAUD_RATE);
 	if (Serial.connected_) {
 		ArduinoThread = new cThread();
 		ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
 		cout << "Zoom through Arduino enabled" << endl;
 	}
 	else{
+		cout << com_port << endl;
 		string num;
 		cout << "Current Arduino Port : ";
 		getline(cin, num);
-		com_port[7] = num[0];
-		SimpleSerial Serial(com_port, COM_BAUD_RATE);
+		UpdatePreferences(num);
+		SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
 		if (Serial.connected_) {
 			ArduinoThread = new cThread();
 			ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
@@ -762,7 +764,7 @@ int main(int argc, char** argv)
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	resetButton->translate(cVector3d(-.4, 0.5, -0.45));
+	resetButton->translate(cVector3d(-.7, 0.5, -0.45));
 	/*
 	cFontPtr font = NEW_CFONTCALIBRI20();
 	cLabel* label = new cLabel(font);
@@ -873,7 +875,7 @@ int main(int argc, char** argv)
 	changeButton = new cMesh();
 	world->addChild(changeButton);
 	cCreatePanel(changeButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	changeButton->translate(cVector3d(.2, -.005, -0.45));
+	changeButton->translate(cVector3d(-.15, 0.5, -0.45));
 	changeButton->setMaterial(mat);
 	changeButton->m_texture = cTexture2d::create();
 	fileload = changeButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/1.png");
@@ -1033,7 +1035,6 @@ int main(int argc, char** argv)
 	while (!glfwWindowShouldClose(window) && !simulationFinished)
 	{
 		OVR::Vector3f tmp = oculusVR.getEyeMVPMatrix(0).GetTranslation();
-		cout << tmp.x << ", " << tmp.y << "," << tmp.z << endl;
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
 		//deltaTimeCalc
@@ -1663,7 +1664,21 @@ bool PaintCanvas(int x, int y, int pattern) {
 }
 void UpdatePreferences(string ComPort) {
 	std::stringstream temp;
+	std::ofstream UserInfo;
 	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
-	UserInfo<< 
+	UserInfo << ComPort << endl;
+	UserInfo.close();
+}
+char* FetchPreferences() {
+	std::ifstream UserInfo;
+	std::string comport;
+	char temp;
+	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
+	getline(UserInfo, comport);
+	UserInfo.close();
+	for (int i = 0; i < comport.length(); i++) {
+		com_port[7 + i] = comport[i];
+	}
+	return com_port;
 }
 //------------------------------------------------------------------------------

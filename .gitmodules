@@ -3,3 +3,8 @@
 	url = https://github.com/Gib-G/chai3d.git
 	branch = master
 	ignore = dirty
+[submodule "Submodules/Flatbuffers"]
+	path = Submodules/Flatbuffers
+	url = https://github.com/google/flatbuffers.git
+	branch = master
+	ignore = dirty

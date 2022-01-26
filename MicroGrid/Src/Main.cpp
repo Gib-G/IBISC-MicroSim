@@ -34,6 +34,7 @@ int BRUSH_SIZE = 600;
 float timerNum = 0.0f;
 string NumCandidate;
 tuple<float, cVector3d> posData[MAX_DEVICES];
+std::ofstream UserInfo;
 std::ofstream myfile[MAX_DEVICES];
 std::ofstream tempfile[MAX_DEVICES];
 string pathname;
@@ -109,7 +110,6 @@ cThread* ArduinoThread;
 char com_port[] = "\\\\.\\COM8";
 DWORD COM_BAUD_RATE = CBR_9600;
 SimpleSerial Serial(com_port, COM_BAUD_RATE);
-
 enum MouseStates
 {
 	MOUSE_IDLE,
@@ -354,7 +354,24 @@ int main(int argc, char** argv)
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
 	//--------------------------------------------------------------------------
-
+	SimpleSerial Serial(com_port, COM_BAUD_RATE);
+	if (Serial.connected_) {
+		ArduinoThread = new cThread();
+		ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
+		cout << "Zoom through Arduino enabled" << endl;
+	}
+	else{
+		string num;
+		cout << "Current Arduino Port : ";
+		getline(cin, num);
+		com_port[7] = num[0];
+		SimpleSerial Serial(com_port, COM_BAUD_RATE);
+		if (Serial.connected_) {
+			ArduinoThread = new cThread();
+			ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
+			cout << "Zoom through Arduino enabled" << endl;
+		}
+	}
 	// initialize GLFW library
 	if (!glfwInit())
 	{
@@ -595,7 +612,7 @@ int main(int argc, char** argv)
 	// create collision detector
 	canvas->createBruteForceCollisionDetector();
 	canvas->setFriction(0.3, 0.3, true);
-	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 50);
+	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 20);
 	/*
 	canvas->rotateAboutGlobalAxisRad(cVector3d(0, 1, 0), cDegToRad(90));
 	canvas->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));*/
@@ -791,7 +808,7 @@ int main(int argc, char** argv)
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(saveButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	saveButton->translate(cVector3d(-.4, -1.05, -0.45));
+	saveButton->translate(cVector3d(-.7, -1.05, -0.45));
 	saveButton->setMaterial(mat);
 	// set graphic properties
 	saveButton->m_texture = cTexture2d::create();
@@ -824,7 +841,7 @@ int main(int argc, char** argv)
 	startButton = new cMesh();
 	world->addChild(startButton);
 	cCreatePanel(startButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	startButton->translate(cVector3d(.2, -.525, -0.45));
+	startButton->translate(cVector3d(-.15, -1.05, -0.45));
 	startButton->setMaterial(mat);
 	startButton->m_texture = cTexture2d::create();
 	fileload = startButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/startButton.png");
@@ -957,11 +974,11 @@ int main(int argc, char** argv)
 	// create a texture
 	cTexture2dPtr textureSpace = cTexture2d::create();
 
-	fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
+	fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/grey.jpg");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
+		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/grey.jpg");
 #endif
 	}
 	if (!fileload)
@@ -1524,10 +1541,10 @@ void SaveCanvas() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "Pattern"<< "\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
-				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << pattern+1<< "\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
@@ -1640,5 +1657,9 @@ bool PaintCanvas(int x, int y, int pattern) {
 	}
 	return hit;
 }
-
+void UpdatePreferences(string ComPort) {
+	std::stringstream temp;
+	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
+	UserInfo<< 
+}
 //------------------------------------------------------------------------------

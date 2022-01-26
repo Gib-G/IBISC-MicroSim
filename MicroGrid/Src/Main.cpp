@@ -259,26 +259,39 @@ void DisplayTimer(float time) {
 }
 // Arduino
 //------------------------------------------------------------------------------
-char com_port[] = "\\\\.\\COM ";
-DWORD COM_BAUD_RATE = CBR_9600;
-SimpleSerial Serial(FetchPreferences() , COM_BAUD_RATE);
 
+char com_port[] = "\\\\.\\COM ";
 void ReadPort(){
 	int reply_wait_time = 1;
 	string incoming;
-	int nb_info = 2;
-	while (!simulationFinished) {
+	int nb_info = 2; 
+	DWORD COM_BAUD_RATE = CBR_115200;
+	static SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+	if(!Serial.connected_){
+		cout << com_port << endl;
+		string num;
+		cout << "Current Arduino Port : ";
+		getline(cin, num);
+		UpdatePreferences(num);
+		SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+		cout << com_port << endl;
 		if (Serial.connected_) {
-			incoming = Serial.ReadSerialPort(reply_wait_time);
-			if (incoming.length() == 3) {
-				for (int i = 0; i < nb_info; i++) {
-					switch (i) {
-					case(0):Zoom_Out = stoi(incoming.substr(0, 1)); break;
-					case(1):Zoom_In = stoi(incoming.substr(2, 1));  break;
-					}
+			cout << "Zoom through Arduino enabled" << endl;
+		}
+		else {
+			cout << "No Arduino detected" << endl;
+		}
+	}
+	while (!simulationFinished && Serial.connected_) {
+		incoming = Serial.ReadSerialPort(reply_wait_time);
+		if (incoming.length() == 3) {
+			for (int i = 0; i < nb_info; i++) {
+				switch (i) {
+				case(0):Zoom_Out = stoi(incoming.substr(0, 1)); break;
+				case(1):Zoom_In = stoi(incoming.substr(2, 1));  break;
 				}
 			}
-			if(Zoom_Out==0 || Zoom_In==0) ZoomCam();
+			if (Zoom_Out == 0 || Zoom_In == 0) ZoomCam();
 		}
 	}
 	Serial.CloseSerialPort();
@@ -357,24 +370,11 @@ int main(int argc, char** argv)
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
 	//--------------------------------------------------------------------------
-	if (Serial.connected_) {
-		ArduinoThread = new cThread();
-		ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
-		cout << "Zoom through Arduino enabled" << endl;
-	}
-	else{
-		cout << com_port << endl;
-		string num;
-		cout << "Current Arduino Port : ";
-		getline(cin, num);
-		UpdatePreferences(num);
-		SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
-		if (Serial.connected_) {
-			ArduinoThread = new cThread();
-			ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
-			cout << "Zoom through Arduino enabled" << endl;
-		}
-	}
+
+
+	ArduinoThread = new cThread();
+	ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
+	cout << "Launching Arduino Thread" << endl;
 	// initialize GLFW library
 	if (!glfwInit())
 	{
@@ -1011,14 +1011,6 @@ int main(int argc, char** argv)
 	// create a thread which starts the main haptics rendering loop
 	hapticsThread = new cThread();
 	hapticsThread->start(updateHaptics, CTHREAD_PRIORITY_HAPTICS);
-	if (Serial.connected_) {
-		ArduinoThread = new cThread();
-		ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
-		cout << "Zoom through Arduino enabled" << endl;
-	}
-	else {
-		cout << "No Arduino detected" << endl;
-	}
 	// setup callback when application exits
 	atexit(close);
 
@@ -1510,15 +1502,13 @@ void ZoomCam() {
 	movementVector.zero();
 	if (Zoom_In==0) {
 		movementVector = camera->getLookVector();
-		cout << "zooming" << endl;
 	}
 	else if (Zoom_Out==0) {
 		movementVector = camera->getLookVector();
 		movementVector.negate();
-		cout << "zooming out" << endl;
 	}
 	movementVector.mul(deltaTime);
-	movementVector.mul(moveSpeed);
+	movementVector.mul((double)moveSpeed/10);
 	cameraPos.add(movementVector);
 	camera->setLocalPos(cameraPos);
 }

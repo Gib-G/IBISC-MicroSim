@@ -7,6 +7,8 @@ using namespace std; // Pas bien ça... :(
 //---------------------------------------------------------------------------
 #include <CODE.h>
 #include <stdlib.h>
+//------------------------------------------------------------------------------
+#include <COculus.h>
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -136,6 +138,20 @@ int height = 0;
 // swap interval for the display context (vertical synchronization)
 int swapInterval = 1;
 
+
+//------------------------------------------------------------------------------
+// OCULUS RIFT
+//------------------------------------------------------------------------------
+
+// display context
+cOVRRenderContext renderContext;
+
+// oculus device
+cOVRDevice oculusVR;
+
+cVector3d defaultPos = cVector3d(-0.1, 0, 0.5);
+
+bool camSim;
 //------------------------------------------------------------------------------
 // DECLARED FUNCTIONS
 //------------------------------------------------------------------------------
@@ -282,24 +298,67 @@ int main(int argc, char* argv[])
 	// create a camera and insert it into the virtual world
 	camera = new cCamera(world);
 	world->addChild(camera);
+	if (!oculusVR.initVR())
+	{
+		cout << "failed to initialize Oculus" << endl;
+		cSleepMs(1000);
+		camSim = true;
 
-	// position and orient the camera
-	camera->set(cVector3d(2.5, 0.0, 0.3),    // camera position (eye)
-		cVector3d(0.0, 0.0, -0.5),    // lookat position (target)
-		cVector3d(0.0, 0.0, 1.0));   // direction of the "up" vector
+		// position and orient the camera
+		camera->set(cVector3d(2.5, 0.0, 0.3),    // camera position (eye)
+			cVector3d(0.0, 0.0, -0.5),    // lookat position (target)
+			cVector3d(0.0, 0.0, 1.0));   // direction of the "up" vector
 
-// set the near and far clipping planes of the camera
-	camera->setClippingPlanes(0.01, 10.0);
+										 // set the near and far clipping planes of the camera
+		camera->setClippingPlanes(0.01, 10.0);
 
-	// set stereo mode
-	camera->setStereoMode(stereoMode);
+		// set vertical mirrored display mode
+		camera->setMirrorVertical(mirroredDisplay);
+	}
 
-	// set stereo eye separation and focal length (applies only if stereo is enabled)
-	camera->setStereoEyeSeparation(0.02);
-	camera->setStereoFocalLength(2.0);
+	ovrSizei windowSize;
+	// get oculus display resolution
+	ovrSizei hmdResolution = oculusVR.getResolution();
+	if (!camSim) {
+		// setup mirror display on computer screen
+		windowSize = { hmdResolution.w / 2, hmdResolution.h / 2 };
+	}
+	else {
+		windowSize = { width,height };
+	}
+	// inialize buffers
+	if (!oculusVR.initVRBuffers(windowSize.w, windowSize.h) && !camSim)
+	{
+		cout << "failed to initialize Oculus buffers" << endl;
+		cSleepMs(1000);
+		oculusVR.destroyVR();
+		renderContext.destroy();
+		glfwTerminate();
+		return 1;
+	}
 
-	// set vertical mirrored display mode
-	camera->setMirrorVertical(mirroredDisplay);
+	// set window size
+	glfwSetWindowSize(window, windowSize.w, windowSize.h);
+
+	if (!camSim) {
+
+		// position and orient the camera
+		camera->set(cVector3d(0.5, 0.0, 0.2),    // camera position (eye)
+			cVector3d(0.0, 0.0, 0.2),    // lookat position (target)
+			cVector3d(0.0, 0.0, 1.0));   // direction of the "up" vector
+
+	// set the near and far clipping planes of the camera
+	// anything in front/behind these clipping planes will not be rendered
+		camera->setClippingPlanes(0.01, 20.0);
+
+
+		// set stereo mode
+		camera->setStereoMode(stereoMode);
+
+		// set stereo eye separation and focal length (applies only if stereo is enabled)
+		camera->setStereoEyeSeparation(0.02);
+		camera->setStereoFocalLength(2.0);
+	}
 
 	// create a light source
 	light = new cSpotLight(world);
@@ -583,6 +642,9 @@ int main(int argc, char* argv[])
 
 	// call window size callback at initialization
 	windowSizeCallback(window, width, height);
+	// recenter oculus
+	camera->setLocalPos(defaultPos);
+	oculusVR.recenterPose();
 
 	// main graphic loop
 	while (!glfwWindowShouldClose(window))
@@ -645,6 +707,11 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 		glfwSetWindowShouldClose(a_window, GLFW_TRUE);
 	}
 
+	// option - spacebar
+	else if (a_key == GLFW_KEY_SPACE)
+	{
+		oculusVR.recenterPose();
+	}
 	// option - enable/disable gravity
 	else if (a_key == GLFW_KEY_G)
 	{
@@ -775,8 +842,36 @@ void updateGraphics(void)
 	// update shadow maps (if any)
 	world->updateShadowMaps(false, mirroredDisplay);
 
-	// render world
-	camera->renderView(width, height);
+	if (!camSim) {
+		// start rendering
+		oculusVR.onRenderStart();
+
+		// render frame for each eye
+		for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)
+		{
+			// retrieve projection and modelview matrix from oculus
+			cTransform projectionMatrix, modelViewMatrix;
+			oculusVR.onEyeRender(eyeIndex, projectionMatrix, modelViewMatrix);
+			camera->m_useCustomProjectionMatrix = true;
+			camera->m_projectionMatrix = projectionMatrix;
+			camera->m_useCustomModelViewMatrix = true;
+			camera->m_modelViewMatrix = modelViewMatrix;
+
+			// render world
+			ovrSizei size = oculusVR.getEyeTextureSize(eyeIndex);
+			camera->renderView(size.w, size.h, C_STEREO_LEFT_EYE, false);
+
+			// finalize rendering  
+			oculusVR.onEyeRenderFinish(eyeIndex);
+		}
+
+		// update frames
+		oculusVR.submitFrame();
+		oculusVR.blitMirror();
+	}
+	else {
+		camera->renderView(width, height);
+	}
 
 	// wait until all GL commands are completed
 	glFinish();
@@ -896,7 +991,6 @@ void updateHaptics(void)
 
 				if (gripperCatchingIndex == i) {
 					if (vientdegrip == i) {
-						cout << i << endl;
 						startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
 						startrotCube.copyfrom(ODEBody0->getLocalRot());
 						startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());

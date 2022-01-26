@@ -94,6 +94,16 @@ cODEGenericBody* ODEGPlane3;
 cODEGenericBody* ODEGPlane4;
 cODEGenericBody* ODEGPlane5;
 
+cCollisionRecorder recorder;
+cCollisionSettings settings;
+cMesh* DetectSphere[5];
+cMesh* DetectionPlanes[1];
+cMesh* testPlane;
+bool crossing = false;
+bool end1 = false;
+bool end2 = false;
+int crossed = 0;
+float sphereSize = 0.01;
 
 //---------------------------------------------------------------------------
 // GENERAL VARIABLES
@@ -144,7 +154,8 @@ void updateGraphics(void);
 
 // this function contains the main haptics simulation loop
 void updateHaptics(void);
-
+void InitializeNeedleDetect(void);
+void AddDetectionPlane(int i, cODEGenericBody* ring);
 // this function closes the application
 void close(void);
 
@@ -478,10 +489,12 @@ int main(int argc, char* argv[])
 	ODEBody0->setMass(0.01);
 	ODEBodytest->setMass(0.01);
 	ODEBody1->setMass(0.05);
-
+	InitializeNeedleDetect();
+	AddDetectionPlane(0,ODEBody1);
 	// set position of each cube
 	ODEBody0->setLocalPos(0.0, -0.6, -0.5);
 	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
+	settings.m_returnMinimalCollisionData;
 
 	for (int i = 0; i < numHapticDevices; i++) {
 		ODEBody2[i] = new cODEGenericBody(ODEWorld);
@@ -705,6 +718,42 @@ void close(void)
 
 //---------------------------------------------------------------------------
 
+void AddDetectionPlane(int i, cODEGenericBody* ring) {
+	DetectionPlanes[i] = new cMesh();
+	ring->addChild(DetectionPlanes[i]);
+	cCreatePanel(DetectionPlanes[i], .2, .2, .1, 10);
+	DetectionPlanes[i]->m_material->setRed();
+}
+
+void ComputeCrossing(cMesh* spheres[], cMesh* plane) {
+	cVector3d pos0 = spheres[0]->getGlobalPos();
+	cVector3d pos1 = spheres[1]->getGlobalPos();
+	cVector3d pos2 = spheres[3]->getGlobalPos();
+	cVector3d pos3 = spheres[4]->getGlobalPos();
+	if (plane->computeCollisionDetection(pos0, pos3, recorder, settings)) {
+		crossing = true;
+	}
+	else {
+		if (end1 && end2) {
+			crossed++;
+			cout << "Crossed " << crossed << " times" << endl;
+		}
+		plane->m_material->setRed();
+		crossing = false;
+		end1 = false;
+		end2 = false;
+	}
+	if (crossing) {
+		if (plane->computeCollisionDetection(pos0, pos1, recorder, settings)) {
+			end1 = true;
+			plane->m_material->setGreen();
+		}
+		if (plane->computeCollisionDetection(pos2, pos3, recorder, settings)) {
+			end2 = true;
+			plane->m_material->setGreenForest();
+		}
+	}
+}
 void updateGraphics(void)
 {
 	/////////////////////////////////////////////////////////////////////
@@ -759,7 +808,7 @@ void updateHaptics(void)
 
 		// stop the simulation clock
 		clock.stop();
-
+		ComputeCrossing(DetectSphere, DetectionPlanes[0]);
 		// read the time increment in seconds
 		double timeInterval = cClamp(clock.getCurrentTimeSeconds(), 0.0001, 0.001);
 
@@ -1074,4 +1123,14 @@ double toAxisAngleAngle(cMatrix3d m) {
 	y = (m(0, 2) - m(2, 0)) / s;
 	z = (m(1, 0) - m(0, 1)) / s;
 	return angle;
+}
+
+void InitializeNeedleDetect() {
+	float size = 0.4;
+	for (int i = 0; i < 5; i++) {
+		DetectSphere[i] = new cMesh();
+		cCreateSphere(DetectSphere[i], sphereSize);
+		ODEBody0->addChild(DetectSphere[i]);
+		DetectSphere[i]->translate(size*(-1+i/2), 0, 0);
+	}
 }

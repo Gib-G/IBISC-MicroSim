@@ -206,7 +206,6 @@ void DisplayTimer(float time) {
 	std::stringstream temp;
 	temp << (int)time;
 	string str = temp.str();
-	cout << str << endl;
 	bool fileload=false;
 	string folder = ROOT_DIR "Resources\\Images\\";
 	for (int i = 0; i < str.length(); i++) {
@@ -215,22 +214,18 @@ void DisplayTimer(float time) {
 		case(0):
 			fileload = timer1->m_texture->loadFromFile(stringnum);
 			timer1->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(1):
 			fileload = timer2->m_texture->loadFromFile(stringnum);
 			timer2->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(2):
 			fileload = timer3->m_texture->loadFromFile(stringnum);
 			timer3->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(3):
 			fileload = timer4->m_texture->loadFromFile(stringnum);
 			timer4->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		}
 		if (!fileload)
@@ -347,7 +342,15 @@ int main(int argc, char** argv)
 
 	// mirrored display
 	bool mirroredDisplay = false;
-
+	//---------------------------------------------------------------------------
+	//User Input for saving purposes
+	//---------------------------------------------------------------------------
+	cout << "Type the ID of the candidate and press Enter to submit it." << endl;
+	cout << "Submitting no ID launches training mode" << endl;
+	cout << "Candidate ID : ";
+	getline(cin, NumCandidate);
+	cout << "NumCandidate : " << NumCandidate;
+	cout << endl;
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
 	//--------------------------------------------------------------------------
@@ -1371,7 +1374,6 @@ void updateHaptics(void)
 					// retrieve pixel information
 					int px, py;
 					canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
-					cout << "px : " << px << "py : " << py << endl;
 					size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
 					for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 					{
@@ -1569,6 +1571,7 @@ void ResetCanvas(int pattern) {
 	}
 	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
+	goalPixels = 0;
 	cout << pattern << endl;
 	switch (pattern) {
 	case 1:

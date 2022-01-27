@@ -33,6 +33,7 @@ const double K_INK = 30;
 double K_SIZE = 10;
 int BRUSH_SIZE = 600;
 float timerNum = 0.0f;
+int currentSec = 0;
 string NumCandidate;
 tuple<float, cVector3d> posData[MAX_DEVICES];
 std::ofstream UserInfo;
@@ -1060,6 +1061,10 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame;
 		if (start) {
 			timerNum += deltaTime;
+			if ((int)timerNum > currentSec) {
+				DisplayTimer(timerNum);
+				currentSec = (int)timerNum;
+			}
 		}
 		if (!camSim) {
 			// start rendering

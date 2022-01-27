@@ -13,6 +13,8 @@ using namespace std;
 const int MAX_DEVICES = 2;
 double toolRadius;
 //game variables
+int Zoom_In = 1;
+int Zoom_Out = 1;
 int numCube = 14;
 float errorPixel;
 float totalColoredPixels;
@@ -22,6 +24,7 @@ float goalPixels;
 float correctPercent = 0;
 float cubesize;
 int pattern = 0;
+int rotation = 0;
 int MAX_PATTERN = 1;
 cColorb errorColor;
 bool start = false;
@@ -30,9 +33,13 @@ const double K_INK = 30;
 double K_SIZE = 10;
 int BRUSH_SIZE = 600;
 float timerNum = 0.0f;
-map<float, cVector3d> posData[MAX_DEVICES];
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
+string NumCandidate;
+tuple<float, cVector3d> posData[MAX_DEVICES];
+std::ofstream UserInfo;
+std::ofstream myfile[MAX_DEVICES];
+std::ofstream tempfile[MAX_DEVICES];
+string pathname;
+// ----------------------------------------------------------------------------
 // CHAI3D
 //------------------------------------------------------------------------------
 
@@ -71,6 +78,8 @@ cMesh* startButton;
 cMesh* changeButton;
 cMesh* resetButton;
 cMesh* saveButton;
+cMesh* rotateButton;
+cVector3d canvasPos;
 // copy of blank canvas texture
 cImagePtr canvasOriginal;
 
@@ -94,8 +103,11 @@ cFrequencyCounter frequencyCounter;
 // haptic thread
 cThread* hapticsThread;
 
-//STATES
+//Arduino Thread
+cThread* ArduinoThread;
 
+//STATES
+//------------------------------------------------------------------------------
 enum MouseStates
 {
 	MOUSE_IDLE,
@@ -128,7 +140,7 @@ double deltaTime;
 double moveSpeed = 1;
 cVector3d movementVector;
 int pressedKey;
-
+bool arduino = false;
 //------------------------------------------------------------------------------
 // OCULUS RIFT
 //------------------------------------------------------------------------------
@@ -139,6 +151,7 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
+cVector3d defaultPos = cVector3d(-0.1,0 , 0.5);
 //------------------------------------------------------------------------------
 // DECLARED FUNCTIONS
 //------------------------------------------------------------------------------
@@ -157,7 +170,6 @@ void mouseMotionCallback(GLFWwindow* a_window, double a_posX, double a_posY);
 
 // function that closes the application
 void close(void);
-
 // main haptics simulation loop
 void updateHaptics(void);
 
@@ -171,8 +183,13 @@ void ResetSim(int pattern);
 
 void ChangePattern(void);
 
+void RotateCanvas(void);
+
 bool PaintCanvas(int x, int y, int pattern);
 
+void ZoomCam(void);
+void UpdatePreferences(string num);
+char* FetchPreferences(void);
 void moveCamera(void);
 
 //==============================================================================
@@ -190,7 +207,6 @@ void DisplayTimer(float time) {
 	std::stringstream temp;
 	temp << (int)time;
 	string str = temp.str();
-	cout << str << endl;
 	bool fileload=false;
 	string folder = ROOT_DIR "Resources\\Images\\";
 	for (int i = 0; i < str.length(); i++) {
@@ -199,22 +215,18 @@ void DisplayTimer(float time) {
 		case(0):
 			fileload = timer1->m_texture->loadFromFile(stringnum);
 			timer1->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(1):
 			fileload = timer2->m_texture->loadFromFile(stringnum);
 			timer2->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(2):
 			fileload = timer3->m_texture->loadFromFile(stringnum);
 			timer3->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(3):
 			fileload = timer4->m_texture->loadFromFile(stringnum);
 			timer4->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		}
 		if (!fileload)
@@ -249,6 +261,41 @@ void DisplayTimer(float time) {
 
 	}
 }
+// Arduino
+//------------------------------------------------------------------------------
+
+char com_port[] = "\\\\.\\COM ";
+void ReadPort(){
+	int reply_wait_time = 1;
+	string incoming;
+	int nb_info = 2; 
+	DWORD COM_BAUD_RATE = CBR_19200;
+	static SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+	if(!Serial.connected_){
+		string num;
+		cout << "Current Arduino Port : ";
+		getline(cin, num);
+		if (num != "") {
+			UpdatePreferences(num);
+		}
+		SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+		if (Serial.connected_) {
+			cout << "Zoom through Arduino enabled" << endl;
+		}
+		else {
+			cout << "No Arduino detected" << endl;
+		}
+	}
+	while (!simulationFinished && Serial.connected_) {
+		arduino = true;
+		incoming = Serial.ReadSerialPort(reply_wait_time);
+		if (incoming.length() == 3) {
+			Zoom_Out = stoi(incoming.substr(0, 1));
+			Zoom_In = stoi(incoming.substr(2, 1));
+			}
+		}
+	if(Serial.connected_) Serial.CloseSerialPort();
+}
 
 void GetResult() {
 	errorColor.setRed();
@@ -279,6 +326,7 @@ void GetResult() {
 	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
 	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
 }
+
 int main(int argc, char** argv)
 {
 	//--------------------------------------------------------------------------
@@ -310,10 +358,19 @@ int main(int argc, char** argv)
 
 	// mirrored display
 	bool mirroredDisplay = false;
-
+	//---------------------------------------------------------------------------
+	//User Input for saving purposes
+	//---------------------------------------------------------------------------
+	cout << "Type the ID of the candidate and press Enter to submit it." << endl;
+	cout << "Submitting no ID launches training mode" << endl;
+	cout << "Candidate ID : ";
+	getline(cin, NumCandidate);
+	cout << "NumCandidate : " << NumCandidate;
+	cout << endl;
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
 	//--------------------------------------------------------------------------
+
 
 	// initialize GLFW library
 	if (!glfwInit())
@@ -550,12 +607,12 @@ int main(int argc, char** argv)
 	board->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));
 	world->addChild(board);*/
 	canvas = new cMesh();
-	cCreatePlane(canvas, 1, 1, cVector3d(-0.3, 0, -0.45));
+	cCreatePlane(canvas, 1, 1);
 	world->addChild(canvas);
 	// create collision detector
 	canvas->createBruteForceCollisionDetector();
 	canvas->setFriction(0.3, 0.3, true);
-	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 50);
+	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 20);
 	/*
 	canvas->rotateAboutGlobalAxisRad(cVector3d(0, 1, 0), cDegToRad(90));
 	canvas->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));*/
@@ -704,15 +761,7 @@ int main(int argc, char** argv)
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	resetButton->translate(cVector3d(-.4, 0.5, -0.45));
-	/*
-	cFontPtr font = NEW_CFONTCALIBRI20();
-	cLabel* label = new cLabel(font);
-	label->m_fontColor.setBlack();
-	label->setText("Reset");
-	resetButton->addChild(label);*/
-
-	// compute collision detection algorithm
+	resetButton->translate(cVector3d(-.7, 0.5, -0.45));
 	mat.setHapticTriangleSides(true, true);
 	mat.setDynamicFriction(0.2);
 	mat.setStaticFriction(0.2);
@@ -751,7 +800,7 @@ int main(int argc, char** argv)
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(saveButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	saveButton->translate(cVector3d(-.4, -1.05, -0.45));
+	saveButton->translate(cVector3d(-.7, -1.05, -0.45));
 	saveButton->setMaterial(mat);
 	// set graphic properties
 	saveButton->m_texture = cTexture2d::create();
@@ -784,7 +833,7 @@ int main(int argc, char** argv)
 	startButton = new cMesh();
 	world->addChild(startButton);
 	cCreatePanel(startButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	startButton->translate(cVector3d(.2, -.525, -0.45));
+	startButton->translate(cVector3d(-.15, -1.05, -0.45));
 	startButton->setMaterial(mat);
 	startButton->m_texture = cTexture2d::create();
 	fileload = startButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/startButton.png");
@@ -815,7 +864,7 @@ int main(int argc, char** argv)
 	changeButton = new cMesh();
 	world->addChild(changeButton);
 	cCreatePanel(changeButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	changeButton->translate(cVector3d(.2, -.005, -0.45));
+	changeButton->translate(cVector3d(-.15, 0.5, -0.45));
 	changeButton->setMaterial(mat);
 	changeButton->m_texture = cTexture2d::create();
 	fileload = changeButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/1.png");
@@ -843,12 +892,45 @@ int main(int argc, char** argv)
 	// compute collision detection algorithm
 	changeButton->createAABBCollisionDetector(toolRadius);
 
+	rotateButton = new cMesh();
+	world->addChild(rotateButton);
+	cCreatePanel(rotateButton, .3, .3, .1, 8, cVector3d(0, 0, 0), rot);
+	rotateButton->translate(cVector3d(.17, -0.31, -0.45));
+	rotateButton->setMaterial(mat);
+	rotateButton->m_texture = cTexture2d::create();
+	fileload = rotateButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/rotateButton.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = rotateButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/rotateButton.png");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
+
+	rotateButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	rotateButton->setUseTexture(true);
+
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	rotateButton->setUseCulling(false, true);
+
+
+	// compute collision detection algorithm
+	rotateButton->createAABBCollisionDetector(toolRadius);
+
 	changeButton->translate(cVector3d(0.1, 0.3, -0.8));
 	startButton->translate(cVector3d(0.1, 0.3, -0.8));
+	rotateButton->translate(cVector3d(0.1, 0.3, -0.8));
 	saveButton->translate(cVector3d(0.1, 0.3, -0.8));
 	resetButton->translate(cVector3d(0.1, 0.3, -0.8));
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
-	canvas->translate(cVector3d(-0.2, 0.31, -0.8));
+	canvasPos = cVector3d(-0.5, .025, -1.25);
+	canvas->translate(canvasPos);
 	//--------------------------------------------------------------------------
 	// CREATE SHADERS
 	//--------------------------------------------------------------------------
@@ -917,11 +999,11 @@ int main(int argc, char** argv)
 	// create a texture
 	cTexture2dPtr textureSpace = cTexture2d::create();
 
-	fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
+	fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/grey.jpg");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
+		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/grey.jpg");
 #endif
 	}
 	if (!fileload)
@@ -951,24 +1033,25 @@ int main(int argc, char** argv)
 	// create a thread which starts the main haptics rendering loop
 	hapticsThread = new cThread();
 	hapticsThread->start(updateHaptics, CTHREAD_PRIORITY_HAPTICS);
-
 	// setup callback when application exits
+
+	ArduinoThread = new cThread();
+	ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
 	atexit(close);
-
-
 	//--------------------------------------------------------------------------
 	// MAIN GRAPHIC LOOP
 	//--------------------------------------------------------------------------
 
 	// recenter oculus
-	oculusVR.recenterPose();
+	camera->setLocalPos(defaultPos);
+	if(!camSim) oculusVR.recenterPose();
 
 	// main graphic rendering loop
 	while (!glfwWindowShouldClose(window) && !simulationFinished)
 	{
+		OVR::Vector3f tmp = oculusVR.getEyeMVPMatrix(0).GetTranslation();
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
-
 		//deltaTimeCalc
 
 		globe->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 0.001);
@@ -988,12 +1071,11 @@ int main(int argc, char** argv)
 				// retrieve projection and modelview matrix from oculus
 				cTransform projectionMatrix, modelViewMatrix;
 				oculusVR.onEyeRender(eyeIndex, projectionMatrix, modelViewMatrix);
-
 				camera->m_useCustomProjectionMatrix = true;
 				camera->m_projectionMatrix = projectionMatrix;
-
 				camera->m_useCustomModelViewMatrix = true;
 				camera->m_modelViewMatrix = modelViewMatrix;
+				if(arduino) ZoomCam();
 
 				// render world
 				ovrSizei size = oculusVR.getEyeTextureSize(eyeIndex);
@@ -1009,6 +1091,9 @@ int main(int argc, char** argv)
 		}
 		else {
 			moveCamera();
+			if (arduino) {
+				ZoomCam();
+			}
 			camera->renderView(width, height);
 		}
 
@@ -1135,9 +1220,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 
 	}
 	if (a_key == GLFW_KEY_7) {
-		pattern = (pattern != MAX_PATTERN ? pattern + 1 : 0);
-		ResetCanvas(pattern);
-		cout << "pattern : " << pattern << endl;
+		RotateCanvas();
 	}
 	pressedKey = a_key;
 
@@ -1195,6 +1278,12 @@ bool CompareVectors(cVector3d v1, cVector3d v2) {
 	if (v1.x() != v2.x() || v1.y() != v2.y() || v1.z() != v2.z()) return false;
 	else return true;
 }
+
+void SaveData() {
+	for (int k = 0; k < numHapticDevices; k++) {
+		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
+	}
+}
 //------------------------------------------------------------------------------
 
 void close(void)
@@ -1209,10 +1298,12 @@ void close(void)
 	for (int i = 0; i < numHapticDevices; i++)
 	{
 		tool[i]->stop();
+		if (tempfile[i].is_open()) tempfile[i].close();
 	}
 
 	// delete resources
 	delete hapticsThread;
+	delete ArduinoThread;
 	delete world;
 	delete handler;
 }
@@ -1234,7 +1325,7 @@ void updateHaptics(void)
 	cVector3d InitialPos[MAX_DEVICES];
 	bool touching[MAX_DEVICES];
 	bool pressed[MAX_DEVICES];
-
+	std::stringstream streamstr;
 	for (int i = 0; i < numHapticDevices; i++)
 	{
 		state[i] = IDLE;
@@ -1242,6 +1333,12 @@ void updateHaptics(void)
 		InitialPos[i] = tool[i]->getDeviceGlobalPos();
 		pressed[i] = false;
 		touching[i] = false;
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
+		pathname = streamstr.str();
+		streamstr << i << ".csv";
+		tempfile[i].open(streamstr.str());
+		streamstr.str("");
+		streamstr.clear();
 	}
 	cTransform tool_T_object[MAX_DEVICES];
 	cTransform tool_T_world[MAX_DEVICES];
@@ -1264,7 +1361,6 @@ void updateHaptics(void)
 		/////////////////////////////////////////////////////////////////////
 		// SIMULATION TIME
 		/////////////////////////////////////////////////////////////////////
-
 		// stop the simulation clock
 		clock.stop();
 
@@ -1317,7 +1413,6 @@ void updateHaptics(void)
 					// retrieve pixel information
 					int px, py;
 					canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
-					cout << "px : " << px << "py : " << py << endl;
 					size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
 					for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 					{
@@ -1380,8 +1475,12 @@ void updateHaptics(void)
 				ChangePattern();
 				pressed[i] = true;
 			}
-			if(start) posData[i].insert(pair<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos()));
+			else if (tool[i]->isInContact(rotateButton) && button == true && !pressed[i]) {
+				RotateCanvas();
+			}
+			if(start) posData[i] = tuple<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos());
 		}
+		if(start) SaveData();
 	}
 
 	// exit haptics thread
@@ -1424,28 +1523,63 @@ void moveCamera() {
 	movementVector.mul(moveSpeed);
 	cameraPos.add(movementVector);
 	camera->setLocalPos(cameraPos);
-
 }
+
+void ZoomCam() {
+	movementVector.zero();
+	if (Zoom_In==0) {
+		movementVector = camera->getLookVector();
+	}
+	else if (Zoom_Out==0) {
+		movementVector = camera->getLookVector();
+		movementVector.negate();
+	}
+	movementVector.mul(deltaTime);
+	movementVector.mul(moveSpeed);
+	camera->translate(movementVector);
+}
+//COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfilen
 void SaveCanvas() {
+	std::stringstream temp;
 	GetResult();
-	canvas->m_texture->m_image->saveToFile(ROOT_DIR "Resources/Images/myPicture.jpg");
-	string path = ROOT_DIR "Resources/CSV/trajectory-Arm_";
+	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "CanvasPicture.jpg" << endl;
+	string path = temp.str();
+	canvas->m_texture->m_image->saveToFile(path);
+	temp.str("");
+	temp.clear();
 	DisplayTimer(timerNum);
 	for (int k = 0; k < numHapticDevices; k++) {
-		std::stringstream temp;
-		temp << path << k << ".csv";
-		std::ofstream myfile;
-		std::cout << "Saving trajectory into /Resources/CSV/trajectory-Arm_"<<k<<".csv\n";
-		myfile.open(temp.str());
-		myfile << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
-		std::map<float, cVector3d>::iterator it = posData[k].begin();
-		myfile << it->first << " , " << it->second << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
-		it++;
-		for (it; it != posData[k].end(); ++it)
-			myfile << it->first << ',' << it->second << '\n';
-		myfile.close();
+		tempfile[k].close();
+		std::ifstream readfile;
+		bool firstline = true;
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv\n";
+		myfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+		string line;
+		temp << pathname << k << ".csv";
+		readfile.open(temp.str());
+		temp.str("");
+		temp.clear();
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "Pattern"<< "Rotation du plan" <<"\n";
+		while (getline(readfile, line)) {
+			if (firstline) {
+				string rotated;
+				switch (rotation) {
+				case(1):rotated = "Droite"; break;
+				case(2):rotated = "Gauche"; break;
+				default:rotated = "Face"; break;
+				}
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << pattern + 1 << rotated<<"\n";
+				firstline = false;
+			}
+			else myfile[k] << line << "\n";
+		}
+		myfile[k].close();
 	}
 }
+
 void ResetSim(int pattern) {
 	if (start) {
 		startButton->setEnabled(true);
@@ -1453,6 +1587,14 @@ void ResetSim(int pattern) {
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);
+	}
+	for (int k = 0; k < numHapticDevices; k++) {
+		std::stringstream temp;
+		tempfile[k].close();
+		temp << pathname << k << ".csv";
+		tempfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
 	}
 	ResetCanvas(pattern);
 }
@@ -1469,11 +1611,11 @@ void ChangePattern() {
 }
 void ResetCanvas(int pattern) {
 	for (int k = 0; k < numHapticDevices; k++) {
-		posData[k].clear();
+		posData[k] = tuple<float, cVector3d>(0, tool[k]->getDeviceGlobalPos());
 	}
 	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
-	cout << pattern << endl;
+	goalPixels = 0;
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
@@ -1541,5 +1683,46 @@ bool PaintCanvas(int x, int y, int pattern) {
 	}
 	return hit;
 }
-
+void RotateCanvas() {
+	double rot;
+	switch (rotation) {
+	case(0):
+		rotation++;
+		rot = 90;
+		break;
+	case(1):
+		rotation++;
+		rot = 180;
+		break;
+	case(2):
+		rotation=0;
+		rot = 90;
+		break;
+	}
+	canvas->setLocalPos(0, 0, 0);
+	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), rot);
+	canvas->translate(canvasPos);
+}
+void UpdatePreferences(string ComPort) {
+	std::stringstream temp;
+	std::ofstream UserInfo;
+	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
+	UserInfo << ComPort << endl;
+	UserInfo.close();
+}
+char* FetchPreferences() {
+	std::ifstream UserInfo;
+	std::string comport;
+	char temp;
+	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
+	getline(UserInfo, comport);
+	UserInfo.close();
+	for (int i = 0; i < comport.length(); i++) {
+		com_port[7 + i] = comport[i];
+	}
+	for (int j = comport.length() + 7; j < 9; j++) {
+		com_port[j] = '\0';
+	}
+	return com_port;
+}
 //------------------------------------------------------------------------------

@@ -1543,15 +1543,22 @@ void ZoomCam() {
 	movementVector.mul(moveSpeed);
 	camera->translate(movementVector);
 }
-//COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfilen
+//COPY CONTENT OF TEMP FILE AND ADD USEFUL INFO IN 1ST LINE myfile
 void SaveCanvas() {
 	std::stringstream temp;
 	GetResult();
-	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "CanvasPicture.jpg" << endl;
+	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "-CanvasPicture.jpg" << endl;
 	string path = temp.str();
 	canvas->m_texture->m_image->saveToFile(path);
 	temp.str("");
 	temp.clear();
+	if (start) {
+		startButton->setEnabled(true);
+		changeButton->setEnabled(true);
+		rotateButton->setEnabled(true);
+		start = false;
+		timerNum = 0;
+	}
 	DisplayTimer(timerNum);
 	for (int k = 0; k < numHapticDevices; k++) {
 		tempfile[k].close();

@@ -173,7 +173,7 @@ int main(int argc, char** argv)
     cout << endl << endl;
 
     // parse first arg to try and locate resources
-    string resourceRoot = string(argv[0]).substr(0, string(argv[0]).find_last_of("/\\") + 1);
+    string resourceRoot = string(argv[0]).substr(0, string(argv[0]).find_last_of("/\\") + 1) + "../../../";
 
     cout << resourceRoot << endl;
 
@@ -275,7 +275,7 @@ int main(int argc, char** argv)
     }
 
     // inialize buffers
-    if (!oculusVR.initVRBuffers(windowSize.w, windowSize.h)&&!camSim)
+    if (!oculusVR.initVRBuffers(windowSize.w, windowSize.h) && !camSim)
     {
         cout << "failed to initialize Oculus buffers" << endl;
         cSleepMs(1000);
@@ -323,8 +323,8 @@ int main(int argc, char** argv)
     //-----------------------------------------------------------------------
     levelHandler = new cLevelHandler();
     m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    m_first = new cFirstLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,levelHandler);
-    m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,levelHandler);
+    m_first = new cFirstLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
+    m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
     levelHandler->setLevel(m_grid);
 
     //--------------------------------------------------------------------------
@@ -353,7 +353,7 @@ int main(int argc, char** argv)
 
         // update shadow maps (if any)
         levelHandler->mainLevel->m_world->updateShadowMaps(false, false);
-        
+
 
         if (!camSim) {
             // start rendering
@@ -428,11 +428,11 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
     else if (a_key == GLFW_KEY_SPACE)
     {
         oculusVR.recenterPose();
-    }            
-    
+    }
+
     levelHandler->mainLevel->keyCallback(a_window, a_key, a_scancode, a_action, a_mods);
 
-    
+
 }
 
 void close(void)
@@ -460,9 +460,9 @@ void updateHaptics(void)
     simulationRunning = true;
 
 
-//------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------
 
-    // main haptic simulation loop
+        // main haptic simulation loop
     while (simulationRunning)
     {
         levelHandler->mainLevel->updateHaptics();

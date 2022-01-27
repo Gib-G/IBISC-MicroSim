@@ -1482,6 +1482,7 @@ void updateHaptics(void)
 			}
 			else if (tool[i]->isInContact(rotateButton) && button == true && !pressed[i]) {
 				RotateCanvas();
+				pressed[i] = true;
 			}
 			if(start) posData[i] = tuple<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos());
 		}

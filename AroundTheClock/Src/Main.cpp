@@ -551,6 +551,8 @@ int main(int argc, char* argv[])
 	ODEBody0->setMass(0.01);
 	ODEBodytest->setMass(0.01);
 	ODEBody1->setMass(0.05);
+	ODEBody1->setLocalPos(0, 0, 0);
+	ODEBody1->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
 	InitializeNeedleDetect();
 	AddDetectionPlane(0, ODEBody1);
 	// set position of each cube
@@ -802,12 +804,18 @@ void close(void)
 //---------------------------------------------------------------------------
 
 void AddDetectionPlane(int i, cODEGenericBody* ring) {
+	cODEGenericBody* test = new cODEGenericBody(ODEWorld);
 	DetectionPlanes[i] = new cMesh();
-	cCreatePanel(DetectionPlanes[i], 1, 1, 1);
+	cCreatePanel(DetectionPlanes[i], 1, 1,.5);
 	DetectionPlanes[i]->m_material->setRed();
 	DetectionPlanes[i]->createAABBCollisionDetector(0.02);
 	DetectionPlanes[i]->setShowCollisionDetector(true);
-	DetectionPlanes[i]->setLocalPos(0, 0, -0.9);
+	DetectionPlanes[i]->setHapticEnabled(false);
+	test->addChild(DetectionPlanes[i]);
+	cout << ring->getGlobalRot().str() << endl;
+	test->disableDynamics();
+	test->setHapticEnabled(false);
+	cout << test->getLocalRot().str() << endl;
 }
 
 void ComputeCrossing(cMesh* spheres[], cMesh* plane, double deltatime) {

@@ -80,12 +80,12 @@ cODEWorld* ODEWorld;
 // ODE objects
 cODEGenericBody* ODEBody0;
 cODEGenericBody* ODEBodytest;
-cODEGenericBody* ODEBody1;
+cODEGenericBody* ODEBody1[12];
 cODEGenericBody* ODEBody2[MAX_DEVICES];
 cODEGenericBody* ODEBody3[MAX_DEVICES];;
 cMesh* object0;
 cMesh* objecttest;
-cMesh* object1;
+cMesh* object1[12];
 cMesh* object2[MAX_DEVICES];
 cMesh* object3[MAX_DEVICES];;
 // ODE objects
@@ -99,11 +99,12 @@ cODEGenericBody* ODEGPlane5;
 cCollisionRecorder recorder;
 cCollisionSettings settings;
 cMesh* DetectSphere[5];
-cMesh* DetectionPlanes[1];
+cMesh* DetectionPlanes[12];
+bool DetectionPlanesFinished[12];
 cMesh* testPlane;
-bool crossing = false;
-bool end1 = false;
-bool end2 = false;
+bool crossing[12];
+bool end1[12];
+bool end2[12];
 float sphereSize = 0.01;
 
 //---------------------------------------------------------------------------
@@ -174,7 +175,7 @@ void updateGraphics(void);
 void updateHaptics(void);
 void InitializeNeedleDetect(void);
 void AddDetectionPlane(int i, cODEGenericBody* ring);
-void ComputeCrossing(cMesh* spheres[], cMesh* plane, double deltatime);
+void ComputeCrossing(cMesh* spheres[], int i);
 // this function closes the application
 void close(void);
 
@@ -499,12 +500,10 @@ int main(int argc, char* argv[])
 	// create a new ODE object that is automatically added to the ODE world
 	ODEBody0 = new cODEGenericBody(ODEWorld);
 	ODEBodytest = new cODEGenericBody(ODEWorld);
-	ODEBody1 = new cODEGenericBody(ODEWorld);
 
 	// create a virtual mesh  that will be used for the geometry representation of the dynamic body
 	object0 = new cMesh();
 	objecttest = new cMesh();
-	object1 = new cMesh();
 
 	// create a cube mesh
 	double size = 0.40;
@@ -513,8 +512,6 @@ int main(int argc, char* argv[])
 	object0->createAABBCollisionDetector(toolRadius);
 	objecttest->createAABBCollisionDetector(toolRadius);
 
-	cCreateRing(object1, 0.01, 0.1);
-	object1->createAABBCollisionDetector(toolRadius);
 
 	// define some material properties for each cube
 	cMaterial mat0, mat1, mat2;
@@ -528,7 +525,6 @@ int main(int argc, char* argv[])
 	mat1.setStiffness(0.3 * maxStiffness);
 	mat1.setDynamicFriction(3);
 	mat1.setStaticFriction(3);
-	object1->setMaterial(mat1);
 
 	mat2.setGreenDarkSea();
 	mat2.setStiffness(0.3 * maxStiffness);
@@ -539,22 +535,16 @@ int main(int argc, char* argv[])
 	// add mesh to ODE object
 	ODEBody0->setImageModel(object0);
 	ODEBodytest->setImageModel(objecttest);
-	ODEBody1->setImageModel(object1);
 
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
-	ODEBody1->createDynamicMesh();
 	ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
 	ODEBodytest->createDynamicBox(size * 2, size * 0.1, size * 0.1);
 
 	// define some mass properties for each cube
 	ODEBody0->setMass(0.01);
 	ODEBodytest->setMass(0.01);
-	ODEBody1->setMass(0.05);
-	ODEBody1->setLocalPos(0, 0, 0);
-	ODEBody1->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
 	InitializeNeedleDetect();
-	AddDetectionPlane(0, ODEBody1);
 	// set position of each cube
 	ODEBody0->setLocalPos(0.0, -0.6, -0.5);
 	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
@@ -578,7 +568,24 @@ int main(int argc, char* argv[])
 
 	}
 
+	for (int i = 0; i < 12; i++) {
+		ODEBody1[i] = new cODEGenericBody(ODEWorld);
+		object1[i] = new cMesh();
+		cCreateRing(object1[i], 0.01, 0.1);
+		object1[i]->createAABBCollisionDetector(toolRadius);
+		object1[i]->setMaterial(mat1);
+		ODEBody1[i]->setImageModel(object1[i]);
+		ODEBody1[i]->createDynamicMesh(true);
+		ODEBody1[i]->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
+		ODEBody1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
+		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i*2*M_PI/12);
+		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12), sin(i * 2 * M_PI / 12), 0);
+		AddDetectionPlane(i, ODEBody1[i]);
+		crossing[i] = false;
+		end1[i] = false;
+		end2[i] = false;
 
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// 6 ODE INVISIBLE WALLS
@@ -652,7 +659,7 @@ int main(int argc, char* argv[])
 		oculusVR.recenterPose();
 	}
 	else {
-		camera->setLocalPos(cVector3d(2.5, 0, 0.3));
+		camera->setLocalPos(cVector3d(2.7, 0, 0.6));
 	}
 
 	// main graphic loop
@@ -804,55 +811,47 @@ void close(void)
 //---------------------------------------------------------------------------
 
 void AddDetectionPlane(int i, cODEGenericBody* ring) {
-	cODEGenericBody* test = new cODEGenericBody(ODEWorld);
 	DetectionPlanes[i] = new cMesh();
-	cCreatePanel(DetectionPlanes[i], 1, 1,.5);
+	ODEWorld->addChild(DetectionPlanes[i]);
+	//cCreatePanel(DetectionPlanes[i], 1, 1,.5,8,ring->getLocalPos(),cMatrix3d(1,0,0,0));
+	cCreateCylinder(DetectionPlanes[i], 0.001, 0.1, 32U, 1U, 1U, true, true, cVector3d(0,0,0), cMatrix3d(1, 0, 1, M_PI));
 	DetectionPlanes[i]->m_material->setRed();
+	DetectionPlanes[i]->setLocalPos(ring->getLocalPos());
+	DetectionPlanes[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 	DetectionPlanes[i]->createAABBCollisionDetector(0.02);
-	DetectionPlanes[i]->setShowCollisionDetector(true);
 	DetectionPlanes[i]->setHapticEnabled(false);
-	test->addChild(DetectionPlanes[i]);
-	cout << ring->getGlobalRot().str() << endl;
-	test->disableDynamics();
-	test->setHapticEnabled(false);
-	cout << test->getLocalRot().str() << endl;
+	DetectionPlanesFinished[i] = false;
 }
 
-void ComputeCrossing(cMesh* spheres[], cMesh* plane, double deltatime) {
+void ComputeCrossing(cMesh* spheres[], int i) {
+	if (DetectionPlanesFinished[i]) return;
 	cVector3d pos0 = spheres[0]->getGlobalPos();
 	cVector3d pos1 = spheres[1]->getGlobalPos();
 	cVector3d pos2 = spheres[3]->getGlobalPos();
 	cVector3d pos3 = spheres[4]->getGlobalPos();
-	crossTimer += deltatime;
-	if (crossTimer >= 0.5) {
-		cout << pos0.str() << "|" << pos3.str() << "|" << plane->getGlobalPos().str() << "|" << plane->getLocalPos().str() << endl;
-		crossTimer = 0;
-	}
-	if (plane->computeCollisionDetection(pos0, pos3, recorder, settings)) {
-		cout << "touché";
-		plane->m_material->setGreen();
-		crossing = true;
-		crossTimer = 0;
+	if (DetectionPlanes[i]->computeCollisionDetection(pos0, pos3, recorder, settings)) {
+		crossing[i] = true;
+		cout << i;
 	}
 	else {
-		if (end1 && end2) {
+		if (end1[i] && end2[i]) {
+			cout << "gini";
+			DetectionPlanes[i]->m_material->setGreen();
+			DetectionPlanesFinished[i] = true;
 		}
-		if (crossTimer >= 10 && crossing) {
-			cout << "wtf";
-			plane->m_material->setRed();
-			crossing = false;
-			end1 = false;
-			end2 = false;
+		if (!DetectionPlanesFinished[i]) {
+			DetectionPlanes[i]->m_material->setRed();
+			crossing[i] = false;
+			end1[i] = false;
+			end2[i] = false;
 		}
 	}
-	if (crossing) {
-		if (plane->computeCollisionDetection(pos0, pos1, recorder, settings)) {
-			end1 = true;
-			plane->m_material->setGreen();
+	if (crossing[i]) {
+		if (DetectionPlanes[i]->computeCollisionDetection(pos0, pos1, recorder, settings)) {
+			end1[i] = true;
 		}
-		if (plane->computeCollisionDetection(pos2, pos3, recorder, settings)) {
-			end2 = true;
-			plane->m_material->setGreenForest();
+		if (DetectionPlanes[i]->computeCollisionDetection(pos2, pos3, recorder, settings)) {
+			end2[i] = true;
 		}
 	}
 }
@@ -931,8 +930,6 @@ void updateHaptics(void)
 	// main haptic simulation loop
 	while (simulationRunning)
 	{
-
-		DetectionPlanes[0]->setLocalPos(0.0, 0, -0.6);
 		/////////////////////////////////////////////////////////////////////
 		// SIMULATION TIME
 		/////////////////////////////////////////////////////////////////////
@@ -941,7 +938,9 @@ void updateHaptics(void)
 		clock.stop();
 		// read the time increment in seconds
 		timeInterval = cClamp(clock.getCurrentTimeSeconds(), 0.0001, 0.001);
-		ComputeCrossing(DetectSphere, DetectionPlanes[0], timeInterval);
+		for (int i = 0; i < 12; i++) {
+			ComputeCrossing(DetectSphere, i);
+		}
 
 		// restart the simulation clock
 		clock.reset();
@@ -1049,8 +1048,14 @@ void updateHaptics(void)
 						if (isnan(rotangle)) {
 							rotangle = 0;
 						}
-						ODEBody0->setLocalRot(startrotCube);
-						ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
+						bool test = true;
+						if (test) {
+							ODEBody0->setLocalRot(startrotCube);
+							ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
+						}
+						else {
+							ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+						}
 					}
 
 				}

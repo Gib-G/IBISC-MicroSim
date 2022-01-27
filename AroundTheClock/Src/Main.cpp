@@ -831,17 +831,14 @@ void ComputeCrossing(cMesh* spheres[], int i) {
 	cVector3d pos3 = spheres[4]->getGlobalPos();
 	if (DetectionPlanes[i]->computeCollisionDetection(pos0, pos3, recorder, settings)) {
 		crossing[i] = true;
-		cout << i;
 	}
 	else {
 		if (end1[i] && end2[i]) {
-			cout << "gini";
-			DetectionPlanes[i]->m_material->setGreen();
+			DetectionPlanes[i]->m_material->m_emission.setGreen();
 			DetectionPlanesFinished[i] = true;
 		}
 		if (!DetectionPlanesFinished[i]) {
-			DetectionPlanes[i]->m_material->setRed();
-			crossing[i] = false;
+			DetectionPlanes[i]->m_material->m_emission.setRed();
 			end1[i] = false;
 			end2[i] = false;
 		}
@@ -1265,6 +1262,5 @@ void InitializeNeedleDetect() {
 		cCreateSphere(DetectSphere[i], sphereSize);
 		ODEBody0->addChild(DetectSphere[i]);
 		DetectSphere[i]->translate(size * (-1 + (double)i / (double)2), 0, 0);
-		cout << DetectSphere[i]->getGlobalPos().str() << endl;
 	}
 }

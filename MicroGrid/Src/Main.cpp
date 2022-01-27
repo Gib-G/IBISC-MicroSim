@@ -1547,7 +1547,7 @@ void ZoomCam() {
 void SaveCanvas() {
 	std::stringstream temp;
 	GetResult();
-	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "CanvasPicture.jpg" << endl;
+	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "-CanvasPicture.jpg" << endl;
 	string path = temp.str();
 	canvas->m_texture->m_image->saveToFile(path);
 	temp.str("");

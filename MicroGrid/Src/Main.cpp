@@ -1584,6 +1584,7 @@ void ResetSim(int pattern) {
 	if (start) {
 		startButton->setEnabled(true);
 		changeButton->setEnabled(true);
+		rotateButton->setEnabled(true);
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);
@@ -1660,6 +1661,7 @@ void Start() {
 	ResetCanvas(pattern);
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
+	rotateButton->setEnabled(false);
 }
 bool PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;

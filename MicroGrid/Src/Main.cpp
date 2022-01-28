@@ -20,13 +20,15 @@ float errorPixel;
 float totalColoredPixels;
 float errorPercent = 0;
 float greenPixels;
+float forcePixels;
 float goalPixels;
+float forcePercent = 0;
 float correctPercent = 0;
 float cubesize;
 int pattern = 0;
 int rotation = 0;
 int MAX_PATTERN = 1;
-cColorb errorColor;
+
 bool start = false;
 //Paint variables
 const double K_INK = 30;
@@ -83,9 +85,11 @@ cMesh* rotateButton;
 cVector3d canvasPos;
 // copy of blank canvas texture
 cImagePtr canvasOriginal;
-
+cImagePtr canvasTraining;
 // selected paint color
 cColorb paintColor;
+cColorb warningColor;
+cColorb errorColor;
 
 // a virtual tool representing the haptic device in the scene
 cToolCursor* tool[MAX_DEVICES];
@@ -205,6 +209,7 @@ void moveCamera(void);
 //==============================================================================
 
 void DisplayTimer(float time) {
+	timer->setEnabled(true, true);
 	std::stringstream temp;
 	temp << (int)time;
 	string str = temp.str();
@@ -271,7 +276,7 @@ void ReadPort(){
 	string incoming;
 	int nb_info = 2; 
 	DWORD COM_BAUD_RATE = CBR_19200;
-	static SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+	SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
 	if(!Serial.connected_){
 		string num;
 		cout << "Current Arduino Port : ";
@@ -287,19 +292,31 @@ void ReadPort(){
 			cout << "No Arduino detected" << endl;
 		}
 	}
+	else {
+		cout << "Zoom through Arduino enabled" << endl;
+	}
 	while (!simulationFinished && Serial.connected_) {
 		arduino = true;
 		incoming = Serial.ReadSerialPort(reply_wait_time);
-		if (incoming.length() == 3) {
-			Zoom_Out = stoi(incoming.substr(0, 1));
-			Zoom_In = stoi(incoming.substr(2, 1));
+		if (incoming.length() > 0) {
+			if (incoming == "1") {
+				Zoom_Out = 0;
+				Zoom_In = 1;
+			}
+			else if (incoming == "2") {
+				Zoom_In = 0;
+				Zoom_Out = 1;
+			}
+			else {
+				Zoom_Out = 1;
+				Zoom_In = 1;
 			}
 		}
+	}
 	if(Serial.connected_) Serial.CloseSerialPort();
 }
 
 void GetResult() {
-	errorColor.setRed();
 	errorPixel = 0;
 	totalColoredPixels = 0;
 	greenPixels = 0;
@@ -308,12 +325,15 @@ void GetResult() {
 			// get color at location
 			cColorb getcolor;
 			canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
-			if (getcolor == errorColor || getcolor == paintColor) {
+			if (getcolor == errorColor || getcolor == paintColor ||getcolor ==warningColor) {
 				if (getcolor == errorColor) {
 					errorPixel++;
 				}
 				if (getcolor == paintColor) {
 					greenPixels++;
+				}
+				if (getcolor == warningColor) {
+					forcePixels++;
 				}
 				totalColoredPixels++;
 			}
@@ -322,10 +342,11 @@ void GetResult() {
 	bool hit = false;
 	errorPercent = (totalColoredPixels ? errorPixel / totalColoredPixels * 100 : 0);
 	correctPercent = greenPixels / goalPixels * 100;
+	forcePercent= (totalColoredPixels ? forcePixels / totalColoredPixels * 100 : 0);
 	cout.precision(10);
 	cout << "Pourcentage d'erreurs : " << errorPercent << "%" << endl;
 	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
-	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+	cout << "Pourcentage d'erreurs dues à la pression appliquée : " <<forcePercent<<"%"<<endl;
 }
 
 int main(int argc, char** argv)
@@ -366,7 +387,6 @@ int main(int argc, char** argv)
 	cout << "Submitting no ID launches training mode" << endl;
 	cout << "Candidate ID : ";
 	getline(cin, NumCandidate);
-	cout << "NumCandidate : " << NumCandidate;
 	cout << endl;
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
@@ -567,6 +587,8 @@ int main(int argc, char** argv)
 		tool[i]->setWaitForSmallForce(true);
 
 		paintColor.setGreen();
+		warningColor.setOrange();
+		errorColor.setRed();
 		tool[i]->m_hapticPoint->m_sphereProxy->m_material->setColor(paintColor);
 		// start the haptic tool
 		tool[i]->start();
@@ -633,10 +655,23 @@ int main(int argc, char** argv)
 		close();
 		return (-1);
 	}
+	canvasOriginal = canvas->m_texture->m_image->copy();
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg"); // Images/grid.jpg
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
 
 	// create a copy of canvas so that we can clear page when requested
-	canvasOriginal = canvas->m_texture->m_image->copy();
-
+	canvasTraining = canvas->m_texture->m_image->copy();
 	// we disable lighting properties for canvas
 	canvas->setUseMaterial(false);
 
@@ -754,6 +789,7 @@ int main(int argc, char** argv)
 	timer4->m_texture->setEnvironmentMode(GL_DECAL);
 	// enable texture rendering 
 	timer4->setUseTexture(true);
+	timer->setEnabled(false, true);
 	//----------------------------------------------------------------------
 	//----------------------------------------------------------------------
 	resetButton = new cMesh();
@@ -1061,10 +1097,10 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame;
 		if (start) {
 			timerNum += deltaTime;
-			if ((int)timerNum > currentSec) {
+			/*if ((int)timerNum > currentSec) { //update timer continuously
 				DisplayTimer(timerNum);
 				currentSec = (int)timerNum;
-			}
+			}*/
 		}
 		if (!camSim) {
 			// start rendering
@@ -1375,7 +1411,6 @@ void updateHaptics(void)
 		// restart the simulation clock
 		clock.reset();
 		clock.start();
-		errorColor.setRed();
 		// update frequency counter
 		frequencyCounter.signal(1);
 		for (int i = 0; i < numHapticDevices; i++)
@@ -1419,6 +1454,7 @@ void updateHaptics(void)
 					int px, py;
 					canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
 					size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
+					force[i] = tool[i]->getDeviceGlobalForce().length();
 					for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 					{
 						for (int y = -BRUSH_SIZE; y < BRUSH_SIZE; y++)
@@ -1430,11 +1466,12 @@ void updateHaptics(void)
 								// get color at location
 								cColorb color, newColor;
 								canvas->m_texture->m_image->getPixelColor(px + x, py + y, color);
-								if (color != paintColor || color != errorColor) {
+								if (color != paintColor || color != errorColor || color != warningColor) {
 									bool hit;
 									hit = PaintCanvas(px + x, py + y, pattern);
 									if (hit) {
-										newColor = paintColor;
+										if (force[i] < 7.5) newColor = paintColor;
+										else newColor = warningColor;
 									}
 									else {
 										newColor = errorColor;
@@ -1535,10 +1572,17 @@ void ZoomCam() {
 	movementVector.zero();
 	if (Zoom_In==0) {
 		movementVector = camera->getUpVector();
+<<<<<<< HEAD
 	}
 	else if (Zoom_Out==0) {
 		movementVector = camera->getUpVector();
 		movementVector.negate();
+=======
+		movementVector.negate();
+	}
+	else if (Zoom_Out==0) {
+		movementVector = camera->getUpVector();
+>>>>>>> 1e40c49d9b5473314bf01038adffb2c851e5cffa
 	}
 	movementVector.mul(deltaTime);
 	movementVector.mul(moveSpeed);
@@ -1548,7 +1592,7 @@ void ZoomCam() {
 void SaveCanvas() {
 	std::stringstream temp;
 	GetResult();
-	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "-CanvasPicture.jpg" << endl;
+	temp << ROOT_DIR "Resources/Images/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "CanvasPicture.jpg" << endl;
 	string path = temp.str();
 	canvas->m_texture->m_image->saveToFile(path);
 	temp.str("");
@@ -1565,8 +1609,8 @@ void SaveCanvas() {
 		tempfile[k].close();
 		std::ifstream readfile;
 		bool firstline = true;
-		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv";
-		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv\n";
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "MicroGrid-trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "MicroGrid-trajectory-Arm_" << k << ".csv\n";
 		myfile[k].open(temp.str());
 		temp.str("");
 		temp.clear();
@@ -1575,7 +1619,7 @@ void SaveCanvas() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "Pattern"<< "Rotation du plan" <<"\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << " , " << "Pourcentage d'erreur de force" << " , " << "Pattern"<< " , " << "Rotation du plan" <<"\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
 				string rotated;
@@ -1584,7 +1628,7 @@ void SaveCanvas() {
 				case(2):rotated = "Gauche"; break;
 				default:rotated = "Face"; break;
 				}
-				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << pattern + 1 << rotated<<"\n";
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << " , " << correctPercent << " , " << forcePercent << " , " << pattern + 1 << " , " << rotated<<"\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
@@ -1592,7 +1636,8 @@ void SaveCanvas() {
 		myfile[k].close();
 	}
 }
-
+//Relance la simulation. Le mode entraînement est réactivé (grille effacé au prochain usage de Start())
+//Les données de trajectoire sauvegardée temporairement jusque là sont écrasées
 void ResetSim(int pattern) {
 	if (start) {
 		startButton->setEnabled(true);
@@ -1601,6 +1646,7 @@ void ResetSim(int pattern) {
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);
+		canvasTraining->copyTo(canvas->m_texture->m_image);
 	}
 	for (int k = 0; k < numHapticDevices; k++) {
 		std::stringstream temp;
@@ -1612,7 +1658,7 @@ void ResetSim(int pattern) {
 	}
 	ResetCanvas(pattern);
 }
-
+// Change le pattern à colorier sur le canvas
 void ChangePattern() {
 	pattern = (pattern != MAX_PATTERN ? pattern + 1 : 0);
 	ResetCanvas(pattern);
@@ -1623,13 +1669,15 @@ void ChangePattern() {
 	fileload = changeButton->m_texture->loadFromFile(temp.str());
 	changeButton->m_texture->markForUpdate();
 }
+// Réinitialise le canvas - supprime les couleurs ajoutées par le joueur et recrée le pattern choisi actuellement
 void ResetCanvas(int pattern) {
 	for (int k = 0; k < numHapticDevices; k++) {
 		posData[k] = tuple<float, cVector3d>(0, tool[k]->getDeviceGlobalPos());
 	}
-	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
 	goalPixels = 0;
+	cColorb yellow;
+	yellow.setYellow();
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
@@ -1638,8 +1686,6 @@ void ResetCanvas(int pattern) {
 					cColorb getcolor;
 					canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
 					if (getcolor != paintColor) {
-						cColorb yellow;
-						yellow.setYellow();
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
 					goalPixels++;
@@ -1655,8 +1701,6 @@ void ResetCanvas(int pattern) {
 					cColorb getcolor;
 					canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
 					if (getcolor != paintColor) {
-						cColorb yellow;
-						yellow.setYellow();
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
 					goalPixels++;
@@ -1671,10 +1715,14 @@ void ResetCanvas(int pattern) {
 void Start() {
 	timerNum = 0;
 	start = true;
+	if (timer->getEnabled()) {
+		timer->setEnabled(false, true);
+	}
 	ResetCanvas(pattern);
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
 	rotateButton->setEnabled(false);
+	canvasOriginal->copyTo(canvas->m_texture->m_image);
 }
 bool PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;
@@ -1723,14 +1771,15 @@ void UpdatePreferences(string ComPort) {
 	std::ofstream UserInfo;
 	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
 	UserInfo << ComPort << endl;
+	UserInfo << NumCandidate << endl;
 	UserInfo.close();
 }
 char* FetchPreferences() {
 	std::ifstream UserInfo;
 	std::string comport;
-	char temp;
 	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
 	getline(UserInfo, comport);
+	//getline(UserInfo, NumCandidate);
 	UserInfo.close();
 	for (int i = 0; i < comport.length(); i++) {
 		com_port[7 + i] = comport[i];

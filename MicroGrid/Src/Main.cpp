@@ -387,7 +387,6 @@ int main(int argc, char** argv)
 	cout << "Submitting no ID launches training mode" << endl;
 	cout << "Candidate ID : ";
 	getline(cin, NumCandidate);
-	cout << "NumCandidate : " << NumCandidate;
 	cout << endl;
 	//--------------------------------------------------------------------------
 	// SETUP DISPLAY CONTEXT
@@ -1586,7 +1585,7 @@ void ZoomCam() {
 void SaveCanvas() {
 	std::stringstream temp;
 	GetResult();
-	temp << ROOT_DIR "Resources/Images/" << NumCandidate << "-CanvasPicture.jpg" << endl;
+	temp << ROOT_DIR "Resources/Images/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "CanvasPicture.jpg" << endl;
 	string path = temp.str();
 	canvas->m_texture->m_image->saveToFile(path);
 	temp.str("");
@@ -1768,9 +1767,9 @@ void UpdatePreferences(string ComPort) {
 char* FetchPreferences() {
 	std::ifstream UserInfo;
 	std::string comport;
-	char temp;
 	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
 	getline(UserInfo, comport);
+	//getline(UserInfo, NumCandidate);
 	UserInfo.close();
 	for (int i = 0; i < comport.length(); i++) {
 		com_port[7 + i] = comport[i];

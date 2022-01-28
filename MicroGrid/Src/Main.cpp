@@ -1602,8 +1602,8 @@ void SaveCanvas() {
 		tempfile[k].close();
 		std::ifstream readfile;
 		bool firstline = true;
-		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv";
-		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "trajectory-Arm_" << k << ".csv\n";
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "MicroGrid-trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "MicroGrid-trajectory-Arm_" << k << ".csv\n";
 		myfile[k].open(temp.str());
 		temp.str("");
 		temp.clear();
@@ -1629,7 +1629,8 @@ void SaveCanvas() {
 		myfile[k].close();
 	}
 }
-
+//Relance la simulation. Le mode entraînement est réactivé (grille effacé au prochain usage de Start())
+//Les données de trajectoire sauvegardée temporairement jusque là sont écrasées
 void ResetSim(int pattern) {
 	if (start) {
 		startButton->setEnabled(true);
@@ -1650,7 +1651,7 @@ void ResetSim(int pattern) {
 	}
 	ResetCanvas(pattern);
 }
-
+// Change le pattern à colorier sur le canvas
 void ChangePattern() {
 	pattern = (pattern != MAX_PATTERN ? pattern + 1 : 0);
 	ResetCanvas(pattern);
@@ -1661,6 +1662,7 @@ void ChangePattern() {
 	fileload = changeButton->m_texture->loadFromFile(temp.str());
 	changeButton->m_texture->markForUpdate();
 }
+// Réinitialise le canvas - supprime les couleurs ajoutées par le joueur et recrée le pattern choisi actuellement
 void ResetCanvas(int pattern) {
 	for (int k = 0; k < numHapticDevices; k++) {
 		posData[k] = tuple<float, cVector3d>(0, tool[k]->getDeviceGlobalPos());
@@ -1762,6 +1764,7 @@ void UpdatePreferences(string ComPort) {
 	std::ofstream UserInfo;
 	UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
 	UserInfo << ComPort << endl;
+	UserInfo << NumCandidate << endl;
 	UserInfo.close();
 }
 char* FetchPreferences() {

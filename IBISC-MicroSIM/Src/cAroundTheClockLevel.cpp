@@ -13,6 +13,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	double maxStiffness;
 	int w;
+	defaultPos = cVector3d(1.6, 0, 2.5);
 
 	if (a_numDevices > 0) {
 		cHapticDeviceInfo hapticDeviceInfo = a_hapticDevice0->getSpecifications();
@@ -22,6 +23,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	else {
 		maxStiffness = 3;
 	}
+
+
 
 	// create an ODE world to simulate dynamic bodies
 	ODEWorld = new cODEWorld(m_world);

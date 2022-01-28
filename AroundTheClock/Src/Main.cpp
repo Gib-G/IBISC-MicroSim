@@ -152,7 +152,7 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
-cVector3d defaultPos = cVector3d(-0.6, 0, 0.5);
+cVector3d defaultPos = cVector3d(1.6, 0, -5);
 
 bool camSim;
 //------------------------------------------------------------------------------
@@ -295,7 +295,6 @@ int main(int argc, char* argv[])
 
 	// create a new world.
 	world = new cWorld();
-
 	// set the background color of the environment
 	world->m_backgroundColor.setWhite();
 
@@ -401,7 +400,7 @@ int main(int argc, char* argv[])
 	cHapticDeviceInfo hapticDeviceInfo;
 	double workspaceScaleFactor = 1;
 	numHapticDevices = handler->getNumDevices();
-	double toolRadius = 0.02;
+	double toolRadius = 0.015;
 	for (int i = 0; i < numHapticDevices; i++) {
 		previousframecaught[i] = false;
 
@@ -421,7 +420,7 @@ int main(int argc, char* argv[])
 		hapticDevice[i]->setEnableGripperUserSwitch(true);
 		// define a radius for the tool
 		tool[i]->setRadius(toolRadius);
-		tool[i]->setGripperWorkspaceScale(.25);
+		tool[i]->setGripperWorkspaceScale(.03);
 		tool[i]->setShowContactPoints(true, false);
 		// enable if objects in the scene are going to rotate of translate
 		// or possibly collide against the tool. If the environment
@@ -429,7 +428,7 @@ int main(int argc, char* argv[])
 		tool[i]->enableDynamicObjects(true);
 
 		// map the physical workspace of the haptic device to a larger virtual workspace.
-		tool[i]->setWorkspaceRadius(1.3);
+		tool[i]->setWorkspaceRadius(12);
 
 		// haptic forces are enabled only if small forces are first sent to the device;
 		// this mode avoids the force spike that occurs when the application starts when 
@@ -438,6 +437,8 @@ int main(int argc, char* argv[])
 
 		// start the haptic tool
 		tool[i]->start();
+		tool[i]->translate(0, (1 - 2 * i) * 12.5, 7);
+		tool[i]->setFriction(100,100);
 
 	}
 
@@ -508,7 +509,7 @@ int main(int argc, char* argv[])
 	// create a cube mesh
 	double size = 0.40;
 	cCreateBox(object0, size * 2, size * 0.1, size * 0.1);
-	cCreateBox(objecttest, size * 2, size * 0.1, size * 0.1);
+	cCreateBox(objecttest, size * 2, size , size);
 	object0->createAABBCollisionDetector(toolRadius);
 	objecttest->createAABBCollisionDetector(toolRadius);
 
@@ -526,11 +527,12 @@ int main(int argc, char* argv[])
 	mat1.setDynamicFriction(3);
 	mat1.setStaticFriction(3);
 
-	mat2.setGreenDarkSea();
+	mat2.setGrayDim();
 	mat2.setStiffness(0.3 * maxStiffness);
 	mat2.setDynamicFriction(3);
 	mat2.setStaticFriction(3);
 	objecttest->setMaterial(mat2);
+	objecttest->m_material->setGreen();
 
 	// add mesh to ODE object
 	ODEBody0->setImageModel(object0);
@@ -539,7 +541,7 @@ int main(int argc, char* argv[])
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
 	ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
-	ODEBodytest->createDynamicBox(size * 2, size * 0.1, size * 0.1);
+	ODEBodytest->createDynamicBox(size * 2, size, size );
 
 	// define some mass properties for each cube
 	ODEBody0->setMass(0.01);
@@ -557,6 +559,7 @@ int main(int argc, char* argv[])
 		ODEBody2[i]->setImageModel(object2[i]);
 		ODEBody2[i]->createDynamicBox(size, size, size);
 		ODEBody2[i]->disableDynamics();
+		ODEBody2[i]->setMass(0);
 
 		ODEBody3[i] = new cODEGenericBody(ODEWorld);
 		object3[i] = new cMesh();
@@ -565,6 +568,7 @@ int main(int argc, char* argv[])
 		ODEBody3[i]->setImageModel(object3[i]);
 		ODEBody3[i]->createDynamicBox(size, size, size);
 		ODEBody3[i]->disableDynamics();
+		ODEBody2[i]->setMass(0);
 
 	}
 
@@ -578,8 +582,8 @@ int main(int argc, char* argv[])
 		ODEBody1[i]->createDynamicMesh(true);
 		ODEBody1[i]->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
 		ODEBody1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
-		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i*2*M_PI/12);
-		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12), sin(i * 2 * M_PI / 12), 0);
+		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
+		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12) * 0.7, sin(i * 2 * M_PI / 12) * 0.7, -7);
 		AddDetectionPlane(i, ODEBody1[i]);
 		crossing[i] = false;
 		end1[i] = false;
@@ -599,9 +603,8 @@ int main(int argc, char* argv[])
 	// ODEGPlane4 = new cODEGenericBody(ODEWorld);
    //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
 
-	w = 1.0;
 	//ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
-	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -w), cVector3d(0.0, 0.0, 1.0));
+	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
 	// ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
 	// ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
    //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
@@ -621,11 +624,11 @@ int main(int argc, char* argv[])
 	cCreatePlane(ground, groundSize, groundSize);
 
 	// position ground in world where the invisible ODE plane is located (ODEGPlane1)
-	ground->setLocalPos(0.0, 0.0, -1.0);
+	ground->setLocalPos(0.0, 0.0, -7.5);
 
 	// define some material properties and apply to mesh
 	cMaterial matGround;
-	matGround.setStiffness(0.3 * maxStiffness);
+	matGround.setStiffness(0.1 * maxStiffness);
 	matGround.setDynamicFriction(0.2);
 	matGround.setStaticFriction(0.0);
 	matGround.setWhite();
@@ -814,7 +817,7 @@ void AddDetectionPlane(int i, cODEGenericBody* ring) {
 	DetectionPlanes[i] = new cMesh();
 	ODEWorld->addChild(DetectionPlanes[i]);
 	//cCreatePanel(DetectionPlanes[i], 1, 1,.5,8,ring->getLocalPos(),cMatrix3d(1,0,0,0));
-	cCreateCylinder(DetectionPlanes[i], 0.001, 0.1, 32U, 1U, 1U, true, true, cVector3d(0,0,0), cMatrix3d(1, 0, 1, M_PI));
+	cCreateCylinder(DetectionPlanes[i], 0.001, 0.1, 32U, 1U, 1U, true, true, cVector3d(0, 0, 0), cMatrix3d(1, 0, 1, M_PI));
 	DetectionPlanes[i]->m_material->setRed();
 	DetectionPlanes[i]->setLocalPos(ring->getLocalPos());
 	DetectionPlanes[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
@@ -1045,7 +1048,7 @@ void updateHaptics(void)
 						if (isnan(rotangle)) {
 							rotangle = 0;
 						}
-						bool test = true;
+						bool test = false;
 						if (test) {
 							ODEBody0->setLocalRot(startrotCube);
 							ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);

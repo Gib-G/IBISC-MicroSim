@@ -2,10 +2,11 @@
 #define CLevelHandler
 
 #include "cGenericLevel.h"
+#include <COculus.h>
 
 class cLevelHandler {
 public:
-	cLevelHandler();
+	cLevelHandler(cOVRDevice* o);
 
 	virtual ~cLevelHandler() {};
 
@@ -14,6 +15,7 @@ public:
 
 public:
 	cGenericLevel* mainLevel;
+	cOVRDevice* oculusVR;
 };
 
 #endif // !CLevelHandler

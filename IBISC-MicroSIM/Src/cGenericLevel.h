@@ -106,6 +106,8 @@ public:
     double currentFrame;
     double lastFrame;
 
+    cVector3d defaultPos;
+
 };
 
 //---------------------------------------------------------------------------

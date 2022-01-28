@@ -18,6 +18,8 @@ cGenericLevel::cGenericLevel(const string a_resourceRoot,
        
     bool fileload;
 
+    defaultPos = cVector3d(0, 0, 0);
+
     lastFrame = glfwGetTime();
 
     moveSpeed = 5;

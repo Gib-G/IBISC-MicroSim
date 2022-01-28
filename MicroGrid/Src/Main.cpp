@@ -152,7 +152,7 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
-cVector3d defaultPos = cVector3d(-0.1,0 , 0.5);
+cVector3d defaultPos = cVector3d(0.3,0 , 0.5);
 //------------------------------------------------------------------------------
 // DECLARED FUNCTIONS
 //------------------------------------------------------------------------------
@@ -926,11 +926,11 @@ int main(int argc, char** argv)
 
 	changeButton->translate(cVector3d(0.1, 0.3, -0.8));
 	startButton->translate(cVector3d(0.1, 0.3, -0.8));
-	rotateButton->translate(cVector3d(0.1, 0.3, -0.8));
+	rotateButton->translate(cVector3d(0.3, 0.3, -0.8));
 	saveButton->translate(cVector3d(0.1, 0.3, -0.8));
 	resetButton->translate(cVector3d(0.1, 0.3, -0.8));
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
-	canvasPos = cVector3d(-0.5, .025, -1.25);
+	canvasPos = cVector3d(-0.2, .025, -1.05);
 	canvas->translate(canvasPos);
 	//--------------------------------------------------------------------------
 	// CREATE SHADERS
@@ -1534,10 +1534,10 @@ void moveCamera() {
 void ZoomCam() {
 	movementVector.zero();
 	if (Zoom_In==0) {
-		movementVector = camera->getLookVector();
+		movementVector = camera->getUpVector();
 	}
 	else if (Zoom_Out==0) {
-		movementVector = camera->getLookVector();
+		movementVector = camera->getUpVector();
 		movementVector.negate();
 	}
 	movementVector.mul(deltaTime);

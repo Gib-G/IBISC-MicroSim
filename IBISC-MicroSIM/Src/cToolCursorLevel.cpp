@@ -45,7 +45,7 @@ cToolCursorLevel::cToolCursorLevel(const std::string a_resourceRoot,
 		m_tool1->enableDynamicObjects(true);
 		m_tool1->setWaitForSmallForce(true);
 		m_tool1->start();
-		m_tools[0] = m_tool1;
+		m_tools[1] = m_tool1;
 		// if the haptic device has a gripper, enable it as a user switch
 		shared_ptr<cGenericHapticDevice>(a_hapticDevice1)->setEnableGripperUserSwitch(true);
 		m_tool1->setShowContactPoints(true, false);

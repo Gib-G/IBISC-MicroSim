@@ -271,7 +271,7 @@ void ReadPort(){
 	string incoming;
 	int nb_info = 2; 
 	DWORD COM_BAUD_RATE = CBR_19200;
-	static SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+	SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
 	if(!Serial.connected_){
 		string num;
 		cout << "Current Arduino Port : ";
@@ -287,14 +287,27 @@ void ReadPort(){
 			cout << "No Arduino detected" << endl;
 		}
 	}
+	else {
+		cout << "Zoom through Arduino enabled" << endl;
+	}
 	while (!simulationFinished && Serial.connected_) {
 		arduino = true;
 		incoming = Serial.ReadSerialPort(reply_wait_time);
-		if (incoming.length() == 3) {
-			Zoom_Out = stoi(incoming.substr(0, 1));
-			Zoom_In = stoi(incoming.substr(2, 1));
+		if (incoming.length() > 0) {
+			if (incoming == "1") {
+				Zoom_Out = 0;
+				Zoom_In = 1;
+			}
+			else if (incoming == "2") {
+				Zoom_In = 0;
+				Zoom_Out = 1;
+			}
+			else {
+				Zoom_Out = 1;
+				Zoom_In = 1;
 			}
 		}
+	}
 	if(Serial.connected_) Serial.CloseSerialPort();
 }
 
@@ -1534,11 +1547,11 @@ void moveCamera() {
 void ZoomCam() {
 	movementVector.zero();
 	if (Zoom_In==0) {
-		movementVector = camera->getLookVector();
+		movementVector = camera->getUpVector();
+		movementVector.negate();
 	}
 	else if (Zoom_Out==0) {
-		movementVector = camera->getLookVector();
-		movementVector.negate();
+		movementVector = camera->getUpVector();
 	}
 	movementVector.mul(deltaTime);
 	movementVector.mul(moveSpeed);

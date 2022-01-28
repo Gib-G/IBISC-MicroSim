@@ -20,13 +20,15 @@ float errorPixel;
 float totalColoredPixels;
 float errorPercent = 0;
 float greenPixels;
+float forcePixels;
 float goalPixels;
+float forcePercent = 0;
 float correctPercent = 0;
 float cubesize;
 int pattern = 0;
 int rotation = 0;
 int MAX_PATTERN = 1;
-cColorb errorColor;
+
 bool start = false;
 //Paint variables
 const double K_INK = 30;
@@ -86,6 +88,8 @@ cImagePtr canvasOriginal;
 cImagePtr canvasTraining;
 // selected paint color
 cColorb paintColor;
+cColorb warningColor;
+cColorb errorColor;
 
 // a virtual tool representing the haptic device in the scene
 cToolCursor* tool[MAX_DEVICES];
@@ -205,6 +209,7 @@ void moveCamera(void);
 //==============================================================================
 
 void DisplayTimer(float time) {
+	timer->setEnabled(true, true);
 	std::stringstream temp;
 	temp << (int)time;
 	string str = temp.str();
@@ -312,7 +317,6 @@ void ReadPort(){
 }
 
 void GetResult() {
-	errorColor.setRed();
 	errorPixel = 0;
 	totalColoredPixels = 0;
 	greenPixels = 0;
@@ -321,12 +325,15 @@ void GetResult() {
 			// get color at location
 			cColorb getcolor;
 			canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
-			if (getcolor == errorColor || getcolor == paintColor) {
+			if (getcolor == errorColor || getcolor == paintColor ||getcolor ==warningColor) {
 				if (getcolor == errorColor) {
 					errorPixel++;
 				}
 				if (getcolor == paintColor) {
 					greenPixels++;
+				}
+				if (getcolor == warningColor) {
+					forcePixels++;
 				}
 				totalColoredPixels++;
 			}
@@ -335,10 +342,11 @@ void GetResult() {
 	bool hit = false;
 	errorPercent = (totalColoredPixels ? errorPixel / totalColoredPixels * 100 : 0);
 	correctPercent = greenPixels / goalPixels * 100;
+	forcePercent= (totalColoredPixels ? forcePixels / totalColoredPixels * 100 : 0);
 	cout.precision(10);
 	cout << "Pourcentage d'erreurs : " << errorPercent << "%" << endl;
 	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
-	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+	cout << "Pourcentage d'erreurs dues à la pression appliquée : " <<forcePercent<<"%"<<endl;
 }
 
 int main(int argc, char** argv)
@@ -580,6 +588,8 @@ int main(int argc, char** argv)
 		tool[i]->setWaitForSmallForce(true);
 
 		paintColor.setGreen();
+		warningColor.setOrange();
+		errorColor.setRed();
 		tool[i]->m_hapticPoint->m_sphereProxy->m_material->setColor(paintColor);
 		// start the haptic tool
 		tool[i]->start();
@@ -780,6 +790,7 @@ int main(int argc, char** argv)
 	timer4->m_texture->setEnvironmentMode(GL_DECAL);
 	// enable texture rendering 
 	timer4->setUseTexture(true);
+	timer->setEnabled(false, true);
 	//----------------------------------------------------------------------
 	//----------------------------------------------------------------------
 	resetButton = new cMesh();
@@ -1087,10 +1098,10 @@ int main(int argc, char** argv)
 		lastFrame = currentFrame;
 		if (start) {
 			timerNum += deltaTime;
-			if ((int)timerNum > currentSec) {
+			/*if ((int)timerNum > currentSec) { //update timer continuously
 				DisplayTimer(timerNum);
 				currentSec = (int)timerNum;
-			}
+			}*/
 		}
 		if (!camSim) {
 			// start rendering
@@ -1401,7 +1412,6 @@ void updateHaptics(void)
 		// restart the simulation clock
 		clock.reset();
 		clock.start();
-		errorColor.setRed();
 		// update frequency counter
 		frequencyCounter.signal(1);
 		for (int i = 0; i < numHapticDevices; i++)
@@ -1445,6 +1455,7 @@ void updateHaptics(void)
 					int px, py;
 					canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
 					size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
+					force[i] = tool[i]->getDeviceGlobalForce().length();
 					for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 					{
 						for (int y = -BRUSH_SIZE; y < BRUSH_SIZE; y++)
@@ -1456,11 +1467,12 @@ void updateHaptics(void)
 								// get color at location
 								cColorb color, newColor;
 								canvas->m_texture->m_image->getPixelColor(px + x, py + y, color);
-								if (color != paintColor || color != errorColor) {
+								if (color != paintColor || color != errorColor || color != warningColor) {
 									bool hit;
 									hit = PaintCanvas(px + x, py + y, pattern);
 									if (hit) {
-										newColor = paintColor;
+										if (force[i] < 7.5) newColor = paintColor;
+										else newColor = warningColor;
 									}
 									else {
 										newColor = errorColor;
@@ -1601,7 +1613,7 @@ void SaveCanvas() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "Pattern"<< "Rotation du plan" <<"\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << " , " << "Pourcentage d'erreur de force" << " , " << "Pattern"<< " , " << "Rotation du plan" <<"\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
 				string rotated;
@@ -1610,7 +1622,7 @@ void SaveCanvas() {
 				case(2):rotated = "Gauche"; break;
 				default:rotated = "Face"; break;
 				}
-				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << pattern + 1 << rotated<<"\n";
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << " , " << correctPercent << " , " << forcePercent << " , " << pattern + 1 << " , " << rotated<<"\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
@@ -1695,6 +1707,9 @@ void ResetCanvas(int pattern) {
 void Start() {
 	timerNum = 0;
 	start = true;
+	if (timer->getEnabled()) {
+		timer->setEnabled(false, true);
+	}
 	ResetCanvas(pattern);
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);

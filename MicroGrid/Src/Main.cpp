@@ -83,7 +83,7 @@ cMesh* rotateButton;
 cVector3d canvasPos;
 // copy of blank canvas texture
 cImagePtr canvasOriginal;
-
+cImagePtr canvasTraining;
 // selected paint color
 cColorb paintColor;
 
@@ -646,10 +646,23 @@ int main(int argc, char** argv)
 		close();
 		return (-1);
 	}
+	canvasOriginal = canvas->m_texture->m_image->copy();
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg"); // Images/grid.jpg
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
 
 	// create a copy of canvas so that we can clear page when requested
-	canvasOriginal = canvas->m_texture->m_image->copy();
-
+	canvasTraining = canvas->m_texture->m_image->copy();
 	// we disable lighting properties for canvas
 	canvas->setUseMaterial(false);
 
@@ -1614,6 +1627,7 @@ void ResetSim(int pattern) {
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);
+		canvasTraining->copyTo(canvas->m_texture->m_image);
 	}
 	for (int k = 0; k < numHapticDevices; k++) {
 		std::stringstream temp;
@@ -1640,9 +1654,10 @@ void ResetCanvas(int pattern) {
 	for (int k = 0; k < numHapticDevices; k++) {
 		posData[k] = tuple<float, cVector3d>(0, tool[k]->getDeviceGlobalPos());
 	}
-	canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
 	goalPixels = 0;
+	cColorb yellow;
+	yellow.setYellow();
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
@@ -1651,8 +1666,6 @@ void ResetCanvas(int pattern) {
 					cColorb getcolor;
 					canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
 					if (getcolor != paintColor) {
-						cColorb yellow;
-						yellow.setYellow();
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
 					goalPixels++;
@@ -1668,8 +1681,6 @@ void ResetCanvas(int pattern) {
 					cColorb getcolor;
 					canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
 					if (getcolor != paintColor) {
-						cColorb yellow;
-						yellow.setYellow();
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
 					goalPixels++;
@@ -1688,6 +1699,7 @@ void Start() {
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
 	rotateButton->setEnabled(false);
+	canvasOriginal->copyTo(canvas->m_texture->m_image);
 }
 bool PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;

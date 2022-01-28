@@ -533,6 +533,10 @@ void cGridLevel::updateGraphics() {
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
 
+	if (start) {
+		timerNum += deltaTime;
+	}
+
 	moveCamera();
 
 
@@ -723,7 +727,7 @@ bool cGridLevel::PaintCanvas(int x, int y, int pattern) {
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
-			if (x <= 1024 - cubesize * (j + 1) && x >= 1024 - cubesize * j && y >= 1024 - cubesize * (j + 1) && y <= 1024 - cubesize * j) {
+			if (x >= 1024 - cubesize * (j + 1) && x <= 1024 - cubesize * j && y >= 1024 - cubesize * (j + 1) && y <= 1024 - cubesize * j) {
 				hit = true;
 				break;
 			}
@@ -777,10 +781,11 @@ void cGridLevel::GetResult() {
 }
 
 void cGridLevel::DisplayTimer(float time) {
+
+	cout << "time:" << time << endl;
+
 	std::stringstream temp;
-	temp << (int)time;
 	string str = temp.str();
-	cout << str << endl;
 	bool fileload = false;
 	string folder = RESOURCE_PATH("../Resources/Images/");
 	for (int i = 0; i < str.length(); i++) {

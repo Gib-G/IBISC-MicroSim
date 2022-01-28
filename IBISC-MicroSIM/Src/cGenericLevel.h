@@ -8,6 +8,8 @@
 using namespace chai3d;
 //---------------------------------------------------------------------------
 
+const int MAX_DEVICES = 2;
+
 class cGenericLevel
 {
     //-----------------------------------------------------------------------
@@ -61,6 +63,8 @@ public:
 
     //! virtual world
     cWorld* m_world;
+
+    cSpotLight* light;
 
     //! camera
     cCamera* m_camera;

@@ -54,6 +54,7 @@
 #include "cLevelHandler.h"
 #include "cGridLevel.h"
 #include "cHomeLevel.h"
+#include "cAroundTheClockLevel.h"
 //------------------------------------------------------------------------------
 using namespace chai3d;
 using namespace std;
@@ -104,6 +105,8 @@ cFirstLevel* m_first;
 cGridLevel* m_grid;
 
 cHomeLevel* m_home;
+
+cAroundTheClockLevel* m_around;
 
 //------------------------------------------------------------------------------
 // OCULUS RIFT
@@ -322,10 +325,11 @@ int main(int argc, char** argv)
     // DEMOS
     //-----------------------------------------------------------------------
     levelHandler = new cLevelHandler();
-    m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
+    //m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
     m_first = new cFirstLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
     m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
-    levelHandler->setLevel(m_grid);
+    m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
+    levelHandler->setLevel(m_around);
 
     //--------------------------------------------------------------------------
     // START SIMULATION

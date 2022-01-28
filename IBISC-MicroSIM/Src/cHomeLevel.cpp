@@ -12,7 +12,7 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	cLevelHandler* levelHandler) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
 
 	m_levelHandler = levelHandler;
-	//m_grid = new cGridLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1);
+	m_grid = new cGridLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1);
 
 	//--------------------------------------------------------------------------
 	// CREATE ENVIRONMENT MAP

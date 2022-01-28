@@ -77,6 +77,34 @@ cGenericLevel::cGenericLevel(const string a_resourceRoot,
     m_light1->m_diffuse.set(0.4, 0.4, 0.4);
     m_light1->m_specular.set(0.0, 0.0, 0.0);*/
 
+    // create a light source
+    light = new cSpotLight(m_world);
+
+    // attach light to camera
+    m_world->addChild(light);
+
+    // enable light source
+    light->setEnabled(true);
+
+    // position the light source
+    light->setLocalPos(0.0, 0.0, 1.2);
+
+    // define the direction of the light beam
+    light->setDir(0.0, 0.0, -1.0);
+
+    // set uniform concentration level of light 
+    light->setSpotExponent(0.0);
+
+    // enable this light source to generate shadows
+    light->setShadowMapEnabled(true);
+
+    // set the resolution of the shadow map
+    //light->m_shadowMap->setQualityLow();
+    light->m_shadowMap->setQualityVeryHigh();
+
+    // set light cone half angle
+    light->setCutOffAngleDeg(45);
+
     // create a ground
     m_ground = new cMesh();
     m_world->addChild(m_ground);

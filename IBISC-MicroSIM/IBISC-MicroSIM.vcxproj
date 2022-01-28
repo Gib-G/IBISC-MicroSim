@@ -164,21 +164,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\cAroundTheClockLevel.cpp" />
     <ClCompile Include="Src\cFirstLevel.cpp" />
     <ClCompile Include="Src\cGenericLevel.cpp" />
     <ClCompile Include="Src\cGridLevel.cpp" />
     <ClCompile Include="Src\cHomeLevel.cpp" />
     <ClCompile Include="Src\cLevelHandler.cpp" />
     <ClCompile Include="Src\cToolCursorLevel.cpp" />
+    <ClCompile Include="Src\cToolGripperLevel.cpp" />
     <ClCompile Include="Src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\cAroundTheClockLevel.h" />
     <ClInclude Include="Src\cFirstLevel.h" />
     <ClInclude Include="Src\cGenericLevel.h" />
     <ClInclude Include="Src\cGridLevel.h" />
     <ClInclude Include="Src\cHomeLevel.h" />
     <ClInclude Include="Src\cLevelHandler.h" />
     <ClInclude Include="Src\cToolCursorLevel.h" />
+    <ClInclude Include="Src\cToolGripperLevel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,25 +1,19 @@
-#ifndef cToolLevel
-#define cToolLevel
+#ifndef CToolGripperLevel
+#define CToolGripperLevel
 
 #include "cGenericLevel.h"
 
-enum cMode
-{
-    IDLE,
-    SELECTION
-};
-
-class cToolCursorLevel : public cGenericLevel
+class cToolGripperLevel : public cGenericLevel
 {
 
 
 public:
-    cToolCursorLevel(const std::string a_resourceRoot,
+    cToolGripperLevel(const std::string a_resourceRoot,
         const int a_numDevices,
         std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
         std::shared_ptr<cGenericHapticDevice> a_hapticDevice1);
 
-    virtual ~cToolCursorLevel() {};
+    virtual ~cToolGripperLevel() {};
 
 
 public:
@@ -27,13 +21,13 @@ public:
 
 public:
     //! table of tools
-    cToolCursor* m_tools[2];
+    cToolGripper* m_tools[2];
 
     //! tool 0
-    cToolCursor* m_tool0;
+    cToolGripper* m_tool0;
 
     //! tool 1
-    cToolCursor* m_tool1;
+    cToolGripper* m_tool1;
 
     double toolRadius;
 };

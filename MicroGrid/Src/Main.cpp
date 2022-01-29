@@ -1473,7 +1473,7 @@ void updateHaptics(void)
 								// get color at location
 								cColorb color, newColor;
 								canvas->m_texture->m_image->getPixelColor(px + x, py + y, color);
-								if (color != paintColor || color != errorColor || color != warningColor) {
+								if (color != paintColor && color != errorColor && color != warningColor) {
 									bool hit;
 									hit = PaintCanvas(px + x, py + y, pattern);
 									if (hit) {

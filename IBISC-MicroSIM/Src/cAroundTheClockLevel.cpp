@@ -13,7 +13,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	double maxStiffness;
 	int w;
-	defaultPos = cVector3d(1.6, 0, 2.5);
+	defaultPos = cVector3d(2.7, 0, -6.6);
 
 	if (a_numDevices > 0) {
 		cHapticDeviceInfo hapticDeviceInfo = a_hapticDevice0->getSpecifications();
@@ -23,6 +23,13 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	else {
 		maxStiffness = 3;
 	}
+
+	m_world->m_backgroundColor.setWhite();
+
+	m_camera->set(cVector3d(2.5, 0.0, 0.3),    // camera position (eye)
+		cVector3d(0.0, 0.0, -0.5),    // lookat position (target)
+		cVector3d(0.0, 0.0, 1.0));
+
 
 	// create a light source
 	light = new cSpotLight(m_world);
@@ -80,7 +87,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// create a cube mesh
 	double size = 0.40;
 	cCreateBox(object0, size * 2, size * 0.1, size * 0.1);
-	cCreateBox(objecttest, size * 2, size * 0.1, size * 0.1);
+	cCreateBox(objecttest, size * 2, size, size);
 	object0->createAABBCollisionDetector(toolRadius);
 	objecttest->createAABBCollisionDetector(toolRadius);
 
@@ -98,11 +105,12 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	mat1.setDynamicFriction(3);
 	mat1.setStaticFriction(3);
 
-	mat2.setGreenDarkSea();
+	mat2.setGrayDim();
 	mat2.setStiffness(0.3 * maxStiffness);
 	mat2.setDynamicFriction(3);
 	mat2.setStaticFriction(3);
 	objecttest->setMaterial(mat2);
+	objecttest->m_material->setGreen();
 
 	// add mesh to ODE object
 	ODEBody0->setImageModel(object0);
@@ -111,7 +119,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
 	ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
-	ODEBodytest->createDynamicBox(size * 2, size * 0.1, size * 0.1);
+	ODEBodytest->createDynamicBox(size * 2, size, size);
 
 	// define some mass properties for each cube
 	ODEBody0->setMass(0.01);
@@ -129,6 +137,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		ODEBody2[i]->setImageModel(object2[i]);
 		ODEBody2[i]->createDynamicBox(size, size, size);
 		ODEBody2[i]->disableDynamics();
+		ODEBody2[i]->setMass(0.1);
 
 		ODEBody3[i] = new cODEGenericBody(ODEWorld);
 		object3[i] = new cMesh();
@@ -137,6 +146,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		ODEBody3[i]->setImageModel(object3[i]);
 		ODEBody3[i]->createDynamicBox(size, size, size);
 		ODEBody3[i]->disableDynamics();
+		ODEBody2[i]->setMass(0.1);
 
 	}
 
@@ -151,7 +161,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		ODEBody1[i]->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
 		ODEBody1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
-		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12), sin(i * 2 * M_PI / 12), 0);
+		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12) * 0.7, sin(i * 2 * M_PI / 12) * 0.7, -7);
 		AddDetectionPlane(i, ODEBody1[i]);
 		crossing[i] = false;
 		end1[i] = false;
@@ -171,9 +181,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// ODEGPlane4 = new cODEGenericBody(ODEWorld);
    //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
 
-	w = 1.0;
 	//ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
-	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -w), cVector3d(0.0, 0.0, 1.0));
+	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
 	// ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
 	// ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
    //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
@@ -193,11 +202,11 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	cCreatePlane(ground, groundSize, groundSize);
 
 	// position ground in world where the invisible ODE plane is located (ODEGPlane1)
-	ground->setLocalPos(0.0, 0.0, -1.0);
+	ground->setLocalPos(0.0, 0.0, -7.5);
 
 	// define some material properties and apply to mesh
 	cMaterial matGround;
-	matGround.setStiffness(0.3 * maxStiffness);
+	matGround.setStiffness(0.1 * maxStiffness);
 	matGround.setDynamicFriction(0.2);
 	matGround.setStaticFriction(0.0);
 	matGround.setWhite();

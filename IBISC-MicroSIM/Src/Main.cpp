@@ -328,7 +328,7 @@ int main(int argc, char** argv)
     m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
     m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
     m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    levelHandler->setLevel(m_grid);
+    levelHandler->setLevel(m_around);
 
     //--------------------------------------------------------------------------
     // START SIMULATION
@@ -428,7 +428,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
     }
 
     // option - spacebar
-    else if (a_key == GLFW_KEY_SPACE)
+    else if (a_key == GLFW_KEY_ENTER)
     {
         levelHandler->mainLevel->m_camera->setLocalPos(levelHandler->mainLevel->defaultPos);
         oculusVR.recenterPose();

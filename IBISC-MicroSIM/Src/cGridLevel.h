@@ -57,6 +57,7 @@ public:
     // selected paint color
     cColorb paintColor;
     cColorb errorColor;
+    cColorb warningColor;
 
     cMode state[MAX_DEVICES];
     cGenericObject* selectedObject[MAX_DEVICES];
@@ -91,13 +92,20 @@ public:
     float errorPercent = 0;
     float greenPixels;
     float goalPixels;
+    float forcePixels;
     float correctPercent = 0;
+    float forcePercent = 0;
 
     int MAX_PATTERN = 1;
 
     std::string m_resourceRoot;
 
     int rotation;
+
+    std::string NumCandidate;
+    std::ofstream myfile[MAX_DEVICES];
+    std::ofstream tempfile[MAX_DEVICES];
+    std::string pathname;
 };
 
 #endif

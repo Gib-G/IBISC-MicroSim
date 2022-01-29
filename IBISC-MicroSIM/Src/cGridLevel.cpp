@@ -14,6 +14,9 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	
 	m_resourceRoot = a_resourceRoot;
 
+	NumCandidate = "";
+	std::stringstream streamstr;
+
 	//--------------------------------------------------------------------------
 	// CREATE ENVIRONMENT MAP
 	//--------------------------------------------------------------------------
@@ -83,12 +86,12 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	board->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));
 	m_world->addChild(board);*/
 	canvas = new cMesh();
-	cCreatePlane(canvas, 1, 1, cVector3d(-0.3, 0, -0.45));
+	cCreatePlane(canvas, 1, 1);
 	m_world->addChild(canvas);
 	// create collision detector
 	canvas->createBruteForceCollisionDetector();
 	canvas->setFriction(0.3, 0.3, true);
-	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 50);
+	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 20);
 	/*
 	canvas->rotateAboutGlobalAxisRad(cVector3d(0, 1, 0), cDegToRad(90));
 	canvas->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));*/
@@ -228,7 +231,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	resetButton->translate(cVector3d(-.4, 0.5, -0.45));
+	resetButton->translate(cVector3d(-.7, 0.5, -0.45));
 	/*
 	cFontPtr font = NEW_CFONTCALIBRI20();
 	cLabel* label = new cLabel(font);
@@ -266,31 +269,12 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// compute collision detection algorithm
 	resetButton->createAABBCollisionDetector(toolRadius);
 
-
-	/*plusButton = new cMesh();
-	m_world->addChild(plusButton);
-	cCreatePanel(plusButton, .25, .25, .1, 8, cVector3d(-.4, -1.1, -0.8), cMatrix3d(cVector3d(0, 1, 0), 1.22173), cColorf(255, 255, 0));
-	plusButton->setMaterial(mat);
-	plusButton->setUseTexture(true);
-	plusButton->setUseCulling(false, true);
-	plusButton->m_material->setYellow();
-	plusButton->createAABBCollisionDetector(toolRadius);
-
-	minusButton = new cMesh();
-	m_world->addChild(minusButton);
-	cCreatePanel(plusButton, .25, .25, .1, 8, cVector3d(-.4, -1.1, -1.2), cMatrix3d(cVector3d(0, 1, 0), 1.22173), cColorf(255, 255, 0));
-	minusButton->setMaterial(mat);
-	minusButton->setUseTexture(true);
-	minusButton->setUseCulling(false, true);
-	minusButton->m_material->setYellow();
-	minusButton->createAABBCollisionDetector(toolRadius);*/
-
 	saveButton = new cMesh();
 	m_world->addChild(saveButton);
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(saveButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	saveButton->translate(cVector3d(-.4, -1.05, -0.45));
+	saveButton->translate(cVector3d(-.7, -1.05, -0.45));
 	saveButton->setMaterial(mat);
 	// set graphic properties
 	saveButton->m_texture = cTexture2d::create();
@@ -320,7 +304,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	startButton = new cMesh();
 	m_world->addChild(startButton);
 	cCreatePanel(startButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	startButton->translate(cVector3d(.2, -.525, -0.45));
+	startButton->translate(cVector3d(-.15, -1.05, -0.45));
 	startButton->setMaterial(mat);
 	startButton->m_texture = cTexture2d::create();
 	fileload = startButton->m_texture->loadFromFile(RESOURCE_PATH("../Resources/Images/startButton.png"));
@@ -349,7 +333,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	changeButton = new cMesh();
 	m_world->addChild(changeButton);
 	cCreatePanel(changeButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	changeButton->translate(cVector3d(.2, -.005, -0.45));
+	changeButton->translate(cVector3d(-.15, 0.5, -0.45));
 	changeButton->setMaterial(mat);
 	changeButton->m_texture = cTexture2d::create();
 	fileload = changeButton->m_texture->loadFromFile(RESOURCE_PATH("../Resources/Images/1.png"));
@@ -504,6 +488,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// disable material properties and lighting
 	globe->setUseMaterial(false);
 
+
 	for (int i = 0; i < m_numTools; i++)
 	{
 		state[i] = IDLE;
@@ -511,6 +496,12 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 		InitialPos[i] = m_tools[i]->getDeviceGlobalPos();
 		pressed[i] = false;
 		touching[i] = false;
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
+		pathname = streamstr.str();
+		streamstr << i << ".csv";
+		tempfile[i].open(streamstr.str());
+		streamstr.str("");
+		streamstr.clear();
 	}
 
 	timerNum = 0;
@@ -606,6 +597,7 @@ void cGridLevel::updateHaptics() {
 	simClock.reset();
 	simClock.start();
 	errorColor.setRed();
+	warningColor.setOrange();
 	// update frequency counter
 	frequencyCounter.signal(1);
 	for (int i = 0; i < m_numTools; i++)
@@ -802,7 +794,6 @@ bool cGridLevel::CompareVectors(cVector3d v1, cVector3d v2) {
 }
 
 void cGridLevel::GetResult() {
-	errorColor.setRed();
 	errorPixel = 0;
 	totalColoredPixels = 0;
 	greenPixels = 0;
@@ -811,12 +802,15 @@ void cGridLevel::GetResult() {
 			// get color at location
 			cColorb getcolor;
 			canvas->m_texture->m_image->getPixelColor(k, l, getcolor);
-			if (getcolor == errorColor || getcolor == paintColor) {
+			if (getcolor == errorColor || getcolor == paintColor || getcolor == warningColor) {
 				if (getcolor == errorColor) {
 					errorPixel++;
 				}
 				if (getcolor == paintColor) {
 					greenPixels++;
+				}
+				if (getcolor == warningColor) {
+					forcePixels++;
 				}
 				totalColoredPixels++;
 			}
@@ -825,42 +819,39 @@ void cGridLevel::GetResult() {
 	bool hit = false;
 	errorPercent = (totalColoredPixels ? errorPixel / totalColoredPixels * 100 : 0);
 	correctPercent = greenPixels / goalPixels * 100;
+	forcePercent = (totalColoredPixels ? forcePixels / totalColoredPixels * 100 : 0);
 	cout.precision(10);
 	cout << "Pourcentage d'erreurs : " << errorPercent << "%" << endl;
 	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
-	cout << "greenPixels | goalPixels : " << greenPixels << "|" << goalPixels << endl;
+	cout << "Pourcentage d'erreurs dues à la pression appliquée : " << forcePercent << "%" << endl;
 }
 
 void cGridLevel::DisplayTimer(float time) {
 
-	cout << "time:" << time << endl;
-
+	timer->setEnabled(true, true);
 	std::stringstream temp;
+	temp << (int)time;
 	string str = temp.str();
 	bool fileload = false;
-	string folder = RESOURCE_PATH("../Resources/Images/");
+	string folder = ROOT_DIR "Resources\\Images\\";
 	for (int i = 0; i < str.length(); i++) {
 		string stringnum = folder + str[str.length() - 1 - i] + ".png";
 		switch (i) {
 		case(0):
 			fileload = timer1->m_texture->loadFromFile(stringnum);
 			timer1->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(1):
 			fileload = timer2->m_texture->loadFromFile(stringnum);
 			timer2->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(2):
 			fileload = timer3->m_texture->loadFromFile(stringnum);
 			timer3->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		case(3):
 			fileload = timer4->m_texture->loadFromFile(stringnum);
 			timer4->m_texture->markForUpdate();
-			cout << stringnum << endl;
 			break;
 		}
 		if (!fileload)
@@ -910,34 +901,66 @@ void cGridLevel::ChangePattern() {
 void cGridLevel::Start() {
 	timerNum = 0;
 	start = true;
+	if (timer->getEnabled()) {
+		timer->setEnabled(false, true);
+	}
 	ResetCanvas(pattern);
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
+	rotateButton->setEnabled(false);
+	canvasOriginal->copyTo(canvas->m_texture->m_image);
 }
 
 void cGridLevel::SaveCanvas() {
+	std::stringstream temp;
 	GetResult();
-	canvas->m_texture->m_image->saveToFile(RESOURCE_PATH("../Resources/Images/myPicture.jpg"));
-	string path = RESOURCE_PATH("../Resources/CSV/trajectory-Arm_");
+	temp << ROOT_DIR "Resources/Images/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "CanvasPicture.jpg" << endl;
+	string path = temp.str();
+	canvas->m_texture->m_image->saveToFile(path);
+	temp.str("");
+	temp.clear();
+	if (start) {
+		startButton->setEnabled(true);
+		changeButton->setEnabled(true);
+		rotateButton->setEnabled(true);
+		start = false;
+		timerNum = 0;
+	}
 	DisplayTimer(timerNum);
 	for (int k = 0; k < m_numTools; k++) {
-		std::stringstream temp;
-		temp << path << k << ".csv";
-		std::ofstream myfile;
-		std::cout << "Saving trajectory into /Resources/CSV/trajectory-Arm_" << k << ".csv\n";
-		myfile.open(temp.str());
-		myfile << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << "\n";
-		std::map<float, cVector3d>::iterator it = posData[k].begin();
-		myfile << it->first << " , " << it->second << " , " << timerNum << " , " << errorPercent << " , " << correctPercent << "\n";
-		it++;
-		for (it; it != posData[k].end(); ++it)
-			myfile << it->first << ',' << it->second << '\n';
-		myfile.close();
+		tempfile[k].close();
+		std::ifstream readfile;
+		bool firstline = true;
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "MicroGrid-trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "MicroGrid-trajectory-Arm_" << k << ".csv\n";
+		myfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+		string line;
+		temp << pathname << k << ".csv";
+		readfile.open(temp.str());
+		temp.str("");
+		temp.clear();
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << " , " << "Pourcentage d'erreur de force" << " , " << "Pattern" << " , " << "Rotation du plan" << "\n";
+		while (getline(readfile, line)) {
+			if (firstline) {
+				string rotated;
+				switch (rotation) {
+				case(1):rotated = "Droite"; break;
+				case(2):rotated = "Gauche"; break;
+				default:rotated = "Face"; break;
+				}
+				myfile[k] << line << " , " << timerNum << " , " << errorPercent << " , " << " , " << correctPercent << " , " << forcePercent << " , " << pattern + 1 << " , " << rotated << "\n";
+				firstline = false;
+			}
+			else myfile[k] << line << "\n";
+		}
+		myfile[k].close();
 	}
 }
 
 void cGridLevel::RotateCanvas() {
-	double rot;
+	double rot = 0;
 	switch (rotation) {
 	case(0):
 		rotation++;

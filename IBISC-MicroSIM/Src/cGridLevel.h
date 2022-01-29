@@ -34,6 +34,7 @@ public:
     void ChangePattern();
     void Start();
     void SaveCanvas();
+    void RotateCanvas();
 
 
 public:
@@ -47,6 +48,9 @@ public:
     cMesh* saveButton;
     cMesh* startButton;
     cMesh* changeButton;
+    cMesh* rotateButton;
+
+    cVector3d canvasPos;
     // copy of blank canvas texture
     cImagePtr canvasOriginal;
 
@@ -93,7 +97,7 @@ public:
 
     std::string m_resourceRoot;
 
-
+    int rotation;
 };
 
 #endif

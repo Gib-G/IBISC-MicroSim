@@ -22,7 +22,7 @@ cGenericLevel::cGenericLevel(const string a_resourceRoot,
 
     lastFrame = glfwGetTime();
 
-    moveSpeed = 5;
+    moveSpeed = 1;
 
     // display is not mirrored
     m_mirroredDisplay = false;

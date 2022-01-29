@@ -21,8 +21,26 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	////////////////////////////////////////////////////////////////////////////
 	// CREATE GROUND
 	////////////////////////////////////////////////////////////////////////////
-	moveSpeed = 10;
 	double maxStiffness;
+
+	rotation = 0;
+
+	light = new cSpotLight(m_world);
+
+	// add light to world
+	m_world->addChild(light);
+
+	// enable light source
+	light->setEnabled(true);
+
+	// position the light source
+	light->setLocalPos(3.5, 2.0, 2.0);
+
+	// define the direction of the light beam
+	light->setDir(-3.5, -2.0, -2.0);
+
+	// set light cone half angle
+	light->setCutOffAngleDeg(50);
 
 	toolRadius = 0.01;
 	pattern = 0;
@@ -315,7 +333,6 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	if (!fileload)
 	{
 		cout << "Error - Texture image failed to load correctly." << endl;
-		close();
 	}
 
 	startButton->m_texture->setEnvironmentMode(GL_DECAL);
@@ -345,7 +362,6 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	if (!fileload)
 	{
 		cout << "Error - Texture image failed to load correctly." << endl;
-		close();
 	}
 
 	changeButton->m_texture->setEnvironmentMode(GL_DECAL);
@@ -359,12 +375,43 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// compute collision detection algorithm
 	changeButton->createAABBCollisionDetector(toolRadius);
 
+	rotateButton = new cMesh();
+	m_world->addChild(rotateButton);
+	cCreatePanel(rotateButton, .3, .3, .1, 8, cVector3d(0, 0, 0), rot);
+	rotateButton->translate(cVector3d(.17, -0.31, -0.45));
+	rotateButton->setMaterial(mat);
+	rotateButton->m_texture = cTexture2d::create();
+	fileload = rotateButton->m_texture->loadFromFile(RESOURCE_PATH("../Resources/Images/rotateButton.png"));
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = rotateButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/rotateButton.png");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+	}
+
+	rotateButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	rotateButton->setUseTexture(true);
+
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	rotateButton->setUseCulling(false, true);
+
+
+	// compute collision detection algorithm
+	rotateButton->createAABBCollisionDetector(toolRadius);
+
 	changeButton->translate(cVector3d(0.1, 0.3, -0.8));
 	startButton->translate(cVector3d(0.1, 0.3, -0.8));
+	rotateButton->translate(cVector3d(0.3, 0.3, -0.8));
 	saveButton->translate(cVector3d(0.1, 0.3, -0.8));
 	resetButton->translate(cVector3d(0.1, 0.3, -0.8));
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
-	canvas->translate(cVector3d(-0.2, 0.31, -0.8));
+	canvasPos = cVector3d(-0.2, .025, -1.05);
+	canvas->translate(canvasPos);
 	//--------------------------------------------------------------------------
 	// CREATE SHADERS
 	//--------------------------------------------------------------------------
@@ -433,11 +480,11 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// create a texture
 	cTexture2dPtr textureSpace = cTexture2d::create();
 
-	fileload = textureSpace->loadFromFile(RESOURCE_PATH("../resources/Images/sky.jpg"));
+	fileload = textureSpace->loadFromFile(RESOURCE_PATH("../resources/Images/grey.jpg"));
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
+		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/grey.jpg");
 #endif
 	}
 	if (!fileload)
@@ -673,6 +720,10 @@ void cGridLevel::updateHaptics() {
 			pressed[i] = true;
 
 		}
+		else if (m_tools[i]->isInContact(rotateButton) && button == true && !pressed[i]) {
+			RotateCanvas();
+			pressed[i] = true;
+		}
 		if (start) posData[i].insert(pair<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos()));
 	}
  
@@ -883,4 +934,25 @@ void cGridLevel::SaveCanvas() {
 			myfile << it->first << ',' << it->second << '\n';
 		myfile.close();
 	}
+}
+
+void cGridLevel::RotateCanvas() {
+	double rot;
+	switch (rotation) {
+	case(0):
+		rotation++;
+		rot = 90;
+		break;
+	case(1):
+		rotation++;
+		rot = 180;
+		break;
+	case(2):
+		rotation = 0;
+		rot = 90;
+		break;
+	}
+	canvas->setLocalPos(0, 0, 0);
+	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), rot);
+	canvas->translate(canvasPos);
 }

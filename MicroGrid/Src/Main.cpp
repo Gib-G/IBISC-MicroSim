@@ -1718,7 +1718,6 @@ void Start() {
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
 	rotateButton->setEnabled(false);
-	canvasOriginal->copyTo(canvas->m_texture->m_image);
 }
 bool PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;

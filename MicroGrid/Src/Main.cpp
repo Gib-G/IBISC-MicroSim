@@ -1572,17 +1572,10 @@ void ZoomCam() {
 	movementVector.zero();
 	if (Zoom_In==0) {
 		movementVector = camera->getUpVector();
-<<<<<<< HEAD
-	}
-	else if (Zoom_Out==0) {
-		movementVector = camera->getUpVector();
-		movementVector.negate();
-=======
 		movementVector.negate();
 	}
 	else if (Zoom_Out==0) {
 		movementVector = camera->getUpVector();
->>>>>>> 1e40c49d9b5473314bf01038adffb2c851e5cffa
 	}
 	movementVector.mul(deltaTime);
 	movementVector.mul(moveSpeed);

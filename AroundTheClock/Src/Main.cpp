@@ -662,7 +662,7 @@ int main(int argc, char* argv[])
 		oculusVR.recenterPose();
 	}
 	else {
-		camera->setLocalPos(cVector3d(2.7, 0, 0.6));
+		camera->setLocalPos(cVector3d(2.7, 0, -6.6));
 	}
 
 	// main graphic loop

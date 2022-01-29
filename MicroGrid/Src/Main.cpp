@@ -1592,6 +1592,7 @@ void SaveCanvas() {
 	canvas->m_texture->m_image->saveToFile(path);
 	temp.str("");
 	temp.clear();
+	DisplayTimer(timerNum);
 	if (start) {
 		startButton->setEnabled(true);
 		changeButton->setEnabled(true);
@@ -1599,7 +1600,6 @@ void SaveCanvas() {
 		start = false;
 		timerNum = 0;
 	}
-	DisplayTimer(timerNum);
 	for (int k = 0; k < numHapticDevices; k++) {
 		tempfile[k].close();
 		std::ifstream readfile;

@@ -28,7 +28,7 @@ float cubesize;
 int pattern = 0;
 int rotation = 0;
 int MAX_PATTERN = 1;
-
+float MAX_FORCE = .8;
 bool start = false;
 //Paint variables
 const double K_INK = 30;
@@ -1472,7 +1472,7 @@ void updateHaptics(void)
 									bool hit;
 									hit = PaintCanvas(px + x, py + y, pattern);
 									if (hit) {
-										if (force[i] < 1) newColor = paintColor;
+										if (force[i] < MAX_FORCE) newColor = paintColor;
 										else newColor = warningColor;
 									}
 									else {

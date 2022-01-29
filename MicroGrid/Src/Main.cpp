@@ -35,6 +35,7 @@ const double K_INK = 30;
 double K_SIZE = 10;
 int BRUSH_SIZE = 600;
 float timerNum = 0.0f;
+float lastSave = 0.0f;
 int currentSec = 0;
 string NumCandidate;
 tuple<float, cVector3d> posData[MAX_DEVICES];
@@ -1321,6 +1322,7 @@ bool CompareVectors(cVector3d v1, cVector3d v2) {
 }
 
 void SaveData() {
+	lastSave = timerNum;
 	for (int k = 0; k < numHapticDevices; k++) {
 		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
 	}
@@ -1523,7 +1525,7 @@ void updateHaptics(void)
 			}
 			if(start) posData[i] = tuple<float, cVector3d>(timerNum, tool[i]->getDeviceGlobalPos());
 		}
-		if(start) SaveData();
+		if(start && timerNum>=lastSave) SaveData();
 	}
 
 	// exit haptics thread

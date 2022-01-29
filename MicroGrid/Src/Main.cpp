@@ -1472,7 +1472,7 @@ void updateHaptics(void)
 									bool hit;
 									hit = PaintCanvas(px + x, py + y, pattern);
 									if (hit) {
-										if (force[i] < 7.5) newColor = paintColor;
+										if (force[i] < 1) newColor = paintColor;
 										else newColor = warningColor;
 									}
 									else {
@@ -1641,7 +1641,6 @@ void ResetSim(int pattern) {
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);
-		canvasTraining->copyTo(canvas->m_texture->m_image);
 	}
 	for (int k = 0; k < numHapticDevices; k++) {
 		std::stringstream temp;
@@ -1669,6 +1668,8 @@ void ResetCanvas(int pattern) {
 	for (int k = 0; k < numHapticDevices; k++) {
 		posData[k] = tuple<float, cVector3d>(0, tool[k]->getDeviceGlobalPos());
 	}
+	if(!start) canvasTraining->copyTo(canvas->m_texture->m_image);
+	else canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
 	goalPixels = 0;
 	cColorb yellow;

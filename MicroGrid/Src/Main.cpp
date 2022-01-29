@@ -37,6 +37,7 @@ int BRUSH_SIZE = 600;
 float timerNum = 0.0f;
 float lastSave = 0.0f;
 int currentSec = 0;
+bool resetHit = false;
 string NumCandidate;
 tuple<float, cVector3d> posData[MAX_DEVICES];
 std::ofstream UserInfo;
@@ -1457,6 +1458,10 @@ void updateHaptics(void)
 					canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
 					size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
 					force[i] = tool[i]->getDeviceGlobalForce().length();
+					if (resetHit) {
+						ResetCanvas(pattern);
+						resetHit = false;
+					}
 					for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 					{
 						for (int y = -BRUSH_SIZE; y < BRUSH_SIZE; y++)
@@ -1598,6 +1603,7 @@ void SaveCanvas() {
 		changeButton->setEnabled(true);
 		rotateButton->setEnabled(true);
 		start = false;
+		resetHit = true;
 		timerNum = 0;
 	}
 	for (int k = 0; k < numHapticDevices; k++) {

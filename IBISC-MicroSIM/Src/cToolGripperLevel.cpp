@@ -26,7 +26,7 @@ cToolGripperLevel::cToolGripperLevel(const std::string a_resourceRoot,
 		a_hapticDevice0->setEnableGripperUserSwitch(true);
 		// define a radius for the tool
 		m_tool0->setRadius(toolRadius);
-		m_tool0->setGripperWorkspaceScale(.25);
+		m_tool0->setGripperWorkspaceScale(.03);
 		m_tool0->setShowContactPoints(true, false);
 		// enable if objects in the scene are going to rotate of translate
 		// or possibly collide against the tool. If the environment
@@ -34,13 +34,14 @@ cToolGripperLevel::cToolGripperLevel(const std::string a_resourceRoot,
 		m_tool0->enableDynamicObjects(true);
 
 		// map the physical workspace of the haptic device to a larger virtual workspace.
-		m_tool0->setWorkspaceRadius(1.3);
+		m_tool0->setWorkspaceRadius(12);
 
 		// haptic forces are enabled only if small forces are first sent to the device;
 		// this mode avoids the force spike that occurs when the application starts when 
 		// the tool is located inside an object for instance. 
 		m_tool0->setWaitForSmallForce(true);
 		m_tool0->start();
+		m_tool0->translate(0, 12.5, 7);
 		m_tools[0] = m_tool0;
 	}
 
@@ -53,7 +54,7 @@ cToolGripperLevel::cToolGripperLevel(const std::string a_resourceRoot,
 		a_hapticDevice1->setEnableGripperUserSwitch(true);
 		// define a radius for the tool
 		m_tool1->setRadius(toolRadius);
-		m_tool1->setGripperWorkspaceScale(.25);
+		m_tool1->setGripperWorkspaceScale(.03);
 		m_tool1->setShowContactPoints(true, false);
 		// enable if objects in the scene are going to rotate of translate
 		// or possibly collide against the tool. If the environment
@@ -61,13 +62,14 @@ cToolGripperLevel::cToolGripperLevel(const std::string a_resourceRoot,
 		m_tool1->enableDynamicObjects(true);
 
 		// map the physical workspace of the haptic device to a larger virtual workspace.
-		m_tool1->setWorkspaceRadius(1.3);
+		m_tool1->setWorkspaceRadius(12);
 
 		// haptic forces are enabled only if small forces are first sent to the device;
 		// this mode avoids the force spike that occurs when the application starts when 
 		// the tool is located inside an object for instance. 
 		m_tool1->setWaitForSmallForce(true);
 		m_tool1->start();
+		m_tool1->translate(0, - 12.5, 7);
 		m_tools[1] = m_tool1;
 	}
 

@@ -420,6 +420,7 @@ int main(int argc, char* argv[])
 		hapticDevice[i]->setEnableGripperUserSwitch(true);
 		// define a radius for the tool
 		tool[i]->setRadius(toolRadius);
+		//tool[i]->setGripperWorkspaceScale(.06);
 		tool[i]->setGripperWorkspaceScale(.03);
 		tool[i]->setShowContactPoints(true, false);
 		// enable if objects in the scene are going to rotate of translate
@@ -428,6 +429,7 @@ int main(int argc, char* argv[])
 		tool[i]->enableDynamicObjects(true);
 
 		// map the physical workspace of the haptic device to a larger virtual workspace.
+		//tool[i]->setWorkspaceRadius(6);
 		tool[i]->setWorkspaceRadius(12);
 
 		// haptic forces are enabled only if small forces are first sent to the device;
@@ -437,8 +439,8 @@ int main(int argc, char* argv[])
 
 		// start the haptic tool
 		tool[i]->start();
+		//tool[i]->translate(0, (1 - 2 * i) * 0, -5);
 		tool[i]->translate(0, (1 - 2 * i) * 12.5, 7);
-		tool[i]->setFriction(100,100);
 
 	}
 
@@ -509,7 +511,7 @@ int main(int argc, char* argv[])
 	// create a cube mesh
 	double size = 0.40;
 	cCreateBox(object0, size * 2, size * 0.1, size * 0.1);
-	cCreateBox(objecttest, size * 2, size , size);
+	cCreateBox(objecttest, size * 2, size * 0.1, size * 0.1);
 	object0->createAABBCollisionDetector(toolRadius);
 	objecttest->createAABBCollisionDetector(toolRadius);
 
@@ -517,7 +519,7 @@ int main(int argc, char* argv[])
 	// define some material properties for each cube
 	cMaterial mat0, mat1, mat2;
 	mat0.setRedIndian();
-	mat0.setStiffness(0.3 * maxStiffness);
+	mat0.setStiffness( maxStiffness);
 	mat0.setDynamicFriction(3);
 	mat0.setStaticFriction(3);
 	object0->setMaterial(mat0);
@@ -541,7 +543,7 @@ int main(int argc, char* argv[])
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
 	ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
-	ODEBodytest->createDynamicBox(size * 2, size, size );
+	ODEBodytest->createDynamicBox(size * 2, size * 0.1, size * 0.1);
 
 	// define some mass properties for each cube
 	ODEBody0->setMass(0.01);
@@ -552,23 +554,14 @@ int main(int argc, char* argv[])
 	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
 
 	for (int i = 0; i < numHapticDevices; i++) {
-		ODEBody2[i] = new cODEGenericBody(ODEWorld);
 		object2[i] = new cMesh();
-		cCreateBox(object2[i], size, 0.03, 0.03);
+		cCreateBox(object2[i], size, 0.01, 0.01);
 		object2[i]->setMaterial(mat2);
-		ODEBody2[i]->setImageModel(object2[i]);
-		ODEBody2[i]->createDynamicBox(size, size, size);
-		ODEBody2[i]->disableDynamics();
-		ODEBody2[i]->setMass(0);
-
-		ODEBody3[i] = new cODEGenericBody(ODEWorld);
+		tool[i]->addChild(object2[i]);
 		object3[i] = new cMesh();
-		cCreateBox(object3[i], size, 0.03, 0.03);
+		cCreateBox(object3[i], size, 0.01, 0.01);
 		object3[i]->setMaterial(mat2);
-		ODEBody3[i]->setImageModel(object3[i]);
-		ODEBody3[i]->createDynamicBox(size, size, size);
-		ODEBody3[i]->disableDynamics();
-		ODEBody2[i]->setMass(0);
+		tool[i]->addChild(object3[i]);
 
 	}
 
@@ -628,10 +621,10 @@ int main(int argc, char* argv[])
 
 	// define some material properties and apply to mesh
 	cMaterial matGround;
-	matGround.setStiffness(0.1 * maxStiffness);
+	matGround.setStiffness(maxStiffness);
 	matGround.setDynamicFriction(0.2);
 	matGround.setStaticFriction(0.0);
-	matGround.setWhite();
+	matGround.setGray();
 	matGround.m_emission.setGrayLevel(0.3);
 	ground->setMaterial(matGround);
 
@@ -875,7 +868,7 @@ void updateGraphics(void)
 
 	// update shadow maps (if any)
 	world->updateShadowMaps(false, mirroredDisplay);
-
+	cout << tool[0]->getDeviceGlobalPos()<<endl;
 	if (!camSim) {
 		// start rendering
 		oculusVR.onRenderStart();
@@ -954,12 +947,11 @@ void updateHaptics(void)
 		bool caught[MAX_DEVICES];
 		int vientdegrip = -1;
 		for (int i = 0; i < numHapticDevices; i++) {
-			ODEBody2[i]->setLocalPos(tool[i]->m_hapticPointFinger->getLocalPosProxy() + ODEBody2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
-			ODEBody2[i]->setLocalRot(tool[i]->getDeviceLocalRot());
-			ODEBody3[i]->setLocalPos(tool[i]->m_hapticPointThumb->getLocalPosProxy() + ODEBody3[i]->getLocalRot() * cVector3d(0.2, 0, 0));
-			ODEBody3[i]->setLocalRot(tool[i]->getDeviceLocalRot());
 
-
+			object2[i]->setLocalRot(tool[i]->getDeviceLocalRot());
+			object2[i]->setLocalPos(tool[i]->m_hapticPointFinger->getLocalPosProxy() + object2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
+			object3[i]->setLocalRot(tool[i]->getDeviceLocalRot());
+			object3[i]->setLocalPos(tool[i]->m_hapticPointThumb->getLocalPosProxy() + object3[i]->getLocalRot() * cVector3d(0.2, 0, 0));
 			/////////////////////////////////////////////////////////////////////
 			// HAPTIC FORCE COMPUTATION
 			/////////////////////////////////////////////////////////////////////
@@ -1056,6 +1048,11 @@ void updateHaptics(void)
 						else {
 							ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
 						}
+
+						startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
+						startrotCube.copyfrom(ODEBody0->getLocalRot());
+						startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());
+						startposCube.copyfrom(ODEBody0->getLocalPos());
 					}
 
 				}

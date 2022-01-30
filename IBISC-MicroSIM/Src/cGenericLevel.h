@@ -54,6 +54,8 @@ public:
 
     virtual void close() {};
 
+    virtual void ZoomCamera();
+
 
     //-----------------------------------------------------------------------
     // PUBLIC MEMBERS:
@@ -107,6 +109,9 @@ public:
     double lastFrame;
 
     cVector3d defaultPos;
+
+    int Zoom_In = 1;
+    int Zoom_Out = 1;
 
 };
 

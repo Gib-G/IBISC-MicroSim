@@ -9,10 +9,13 @@ using namespace std;
 cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	const int a_numDevices,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
-	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1) : cToolGripperLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
+	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
+	string NC) : cToolGripperLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
 
 	double maxStiffness;
 	int w;
+	std::stringstream streamstr;
+	NumCandidate = NC;
 	defaultPos = cVector3d(2.7, 0, -6.6);
 
 	if (a_numDevices > 0) {
@@ -139,7 +142,12 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		cCreateBox(object3[i], size, 0.01, 0.01);
 		object3[i]->setMaterial(mat2);
 		m_tools[i]->addChild(object3[i]);
-
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
+		pathname = streamstr.str();
+		streamstr << i << ".csv";
+		tempfile[i].open(streamstr.str());
+		streamstr.str("");
+		streamstr.clear();
 	}
 
 	for (int i = 0; i < 12; i++) {
@@ -273,7 +281,7 @@ void cAroundTheClockLevel::updateGraphics() {
 	currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-
+	if(start) timerNum += deltaTime;
 	moveCamera();
 
 
@@ -438,7 +446,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 				}
 
 			}
-
+			if(start && timerNum > lastSave)SaveData();
 		}
 		// update simulation
 		ODEWorld->updateDynamics(timeInterval);
@@ -658,5 +666,50 @@ void cAroundTheClockLevel::ComputeCrossing(cMesh* spheres[], int i) {
 		if (DetectionPlanes[i]->computeCollisionDetection(pos2, pos3, recorder, settings)) {
 			end2[i] = true;
 		}
+	}
+}
+void cAroundTheClockLevel::SaveData() {
+	lastSave = timerNum;
+	for (int k = 0; k < m_numTools; k++) {
+		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
+	}
+}
+void cAroundTheClockLevel::SaveResults() {
+	std::stringstream temp;
+	//DisplayTimer(timerNum);
+	start = false;
+	for (int k = 0; k < m_numTools; k++) {
+		tempfile[k].close();
+		std::ifstream readfile;
+		bool firstline = true;
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "Aroundtheclock-trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "Aroundtheclock-trajectory-Arm_" << k << ".csv\n";
+		myfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+		string line;
+		temp << pathname << k << ".csv";
+		readfile.open(temp.str());
+		temp.str("");
+		temp.clear();
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" <<"\n";
+		while (getline(readfile, line)) {
+			if (firstline) {
+				myfile[k] << line << " , " << timerNum <<"\n";
+				firstline = false;
+			}
+			else myfile[k] << line << "\n";
+		}
+		myfile[k].close();
+	}
+}
+void cAroundTheClockLevel::ResetSim() {
+	for (int k = 0; k < m_numTools; k++) {
+		std::stringstream temp;
+		tempfile[k].close();
+		temp << pathname << k << ".csv";
+		tempfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
 	}
 }

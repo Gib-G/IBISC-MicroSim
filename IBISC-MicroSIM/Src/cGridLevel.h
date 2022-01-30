@@ -52,6 +52,7 @@ public:
     cMesh* startButton;
     cMesh* changeButton;
     cMesh* rotateButton;
+    cMesh* stylus[MAX_DEVICES];
 
     cVector3d canvasPos;
     // copy of blank canvas texture

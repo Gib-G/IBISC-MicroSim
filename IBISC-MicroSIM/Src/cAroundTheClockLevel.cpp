@@ -446,8 +446,8 @@ void cAroundTheClockLevel::updateHaptics(void)
 				}
 
 			}
-			if(start && timerNum > lastSave)SaveData();
 		}
+		if (start && timerNum > lastSave)SaveData();
 		// update simulation
 		ODEWorld->updateDynamics(timeInterval);
 	

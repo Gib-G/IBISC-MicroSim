@@ -113,6 +113,9 @@ float sphereSize = 0.01;
 // GENERAL VARIABLES
 //---------------------------------------------------------------------------
 
+double currentFrame;
+double lastFrame;
+double deltaTime;
 // flag to indicate if the haptic simulation currently running
 bool simulationRunning = false;
 
@@ -142,8 +145,21 @@ int swapInterval = 1;
 
 double crossTimer = 0;
 
+cMesh* resetButton;
 //delta time variables
 double timeInterval;
+bool start = false;
+float lastSave;
+float timerNum = 0.0;
+bool startgrab = false;
+bool pressed[MAX_DEVICES];
+//Sauvegarde
+std::stringstream streamstr;
+std::tuple<float, cVector3d> posData[MAX_DEVICES];
+std::string NumCandidate;
+std::ofstream myfile[MAX_DEVICES];
+std::ofstream tempfile[MAX_DEVICES];
+std::string pathname;
 //------------------------------------------------------------------------------
 // OCULUS RIFT
 //------------------------------------------------------------------------------
@@ -180,7 +196,10 @@ void AddDetectionPlane(int i, cODEGenericBody* ring);
 void ComputeCrossing(cMesh* spheres[], int i);
 // this function closes the application
 void close(void);
-
+void ResetSim(void);
+void SaveData(void);
+void Start(void);
+void SaveResults(void);
 cVector3d toAxisAngleVec(cMatrix3d m);
 double toAxisAngleAngle(cMatrix3d m);
 
@@ -443,7 +462,12 @@ int main(int argc, char* argv[])
 		tool[i]->start();
 		tool[i]->translate(0, (1 - 2 * i) * 0, -5);
 		//tool[i]->translate(0, (1 - 2 * i) * 12.5, 7);
-
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
+		pathname = streamstr.str();
+		streamstr << i << ".csv";
+		tempfile[i].open(streamstr.str());
+		streamstr.str("");
+		streamstr.clear();
 	}
 
 
@@ -471,7 +495,6 @@ int main(int argc, char* argv[])
 	labelRates = new cLabel(font);
 	labelRates->m_fontColor.setBlack();
 	camera->m_frontLayer->addChild(labelRates);
-
 
 	//-----------------------------------------------------------------------
 	// CREATE ODE WORLD AND OBJECTS
@@ -564,7 +587,7 @@ int main(int argc, char* argv[])
 		cCreateBox(object3[i], size, 0.01, 0.01);
 		object3[i]->setMaterial(mat2);
 		tool[i]->addChild(object3[i]);
-
+		pressed[i] = false;
 	}
 
 	for (int i = 0; i < 12; i++) {
@@ -585,7 +608,45 @@ int main(int argc, char* argv[])
 		end2[i] = false;
 
 	}
+	resetButton = new cMesh();
+	world->addChild(resetButton);
+	cMaterial mat;
+	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), cMatrix3d(0,1,0,90));
+	resetButton->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 90);
+	resetButton->translate(cVector3d(-1.5, 0, -6.5));
+	mat.setHapticTriangleSides(true, true);
+	mat.setDynamicFriction(0.2);
+	mat.setStaticFriction(0.2);
+	mat.setStiffness(0.3 * maxStiffness);
+	mat.setTextureLevel(1);
+	mat.setHapticTriangleSides(true, false);
+	resetButton->setMaterial(mat);
+	resetButton->m_texture = cTexture2d::create();
+	bool fileload;
+	fileload = resetButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/resetButton.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = resetButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/resetButton.png");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+		return (-1);
+	}
+	resetButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	resetButton->setUseTexture(true);
 
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	resetButton->setUseCulling(false, true);
+
+
+	// compute collision detection algorithm
+	resetButton->createAABBCollisionDetector(toolRadius);
+	resetButton->setEnabled(false);
 	//////////////////////////////////////////////////////////////////////////
 	// 6 ODE INVISIBLE WALLS
 	//////////////////////////////////////////////////////////////////////////
@@ -864,6 +925,12 @@ void updateGraphics(void)
 	labelRates->setLocalPos((int)(0.5 * (width - labelRates->getWidth())), 15);
 
 
+	currentFrame = glfwGetTime();
+	deltaTime = currentFrame - lastFrame;
+	lastFrame = currentFrame;
+	if (start) {
+		timerNum += deltaTime;
+	}
 	/////////////////////////////////////////////////////////////////////
 	// RENDER SCENE
 	/////////////////////////////////////////////////////////////////////
@@ -948,7 +1015,7 @@ void updateHaptics(void)
 		bool caught[MAX_DEVICES];
 		int vientdegrip = -1;
 		for (int i = 0; i < numHapticDevices; i++) {
-
+			// get status of user switch
 			object2[i]->setLocalRot(tool[i]->getDeviceLocalRot());
 			object2[i]->setLocalPos(tool[i]->m_hapticPointFinger->getLocalPosProxy() + object2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
 			object3[i]->setLocalRot(tool[i]->getDeviceLocalRot());
@@ -984,6 +1051,14 @@ void updateHaptics(void)
 			if (!caught[i]) {
 				previousframecaught[i] = false;
 			}
+			if (start) {
+				bool button = tool[i]->getUserSwitch(0);
+				if (tool[i]->isInContact(resetButton) && button == true && !pressed[i]) {
+					ResetSim();
+					pressed[i] = true;
+				}
+			}
+			else pressed[i] = false;
 
 		}
 		if (vientdegrip != -1) {
@@ -1107,8 +1182,8 @@ void updateHaptics(void)
 				}
 
 			}
-
 		}
+		if (start && timerNum > lastSave)SaveData();
 		// update simulation
 		ODEWorld->updateDynamics(timeInterval);
 	}
@@ -1288,5 +1363,54 @@ void InitializeNeedleDetect() {
 		cCreateSphere(DetectSphere[i], sphereSize);
 		ODEBody0->addChild(DetectSphere[i]);
 		DetectSphere[i]->translate(size * (-1 + (double)i / (double)2), 0, 0);
+	}
+}
+void ResetSim() {
+	for (int k = 0; k < numHapticDevices; k++) {
+		std::stringstream temp;
+		tempfile[k].close();
+		temp << pathname << k << ".csv";
+		tempfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+	}
+}
+void Start() {
+	resetButton->setEnabled(true);
+	start = true;
+}
+void SaveData() {
+	lastSave = timerNum;
+	for (int k = 0; k < numHapticDevices; k++) {
+		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
+	}
+}
+void SaveResults() {
+	std::stringstream temp;
+	//DisplayTimer(timerNum);
+	start = false;
+	for (int k = 0; k < numHapticDevices; k++) {
+		tempfile[k].close();
+		std::ifstream readfile;
+		bool firstline = true;
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "Aroundtheclock-trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "Aroundtheclock-trajectory-Arm_" << k << ".csv\n";
+		myfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+		string line;
+		temp << pathname << k << ".csv";
+		readfile.open(temp.str());
+		temp.str("");
+		temp.clear();
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << "\n";
+		while (getline(readfile, line)) {
+			if (firstline) {
+				myfile[k] << line << " , " << timerNum << "\n";
+				firstline = false;
+			}
+			else myfile[k] << line << "\n";
+		}
+		myfile[k].close();
 	}
 }

@@ -79,6 +79,7 @@ cODEWorld* ODEWorld;
 
 // ODE objects
 cODEGenericBody* ODEBody0;
+cODEGenericBody* ODENeedleRotationCenter;
 cODEGenericBody* ODEBodytest;
 cODEGenericBody* ODEBody1[12];
 cODEGenericBody* ODEBody2[MAX_DEVICES];
@@ -87,7 +88,8 @@ cMesh* object0;
 cMesh* objecttest;
 cMesh* object1[12];
 cMesh* object2[MAX_DEVICES];
-cMesh* object3[MAX_DEVICES];;
+cMesh* object3[MAX_DEVICES];
+cMesh* ground;
 // ODE objects
 cODEGenericBody* ODEGPlane0;
 cODEGenericBody* ODEGPlane1;
@@ -400,7 +402,7 @@ int main(int argc, char* argv[])
 	cHapticDeviceInfo hapticDeviceInfo;
 	double workspaceScaleFactor = 1;
 	numHapticDevices = handler->getNumDevices();
-	double toolRadius = 0.015;
+	double toolRadius = 0.01;
 	for (int i = 0; i < numHapticDevices; i++) {
 		previousframecaught[i] = false;
 
@@ -420,8 +422,8 @@ int main(int argc, char* argv[])
 		hapticDevice[i]->setEnableGripperUserSwitch(true);
 		// define a radius for the tool
 		tool[i]->setRadius(toolRadius);
-		//tool[i]->setGripperWorkspaceScale(.06);
-		tool[i]->setGripperWorkspaceScale(.03);
+		tool[i]->setGripperWorkspaceScale(.06);
+		//tool[i]->setGripperWorkspaceScale(.03);
 		tool[i]->setShowContactPoints(true, false);
 		// enable if objects in the scene are going to rotate of translate
 		// or possibly collide against the tool. If the environment
@@ -429,8 +431,8 @@ int main(int argc, char* argv[])
 		tool[i]->enableDynamicObjects(true);
 
 		// map the physical workspace of the haptic device to a larger virtual workspace.
-		//tool[i]->setWorkspaceRadius(6);
-		tool[i]->setWorkspaceRadius(12);
+		tool[i]->setWorkspaceRadius(6);
+		//tool[i]->setWorkspaceRadius(12);
 
 		// haptic forces are enabled only if small forces are first sent to the device;
 		// this mode avoids the force spike that occurs when the application starts when 
@@ -439,8 +441,8 @@ int main(int argc, char* argv[])
 
 		// start the haptic tool
 		tool[i]->start();
-		//tool[i]->translate(0, (1 - 2 * i) * 0, -5);
-		tool[i]->translate(0, (1 - 2 * i) * 12.5, 7);
+		tool[i]->translate(0, (1 - 2 * i) * 0, -5);
+		//tool[i]->translate(0, (1 - 2 * i) * 12.5, 7);
 
 	}
 
@@ -519,7 +521,7 @@ int main(int argc, char* argv[])
 	// define some material properties for each cube
 	cMaterial mat0, mat1, mat2;
 	mat0.setRedIndian();
-	mat0.setStiffness( maxStiffness);
+	mat0.setStiffness(maxStiffness);
 	mat0.setDynamicFriction(3);
 	mat0.setStaticFriction(3);
 	object0->setMaterial(mat0);
@@ -609,7 +611,7 @@ int main(int argc, char* argv[])
 	 //////////////////////////////////////////////////////////////////////////
 
 	 // create a mesh that represents the ground
-	cMesh* ground = new cMesh();
+	ground = new cMesh();
 	ODEWorld->addChild(ground);
 
 	// create a plane
@@ -868,7 +870,6 @@ void updateGraphics(void)
 
 	// update shadow maps (if any)
 	world->updateShadowMaps(false, mirroredDisplay);
-	cout << tool[0]->getDeviceGlobalPos()<<endl;
 	if (!camSim) {
 		// start rendering
 		oculusVR.onRenderStart();
@@ -960,7 +961,7 @@ void updateHaptics(void)
 
 			// update position and orientation of tool[i]
 			tool[i]->updateFromDevice();
-
+			tool[i]->setDeviceLocalPos(cClamp(tool[i]->getDeviceLocalPos().x(), -1.5, 1.5), cClamp(tool[i]->getDeviceLocalPos().y(), -1.5, 1.5), cClamp(tool[i]->getDeviceLocalPos().z(), -3.0, -1.5));
 			// compute interaction forces
 			tool[i]->computeInteractionForces();
 
@@ -1004,7 +1005,73 @@ void updateHaptics(void)
 			/////////////////////////////////////////////////////////////////////
 			// DYNAMIC SIMULATION
 			/////////////////////////////////////////////////////////////////////
+			if (gripperCatchingIndex == i) {
+				if (vientdegrip == i) {
+					startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
+					startrotCube.copyfrom(ODEBody0->getLocalRot());
+					startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());
+					startposCube.copyfrom(ODEBody0->getLocalPos());
+					previousframecaught[i] = true;
+					ODEWorld->setGravity(cVector3d(0, 0, 0));
+				}
+				else {
+					cMatrix3d ObjT0Invert;
+					cMatrix3d ArmT;
+					cMatrix3d ArmT0Invert;
+					cMatrix3d ObjT0;
+					ObjT0Invert.copyfrom(startrotCube);
+					ObjT0Invert.invert();
+					ArmT.copyfrom(tool[i]->getDeviceLocalRot());
+					ArmT0Invert.copyfrom(startrotGripper[i]);
+					ArmT0Invert.invert();
+					ObjT0.copyfrom(startrotCube);
 
+					cVector3d rotvec = toAxisAngleVec(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+					double rotangle = toAxisAngleAngle(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+					if (isnan(rotangle) || rotangle > 0.174533) {
+						rotangle = 0;
+					}
+					cMatrix3d temp = ODEBody0->getLocalRot();
+					bool test = false;
+					if (test) {
+						ODEBody0->setLocalRot(startrotCube);
+						ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
+					}
+					else {
+						ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+					}
+
+					bool iltouche = false;
+					for (int z = -1; z <= 1; z += 2) {
+						for (int y = -1; y <= 1; y += 2) {
+							double size = 0.4;
+							ODEBody0->setLocalPos(ODEBody0->getLocalPos() + cVector3d(0, y , z ));
+							if (ground->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
+								iltouche = true;
+								cout << "il touche ODEGPlane1";
+							}
+							for (int j = 0; j < 12; j++) {
+								if (object1[j]->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
+									iltouche = true;
+									cout << "il touche ODEGBody["<<j<<"],y="<<y<<",z="<<z<<" ";
+									object1[j]->m_material->setYellow();
+								}
+							}
+
+							ODEBody0->setLocalPos(ODEBody0->getLocalPos() - cVector3d(0, y , z ));
+						}
+					}
+					if (iltouche) {
+						ODEBody0->setLocalRot(temp);
+					}
+
+					startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
+					startrotCube.copyfrom(ODEBody0->getLocalRot());
+					startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());
+					startposCube.copyfrom(ODEBody0->getLocalPos());
+				}
+
+			}
 			// for each interaction point of the tool[i] we look for any contact events
 			// with the environment and apply forces accordingly
 			int numInteractionPoints = tool[i]->getNumHapticPoints();
@@ -1014,48 +1081,7 @@ void updateHaptics(void)
 				cHapticPoint* interactionPoint = tool[i]->getHapticPoint(j);
 
 
-				if (gripperCatchingIndex == i) {
-					if (vientdegrip == i) {
-						startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
-						startrotCube.copyfrom(ODEBody0->getLocalRot());
-						startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());
-						startposCube.copyfrom(ODEBody0->getLocalPos());
-						previousframecaught[i] = true;
-						ODEWorld->setGravity(cVector3d(0, 0, 0));
-					}
-					else {
-						cMatrix3d ObjT0Invert;
-						cMatrix3d ArmT;
-						cMatrix3d ArmT0Invert;
-						cMatrix3d ObjT0;
-						ObjT0Invert.copyfrom(startrotCube);
-						ObjT0Invert.invert();
-						ArmT.copyfrom(tool[i]->getDeviceLocalRot());
-						ArmT0Invert.copyfrom(startrotGripper[i]);
-						ArmT0Invert.invert();
-						ObjT0.copyfrom(startrotCube);
 
-						cVector3d rotvec = toAxisAngleVec(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
-						double rotangle = toAxisAngleAngle(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
-						if (isnan(rotangle)) {
-							rotangle = 0;
-						}
-						bool test = false;
-						if (test) {
-							ODEBody0->setLocalRot(startrotCube);
-							ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
-						}
-						else {
-							ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
-						}
-
-						startrotGripper[i].copyfrom(tool[i]->getDeviceGlobalRot());
-						startrotCube.copyfrom(ODEBody0->getLocalRot());
-						startposGripper[i].copyfrom(tool[i]->getDeviceLocalPos());
-						startposCube.copyfrom(ODEBody0->getLocalPos());
-					}
-
-				}
 				// check all contact points
 				int numContacts = interactionPoint->getNumCollisionEvents();
 				for (int k = 0; k < numContacts; k++)

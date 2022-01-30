@@ -54,6 +54,7 @@ public:
     cMesh* object1[12];
     cMesh* object2[MAX_DEVICES];
     cMesh* object3[MAX_DEVICES];;
+    cMesh* ground;
     // ODE objects
     cODEGenericBody* ODEGPlane0;
     cODEGenericBody* ODEGPlane1;

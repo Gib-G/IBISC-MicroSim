@@ -131,23 +131,14 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	for (int i = 0; i < m_numTools; i++) {
 
-		ODEBody2[i] = new cODEGenericBody(ODEWorld);
 		object2[i] = new cMesh();
-		cCreateBox(object2[i], size, 0.03, 0.03);
+		cCreateBox(object2[i], size, 0.01, 0.01);
 		object2[i]->setMaterial(mat2);
-		ODEBody2[i]->setImageModel(object2[i]);
-		ODEBody2[i]->createDynamicBox(size, size, size);
-		ODEBody2[i]->disableDynamics();
-		ODEBody2[i]->setMass(0.1);
-
-		ODEBody3[i] = new cODEGenericBody(ODEWorld);
+		m_tools[i]->addChild(object2[i]);
 		object3[i] = new cMesh();
-		cCreateBox(object3[i], size, 0.03, 0.03);
+		cCreateBox(object3[i], size, 0.01, 0.01);
 		object3[i]->setMaterial(mat2);
-		ODEBody3[i]->setImageModel(object3[i]);
-		ODEBody3[i]->createDynamicBox(size, size, size);
-		ODEBody3[i]->disableDynamics();
-		ODEBody2[i]->setMass(0.1);
+		m_tools[i]->addChild(object3[i]);
 
 	}
 
@@ -191,31 +182,31 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 
 	 //////////////////////////////////////////////////////////////////////////
-	 // GROUND
-	 //////////////////////////////////////////////////////////////////////////
+     // GROUND
+     //////////////////////////////////////////////////////////////////////////
 
-	 // create a mesh that represents the ground
-	cMesh* ground = new cMesh();
-	ODEWorld->addChild(ground);
+     // create a mesh that represents the ground
+    ground = new cMesh();
+    ODEWorld->addChild(ground);
 
-	// create a plane
-	double groundSize = 3.0;
-	cCreatePlane(ground, groundSize, groundSize);
+    // create a plane
+    double groundSize = 3.0;
+    cCreatePlane(ground, groundSize, groundSize);
 
-	// position ground in world where the invisible ODE plane is located (ODEGPlane1)
-	ground->setLocalPos(0.0, 0.0, -7.5);
+    // position ground in world where the invisible ODE plane is located (ODEGPlane1)
+    ground->setLocalPos(0.0, 0.0, -7.5);
 
-	// define some material properties and apply to mesh
-	cMaterial matGround;
-	matGround.setStiffness(0.1 * maxStiffness);
-	matGround.setDynamicFriction(0.2);
-	matGround.setStaticFriction(0.0);
-	matGround.setWhite();
-	matGround.m_emission.setGrayLevel(0.3);
-	ground->setMaterial(matGround);
+    // define some material properties and apply to mesh
+    cMaterial matGround;
+    matGround.setStiffness(maxStiffness);
+    matGround.setDynamicFriction(0.2);
+    matGround.setStaticFriction(0.0);
+    matGround.setGray();
+    matGround.m_emission.setGrayLevel(0.3);
+    ground->setMaterial(matGround);
 
-	// setup collision detector
-	ground->createAABBCollisionDetector(toolRadius);
+    // setup collision detector
+    ground->createAABBCollisionDetector(toolRadius);
 
 }
 
@@ -298,6 +289,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 		simClock.stop();
 		// read the time increment in seconds
 		timeInterval = cClamp(simClock.getCurrentTimeSeconds(), 0.0001, 0.001);
+
 		for (int i = 0; i < 12; i++) {
 			ComputeCrossing(DetectSphere, i);
 		}

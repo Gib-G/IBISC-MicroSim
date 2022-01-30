@@ -339,7 +339,7 @@ int main(int argc, char** argv)
     m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
     //m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
     m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    levelHandler->setLevel(m_grid);
+    levelHandler->setLevel(m_around);
 
     //--------------------------------------------------------------------------
     // START SIMULATION
@@ -445,7 +445,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
         oculusVR.recenterPose();
 
     }
-    else if (a_key == GLFW_KEY_F)
+    else if (a_key == GLFW_KEY_F && a_action == GLFW_PRESS)
     {
         // toggle state variable
         fullscreen = !fullscreen;

@@ -12,7 +12,8 @@ public:
     cAroundTheClockLevel(const std::string a_resourceRoot,
         const int a_numDevices,
         std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
-        std::shared_ptr<cGenericHapticDevice> a_hapticDevice1);
+        std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
+        std::string NC);
 
     virtual ~cAroundTheClockLevel() {};
 

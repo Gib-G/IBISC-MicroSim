@@ -338,7 +338,7 @@ int main(int argc, char** argv)
     levelHandler = new cLevelHandler(&oculusVR);
     m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
     //m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
-    m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
+    m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
     levelHandler->setLevel(m_grid);
 
     //--------------------------------------------------------------------------

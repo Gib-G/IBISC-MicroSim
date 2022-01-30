@@ -9,11 +9,13 @@ using namespace std;
 cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	const int a_numDevices,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
-	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1) : cToolGripperLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
+	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
+	string NC) : cToolGripperLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
 
 	double maxStiffness;
 	int w;
 	std::stringstream streamstr;
+	NumCandidate = NC;
 	defaultPos = cVector3d(2.7, 0, -6.6);
 
 	if (a_numDevices > 0) {

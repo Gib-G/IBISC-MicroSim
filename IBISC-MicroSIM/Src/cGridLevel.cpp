@@ -238,6 +238,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	timer4->m_texture->setEnvironmentMode(GL_DECAL);
 	// enable texture rendering 
 	timer4->setUseTexture(true);
+	timer->setEnabled(false, true);
 	//----------------------------------------------------------------------
 	//----------------------------------------------------------------------
 
@@ -247,7 +248,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	resetButton->translate(cVector3d(-.7, 0.5, -0.45));
+	resetButton->translate(cVector3d(-.6, 0.8, -1.25));
 	/*
 	cFontPtr font = NEW_CFONTCALIBRI20();
 	cLabel* label = new cLabel(font);
@@ -290,7 +291,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(saveButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	saveButton->translate(cVector3d(-.7, -1.05, -0.45));
+	saveButton->translate(cVector3d(-.6, -0.75, -1.25));
 	saveButton->setMaterial(mat);
 	// set graphic properties
 	saveButton->m_texture = cTexture2d::create();
@@ -320,7 +321,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	startButton = new cMesh();
 	m_world->addChild(startButton);
 	cCreatePanel(startButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	startButton->translate(cVector3d(-.15, -1.05, -0.45));
+	startButton->translate(cVector3d(-.05, -0.75, -1.25));
 	startButton->setMaterial(mat);
 	startButton->m_texture = cTexture2d::create();
 	fileload = startButton->m_texture->loadFromFile(RESOURCE_PATH("../Resources/Images/startButton.png"));
@@ -349,7 +350,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	changeButton = new cMesh();
 	m_world->addChild(changeButton);
 	cCreatePanel(changeButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
-	changeButton->translate(cVector3d(-.15, 0.5, -0.45));
+	changeButton->translate(cVector3d(-.05, 0.8, -1.25));
 	changeButton->setMaterial(mat);
 	changeButton->m_texture = cTexture2d::create();
 	fileload = changeButton->m_texture->loadFromFile(RESOURCE_PATH("../Resources/Images/1.png"));
@@ -378,7 +379,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	rotateButton = new cMesh();
 	m_world->addChild(rotateButton);
 	cCreatePanel(rotateButton, .3, .3, .1, 8, cVector3d(0, 0, 0), rot);
-	rotateButton->translate(cVector3d(.17, -0.31, -0.45));
+	rotateButton->translate(cVector3d(.47, -0.01, -1.25));
 	rotateButton->setMaterial(mat);
 	rotateButton->m_texture = cTexture2d::create();
 	fileload = rotateButton->m_texture->loadFromFile(RESOURCE_PATH("../Resources/Images/rotateButton.png"));
@@ -404,11 +405,6 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// compute collision detection algorithm
 	rotateButton->createAABBCollisionDetector(toolRadius);
 
-	changeButton->translate(cVector3d(0.1, 0.3, -0.8));
-	startButton->translate(cVector3d(0.1, 0.3, -0.8));
-	rotateButton->translate(cVector3d(0.3, 0.3, -0.8));
-	saveButton->translate(cVector3d(0.1, 0.3, -0.8));
-	resetButton->translate(cVector3d(0.1, 0.3, -0.8));
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	canvasPos = cVector3d(-0.2, .025, -1.05);
 	canvas->translate(canvasPos);

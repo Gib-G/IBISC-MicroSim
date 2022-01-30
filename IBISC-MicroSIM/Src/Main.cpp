@@ -401,7 +401,7 @@ int main(int argc, char** argv)
                 levelHandler->mainLevel->m_camera->m_useCustomModelViewMatrix = true;
                 levelHandler->mainLevel->m_camera->m_modelViewMatrix = modelViewMatrix;
 
-                if (arduino) levelHandler->mainLevel->ZoomCamera();
+                if (arduino)levelHandler->mainLevel->ZoomCamera();
                 // render world
                 ovrSizei size = oculusVR.getEyeTextureSize(eyeIndex);
                 levelHandler->mainLevel->m_camera->renderView(size.w, size.h, C_STEREO_LEFT_EYE, false);
@@ -416,6 +416,7 @@ int main(int argc, char** argv)
         }
         else {
             //cout << width << " " << height << endl;
+            if (arduino)levelHandler->mainLevel->ZoomCamera();
             levelHandler->mainLevel->m_camera->renderView(width, height);
             levelHandler->mainLevel->updateGraphics();
         }

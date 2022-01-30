@@ -12,7 +12,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
 	std::string NC) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
-	
+
 	m_resourceRoot = a_resourceRoot;
 
 	NumCandidate = NC;
@@ -521,6 +521,14 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	}
 
 	timerNum = 0;
+	for (int i = 0; i < m_numTools; i++) {
+		stylus[i] = new cMesh();
+		cCreateBox(stylus[i], 0.2, 0.01, 0.01);
+		m_tools[i]->addChild(stylus[i]);
+		stylus[i]->m_material->setGray();
+
+
+	}
 
 }
 
@@ -618,6 +626,9 @@ void cGridLevel::updateHaptics() {
 	frequencyCounter.signal(1);
 	for (int i = 0; i < m_numTools; i++)
 	{
+
+		stylus[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
+		stylus[i]->setLocalPos(m_tools[i]->m_hapticPoint->getLocalPosProxy() + stylus[i]->getLocalRot() * cVector3d(0.1, 0, 0));
 		/////////////////////////////////////////////////////////////////////
 		// HAPTIC FORCE COMPUTATION
 		/////////////////////////////////////////////////////////////////////
@@ -731,7 +742,7 @@ void cGridLevel::updateHaptics() {
 		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 	}
 	if (start && timerNum >= lastSave) SaveData();
- 
+
 }
 
 void cGridLevel::ResetCanvas(int pattern) {

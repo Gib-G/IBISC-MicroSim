@@ -27,6 +27,8 @@ public:
     void ComputeCrossing(cMesh* spheres[], int i);
     cVector3d toAxisAngleVec(cMatrix3d m);
     double toAxisAngleAngle(cMatrix3d m);
+    void SaveData(void);
+    void SaveResults(void);
 
 public:
     bool previousframecaught[MAX_DEVICES];
@@ -73,7 +75,17 @@ public:
     bool end2[12];
     float sphereSize = 0.01;
 
+    bool start;
     double timeInterval;
+    float lastSave;
+    float timerNum = 0.0;
+
+    //Sauvegarde
+    std::tuple<float, cVector3d> posData[MAX_DEVICES];
+    std::string NumCandidate;
+    std::ofstream myfile[MAX_DEVICES];
+    std::ofstream tempfile[MAX_DEVICES];
+    std::string pathname;
 };
 
 #endif

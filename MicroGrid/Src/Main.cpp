@@ -1598,14 +1598,6 @@ void SaveCanvas() {
 	temp.str("");
 	temp.clear();
 	DisplayTimer(timerNum);
-	if (start) {
-		startButton->setEnabled(true);
-		changeButton->setEnabled(true);
-		rotateButton->setEnabled(true);
-		start = false;
-		resetHit = true;
-		timerNum = 0;
-	}
 	for (int k = 0; k < numHapticDevices; k++) {
 		tempfile[k].close();
 		std::ifstream readfile;
@@ -1635,6 +1627,14 @@ void SaveCanvas() {
 			else myfile[k] << line << "\n";
 		}
 		myfile[k].close();
+	}
+	if (start) {
+		startButton->setEnabled(true);
+		changeButton->setEnabled(true);
+		rotateButton->setEnabled(true);
+		start = false;
+		resetHit = true;
+		timerNum = 0;
 	}
 }
 //Relance la simulation. Le mode entraînement est réactivé (grille effacé au prochain usage de Start())

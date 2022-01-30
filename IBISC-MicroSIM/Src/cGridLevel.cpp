@@ -943,13 +943,6 @@ void cGridLevel::SaveCanvas() {
 	temp.str("");
 	temp.clear();
 	DisplayTimer(timerNum);
-	if (start) {
-		startButton->setEnabled(true);
-		changeButton->setEnabled(true);
-		rotateButton->setEnabled(true);
-		start = false;
-		timerNum = 0;
-	}
 	for (int k = 0; k < m_numTools; k++) {
 		tempfile[k].close();
 		std::ifstream readfile;
@@ -979,6 +972,13 @@ void cGridLevel::SaveCanvas() {
 			else myfile[k] << line << "\n";
 		}
 		myfile[k].close();
+	}
+	if (start) {
+		startButton->setEnabled(true);
+		changeButton->setEnabled(true);
+		rotateButton->setEnabled(true);
+		start = false;
+		timerNum = 0;
 	}
 }
 

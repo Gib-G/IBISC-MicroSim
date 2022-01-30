@@ -282,7 +282,7 @@ void cAroundTheClockLevel::updateGraphics() {
 	currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-
+	if(start) timerNum += deltaTime;
 	moveCamera();
 
 
@@ -666,5 +666,40 @@ void cAroundTheClockLevel::ComputeCrossing(cMesh* spheres[], int i) {
 		if (DetectionPlanes[i]->computeCollisionDetection(pos2, pos3, recorder, settings)) {
 			end2[i] = true;
 		}
+	}
+}
+void cAroundTheClockLevel::SaveData() {
+	lastSave = timerNum;
+	for (int k = 0; k < m_numTools; k++) {
+		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
+	}
+}
+void cAroundTheClockLevel::SaveResults() {
+	std::stringstream temp;
+	//DisplayTimer(timerNum);
+	start = false;
+	for (int k = 0; k < m_numTools; k++) {
+		tempfile[k].close();
+		std::ifstream readfile;
+		bool firstline = true;
+		temp << ROOT_DIR "Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "Aroundtheclock-trajectory-Arm_" << k << ".csv";
+		std::cout << "Saving trajectory into /Resources/CSV/" << (!NumCandidate.empty() ? NumCandidate + "-" : "") << "Aroundtheclock-trajectory-Arm_" << k << ".csv\n";
+		myfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+		string line;
+		temp << pathname << k << ".csv";
+		readfile.open(temp.str());
+		temp.str("");
+		temp.clear();
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" <<"\n";
+		while (getline(readfile, line)) {
+			if (firstline) {
+				myfile[k] << line << " , " << timerNum <<"\n";
+				firstline = false;
+			}
+			else myfile[k] << line << "\n";
+		}
+		myfile[k].close();
 	}
 }

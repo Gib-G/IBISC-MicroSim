@@ -10,12 +10,15 @@ using namespace std;
 cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	const int a_numDevices,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
-	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
+	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
+	std::string NC) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
 	
 	m_resourceRoot = a_resourceRoot;
 
-	NumCandidate = "";
+	NumCandidate = NC;
 	std::stringstream streamstr;
+
+	resetHit = false;
 
 	//--------------------------------------------------------------------------
 	// CREATE ENVIRONMENT MAP
@@ -98,7 +101,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 
 	// set graphic properties
 	canvas->m_texture = cTexture2d::create();
-	fileload = canvas->m_texture->loadFromFile(RESOURCE_PATH("../resources/Images/grid.jpg")); // Images/grid.jpg
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/grid.jpg"); // Images/grid.jpg
 	if (!fileload)
 	{
 #if defined(_MSVC)
@@ -108,11 +111,24 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	if (!fileload)
 	{
 		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+	}
+	canvasOriginal = canvas->m_texture->m_image->copy();
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg"); // Images/grid.jpg
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg");
+#endif
+	}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
 	}
 
 	// create a copy of canvas so that we can clear page when requested
-	canvasOriginal = canvas->m_texture->m_image->copy();
-
+	canvasTraining = canvas->m_texture->m_image->copy();
 	// we disable lighting properties for canvas
 	canvas->setUseMaterial(false);
 
@@ -602,7 +618,6 @@ void cGridLevel::updateHaptics() {
 	frequencyCounter.signal(1);
 	for (int i = 0; i < m_numTools; i++)
 	{
-
 		/////////////////////////////////////////////////////////////////////
 		// HAPTIC FORCE COMPUTATION
 		/////////////////////////////////////////////////////////////////////
@@ -617,7 +632,7 @@ void cGridLevel::updateHaptics() {
 		m_tools[i]->computeInteractionForces();
 
 		// get interaction forces magnitude
-		//force[i] = 5 * tool[i]->getDeviceGlobalForce().length();
+		//force[i] = 5 * m_tools[i]->getDeviceGlobalForce().length();
 		// send forces to haptic device
 		m_tools[i]->applyToDevice();
 
@@ -641,8 +656,12 @@ void cGridLevel::updateHaptics() {
 				// retrieve pixel information
 				int px, py;
 				canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
-				cout << "px : " << px << "py : " << py << endl;
 				size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
+				force[i] = m_tools[i]->getDeviceGlobalForce().length();
+				if (resetHit) {
+					ResetCanvas(pattern);
+					resetHit = false;
+				}
 				for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 				{
 					for (int y = -BRUSH_SIZE; y < BRUSH_SIZE; y++)
@@ -654,11 +673,12 @@ void cGridLevel::updateHaptics() {
 							// get color at location
 							cColorb color, newColor;
 							canvas->m_texture->m_image->getPixelColor(px + x, py + y, color);
-							if (color != paintColor || color != errorColor) {
+							if (color != paintColor && color != errorColor && color != warningColor) {
 								bool hit;
 								hit = PaintCanvas(px + x, py + y, pattern);
 								if (hit) {
-									newColor = paintColor;
+									if (force[i] < MAX_FORCE) newColor = paintColor;
+									else newColor = warningColor;
 								}
 								else {
 									newColor = errorColor;
@@ -678,7 +698,9 @@ void cGridLevel::updateHaptics() {
 				canvas->m_texture->markForUpdate();
 			}
 		}
-
+		////////////////////////////////////////////////////////////////////
+		//INTERACTIONS WITH BUTTONS
+		////////////////////////////////////////////////////////////////////
 		if (m_tools[i]->getHapticPoint(0)->getNumCollisionEvents() > 0) {
 			touching[i] = true;
 		}
@@ -686,48 +708,42 @@ void cGridLevel::updateHaptics() {
 			touching[i] = false;
 			pressed[i] = false;
 		}
-
 		if (m_tools[i]->isInContact(resetButton) && button == true && !pressed[i]) {
-
-			// copy original image of canvas to texture
-			ResetCanvas(pattern);
-
-			// update console message
-			cout << "> Canvas has been erased.            \r";
+			ResetSim(pattern);
 			pressed[i] = true;
 		}
 		else if (m_tools[i]->isInContact(saveButton) && button == true && !pressed[i]) {
 			SaveCanvas();
 			pressed[i] = true;
-
-
 		}
 		else if (m_tools[i]->isInContact(startButton) && button == true && !pressed[i]) {
 			Start();
 			pressed[i] = true;
-
 		}
 		else if (m_tools[i]->isInContact(changeButton) && button == true && !pressed[i]) {
 			ChangePattern();
 			pressed[i] = true;
-
 		}
 		else if (m_tools[i]->isInContact(rotateButton) && button == true && !pressed[i]) {
 			RotateCanvas();
 			pressed[i] = true;
 		}
-		if (start) posData[i].insert(pair<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos()));
+		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 	}
+	if (start && timerNum >= lastSave) SaveData();
  
 }
 
 void cGridLevel::ResetCanvas(int pattern) {
 	for (int k = 0; k < m_numTools; k++) {
-		posData[k].clear();
+		posData[k] = tuple<float, cVector3d>(0, m_tools[k]->getDeviceGlobalPos());
 	}
-	canvasOriginal->copyTo(canvas->m_texture->m_image);
+	if (!start) canvasTraining->copyTo(canvas->m_texture->m_image);
+	else canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
-	cout << pattern << endl;
+	goalPixels = 0;
+	cColorb yellow;
+	yellow.setYellow();
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
@@ -736,8 +752,6 @@ void cGridLevel::ResetCanvas(int pattern) {
 					cColorb getcolor;
 					canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
 					if (getcolor != paintColor) {
-						cColorb yellow;
-						yellow.setYellow();
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
 					goalPixels++;
@@ -753,8 +767,6 @@ void cGridLevel::ResetCanvas(int pattern) {
 					cColorb getcolor;
 					canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
 					if (getcolor != paintColor) {
-						cColorb yellow;
-						yellow.setYellow();
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
 					goalPixels++;
@@ -919,6 +931,7 @@ void cGridLevel::SaveCanvas() {
 	canvas->m_texture->m_image->saveToFile(path);
 	temp.str("");
 	temp.clear();
+	DisplayTimer(timerNum);
 	if (start) {
 		startButton->setEnabled(true);
 		changeButton->setEnabled(true);
@@ -926,7 +939,6 @@ void cGridLevel::SaveCanvas() {
 		start = false;
 		timerNum = 0;
 	}
-	DisplayTimer(timerNum);
 	for (int k = 0; k < m_numTools; k++) {
 		tempfile[k].close();
 		std::ifstream readfile;
@@ -978,4 +990,31 @@ void cGridLevel::RotateCanvas() {
 	canvas->setLocalPos(0, 0, 0);
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), rot);
 	canvas->translate(canvasPos);
+}
+
+void cGridLevel::ResetSim(int pattern) {
+	if (start) {
+		startButton->setEnabled(true);
+		changeButton->setEnabled(true);
+		rotateButton->setEnabled(true);
+		start = false;
+		timerNum = 0;
+		DisplayTimer(timerNum);
+	}
+	for (int k = 0; k < m_numTools; k++) {
+		std::stringstream temp;
+		tempfile[k].close();
+		temp << pathname << k << ".csv";
+		tempfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
+	}
+	ResetCanvas(pattern);
+}
+
+void cGridLevel::SaveData() {
+	lastSave = timerNum;
+	for (int k = 0; k < m_numTools; k++) {
+		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
+	}
 }

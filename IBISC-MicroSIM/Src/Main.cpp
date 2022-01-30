@@ -91,6 +91,11 @@ int width = 0;
 // current height of window
 int height = 0;
 
+string NumCandidate;
+
+int swapInterval = 1;
+bool fullscreen = false;
+
 
 //---------------------------------------------------------------------------
 // DEMOS
@@ -181,6 +186,12 @@ int main(int argc, char** argv)
     cout << resourceRoot << endl;
 
     cStereoMode stereoMode = C_STEREO_DISABLED;
+
+    cout << "Type the ID of the candidate and press Enter to submit it." << endl;
+    cout << "Submitting no ID launches training mode" << endl;
+    cout << "Candidate ID : ";
+    getline(cin, NumCandidate);
+    cout << endl;
 
     //--------------------------------------------------------------------------
     // SETUP DISPLAY CONTEXT
@@ -325,10 +336,10 @@ int main(int argc, char** argv)
     // DEMOS
     //-----------------------------------------------------------------------
     levelHandler = new cLevelHandler(&oculusVR);
-    m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
+    m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
+    //m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
     m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1);
-    levelHandler->setLevel(m_around);
+    levelHandler->setLevel(m_grid);
 
     //--------------------------------------------------------------------------
     // START SIMULATION
@@ -433,6 +444,33 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
         levelHandler->mainLevel->m_camera->setLocalPos(levelHandler->mainLevel->defaultPos);
         oculusVR.recenterPose();
 
+    }
+    else if (a_key == GLFW_KEY_F)
+    {
+        // toggle state variable
+        fullscreen = !fullscreen;
+
+        // get handle to monitor
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+
+        // get information about monitor
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        // set fullscreen or window mode
+        if (fullscreen)
+        {
+            glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            glfwSwapInterval(swapInterval);
+        }
+        else
+        {
+            int w = 0.8 * mode->height;
+            int h = 0.5 * mode->height;
+            int x = 0.5 * (mode->width - w);
+            int y = 0.5 * (mode->height - h);
+            glfwSetWindowMonitor(window, NULL, x, y, w, h, mode->refreshRate);
+            glfwSwapInterval(swapInterval);
+        }
     }
 
     levelHandler->mainLevel->keyCallback(a_window, a_key, a_scancode, a_action, a_mods);

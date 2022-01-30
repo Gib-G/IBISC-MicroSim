@@ -1,4 +1,5 @@
-0 , -0.191832, -0.648384, -1.27681
+Temps , Position - x , Position - y , Position - z , Temps total , Pourcentage d'erreur , Pourcentage de completion , Pourcentage d'erreur de force , Pattern , Rotation du plan
+0 , -0.191832, -0.648384, -1.27681 , 0 , 32.945 ,  , 5.58256 , 22.082 , 1 , Face
 0 , -0.191659, -0.648438, -1.27898
 0 , -0.191603, -0.648456, -1.27971
 0 , -0.191603, -0.648456, -1.27971

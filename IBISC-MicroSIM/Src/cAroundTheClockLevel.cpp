@@ -17,7 +17,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	if (a_numDevices > 0) {
 		cHapticDeviceInfo hapticDeviceInfo = a_hapticDevice0->getSpecifications();
-		double workspaceScaleFactor = 1;
+		double workspaceScaleFactor = m_tools[0]->getWorkspaceScaleFactor();
 		maxStiffness = hapticDeviceInfo.m_maxLinearStiffness / workspaceScaleFactor;
 	}
 	else {
@@ -130,6 +130,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
 
 	for (int i = 0; i < m_numTools; i++) {
+
 		ODEBody2[i] = new cODEGenericBody(ODEWorld);
 		object2[i] = new cMesh();
 		cCreateBox(object2[i], size, 0.03, 0.03);
@@ -289,161 +290,167 @@ void cAroundTheClockLevel::updateGraphics() {
 
 void cAroundTheClockLevel::updateHaptics(void)
 {
-	/////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////
 		// SIMULATION TIME
 		/////////////////////////////////////////////////////////////////////
 
 		// stop the simulation clock
-	simClock.stop();
-	// read the time increment in seconds
-	timeInterval = cClamp(simClock.getCurrentTimeSeconds(), 0.0001, 0.001);
-	for (int i = 0; i < 12; i++) {
-		ComputeCrossing(DetectSphere, i);
-	}
-
-	// restart the simulation clock
-	simClock.reset();
-	simClock.start();
-
-	// compute global reference frames for each object
-	m_world->computeGlobalPositions(true);
-	bool caught[MAX_DEVICES];
-	int vientdegrip = -1;
-	for (int i = 0; i < m_numTools; i++) {
-		ODEBody2[i]->setLocalPos(m_tools[i]->m_hapticPointFinger->getLocalPosProxy() + ODEBody2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
-		ODEBody2[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
-		ODEBody3[i]->setLocalPos(m_tools[i]->m_hapticPointThumb->getLocalPosProxy() + ODEBody3[i]->getLocalRot() * cVector3d(0.2, 0, 0));
-		ODEBody3[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
-
-
-		/////////////////////////////////////////////////////////////////////
-		// HAPTIC FORCE COMPUTATION
-		/////////////////////////////////////////////////////////////////////
-
-
-
-		// update position and orientation of m_tools[i]
-		m_tools[i]->updateFromDevice();
-
-		// compute interaction forces
-		m_tools[i]->computeInteractionForces();
-
-		// send forces to haptic device
-		m_tools[i]->applyToDevice();
-		caught[i] = true;
-		int numInteractionPoints = m_tools[i]->getNumHapticPoints();
-		for (int j = 0; j < numInteractionPoints; j++)
-		{
-			// get pointer to next interaction point of m_tools[i]
-			cHapticPoint* interactionPoint = m_tools[i]->getHapticPoint(j);
-
-			if (!interactionPoint->isInContact(object0)) {
-				caught[i] = false;
-			}
-		}
-		if (caught[i] && !previousframecaught[i]) {
-			vientdegrip = i;
-		}
-		if (!caught[i]) {
-			previousframecaught[i] = false;
+		simClock.stop();
+		// read the time increment in seconds
+		timeInterval = cClamp(simClock.getCurrentTimeSeconds(), 0.0001, 0.001);
+		for (int i = 0; i < 12; i++) {
+			ComputeCrossing(DetectSphere, i);
 		}
 
-	}
-	if (vientdegrip != -1) {
-		gripperCatchingIndex = vientdegrip;
-	}
-	if (gripperCatchingIndex != -1 && !caught[gripperCatchingIndex]) {
-		gripperCatchingIndex = -1;
+		// restart the simulation clock
+		simClock.reset();
+		simClock.start();
+
+		// compute global reference frames for each object
+		m_world->computeGlobalPositions(true);
+		bool caught[MAX_DEVICES];
+		int vientdegrip = -1;
+
 		for (int i = 0; i < m_numTools; i++) {
-			if (caught[i]) {
-				gripperCatchingIndex = i;
+
+			object2[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
+			object2[i]->setLocalPos(m_tools[i]->m_hapticPointFinger->getLocalPosProxy() + object2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
+			object3[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
+			object3[i]->setLocalPos(m_tools[i]->m_hapticPointThumb->getLocalPosProxy() + object3[i]->getLocalRot() * cVector3d(0.2, 0, 0));
+			/////////////////////////////////////////////////////////////////////
+			// HAPTIC FORCE COMPUTATION
+			/////////////////////////////////////////////////////////////////////
+
+
+
+			// update position and orientation of m_tools[i]
+			m_tools[i]->updateFromDevice();
+
+			// compute interaction forces
+			m_tools[i]->computeInteractionForces();
+
+			// send forces to haptic device
+			m_tools[i]->applyToDevice();
+			caught[i] = true;
+			int numInteractionPoints = m_tools[i]->getNumHapticPoints();
+			for (int j = 0; j < numInteractionPoints; j++)
+			{
+				// get pointer to next interaction point of m_tools[i]
+				cHapticPoint* interactionPoint = m_tools[i]->getHapticPoint(j);
+
+				if (!interactionPoint->isInContact(object0)) {
+					caught[i] = false;
+				}
+			}
+			if (caught[i] && !previousframecaught[i]) {
+				vientdegrip = i;
+			}
+			if (!caught[i]) {
+				previousframecaught[i] = false;
+			}
+
+		}
+		if (vientdegrip != -1) {
+			gripperCatchingIndex = vientdegrip;
+		}
+		if (gripperCatchingIndex != -1 && !caught[gripperCatchingIndex]) {
+			gripperCatchingIndex = -1;
+			for (int i = 0; i < m_numTools; i++) {
+				if (caught[i]) {
+					gripperCatchingIndex = i;
+				}
 			}
 		}
-	}
-	if (gripperCatchingIndex == -1) {
-		ODEWorld->setGravity(cVector3d(0, 0, -45.81));
+		if (gripperCatchingIndex == -1) {
+			ODEWorld->setGravity(cVector3d(0, 0, -45.81));
 
-	}
-	for (int i = 0; i < m_numTools; i++) {
-		/////////////////////////////////////////////////////////////////////
-		// DYNAMIC SIMULATION
-		/////////////////////////////////////////////////////////////////////
+		}
+		for (int i = 0; i < m_numTools; i++) {
+			/////////////////////////////////////////////////////////////////////
+			// DYNAMIC SIMULATION
+			/////////////////////////////////////////////////////////////////////
 
-		// for each interaction point of the m_tools[i] we look for any contact events
-		// with the environment and apply forces accordingly
-		int numInteractionPoints = m_tools[i]->getNumHapticPoints();
-		for (int j = 0; j < numInteractionPoints; j++)
-		{
-			// get pointer to next interaction point of m_tools[i]
-			cHapticPoint* interactionPoint = m_tools[i]->getHapticPoint(j);
+			// for each interaction point of the m_tools[i] we look for any contact events
+			// with the environment and apply forces accordingly
+			int numInteractionPoints = m_tools[i]->getNumHapticPoints();
+			for (int j = 0; j < numInteractionPoints; j++)
+			{
+				// get pointer to next interaction point of m_tools[i]
+				cHapticPoint* interactionPoint = m_tools[i]->getHapticPoint(j);
 
 
-			if (gripperCatchingIndex == i) {
-				if (vientdegrip == i) {
-					startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
-					startrotCube.copyfrom(ODEBody0->getLocalRot());
-					startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
-					startposCube.copyfrom(ODEBody0->getLocalPos());
-					previousframecaught[i] = true;
-					ODEWorld->setGravity(cVector3d(0, 0, 0));
-				}
-				else {
-					cMatrix3d ObjT0Invert;
-					cMatrix3d ArmT;
-					cMatrix3d ArmT0Invert;
-					cMatrix3d ObjT0;
-					ObjT0Invert.copyfrom(startrotCube);
-					ObjT0Invert.invert();
-					ArmT.copyfrom(m_tools[i]->getDeviceLocalRot());
-					ArmT0Invert.copyfrom(startrotGripper[i]);
-					ArmT0Invert.invert();
-					ObjT0.copyfrom(startrotCube);
-
-					cVector3d rotvec = toAxisAngleVec(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
-					double rotangle = toAxisAngleAngle(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
-					if (isnan(rotangle)) {
-						rotangle = 0;
-					}
-					bool test = true;
-					if (test) {
-						ODEBody0->setLocalRot(startrotCube);
-						ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
+				if (gripperCatchingIndex == i) {
+					if (vientdegrip == i) {
+						startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
+						startrotCube.copyfrom(ODEBody0->getLocalRot());
+						startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
+						startposCube.copyfrom(ODEBody0->getLocalPos());
+						previousframecaught[i] = true;
+						ODEWorld->setGravity(cVector3d(0, 0, 0));
 					}
 					else {
-						ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+						cMatrix3d ObjT0Invert;
+						cMatrix3d ArmT;
+						cMatrix3d ArmT0Invert;
+						cMatrix3d ObjT0;
+						ObjT0Invert.copyfrom(startrotCube);
+						ObjT0Invert.invert();
+						ArmT.copyfrom(m_tools[i]->getDeviceLocalRot());
+						ArmT0Invert.copyfrom(startrotGripper[i]);
+						ArmT0Invert.invert();
+						ObjT0.copyfrom(startrotCube);
+
+						cVector3d rotvec = toAxisAngleVec(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+						double rotangle = toAxisAngleAngle(ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+						if (isnan(rotangle)) {
+							rotangle = 0;
+						}
+						bool test = false;
+						if (test) {
+							ODEBody0->setLocalRot(startrotCube);
+							ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
+						}
+						else {
+							ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+						}
+
+						startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
+						startrotCube.copyfrom(ODEBody0->getLocalRot());
+						startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
+						startposCube.copyfrom(ODEBody0->getLocalPos());
+					}
+
+				}
+				// check all contact points
+				int numContacts = interactionPoint->getNumCollisionEvents();
+				for (int k = 0; k < numContacts; k++)
+				{
+					cCollisionEvent* collisionEvent = interactionPoint->getCollisionEvent(k);
+
+					// given the mesh object we may be touching, we search for its owner which
+					// could be the mesh itself or a multi-mesh object. Once the owner found, we
+					// look for the parent that will point to the ODE object itself.
+					cGenericObject* object = collisionEvent->m_object->getOwner()->getOwner();
+
+
+					// cast to ODE object
+					cODEGenericBody* ODEobject = dynamic_cast<cODEGenericBody*>(object);
+
+					// if ODE object, we apply interaction forces
+					if (ODEobject != NULL)
+					{
+
+						ODEobject->addExternalForceAtPoint(-10 * interactionPoint->getLastComputedForce(),
+							collisionEvent->m_globalPos);
 					}
 				}
 
 			}
-			// check all contact points
-			int numContacts = interactionPoint->getNumCollisionEvents();
-			for (int k = 0; k < numContacts; k++)
-			{
-				cCollisionEvent* collisionEvent = interactionPoint->getCollisionEvent(k);
-
-				// given the mesh object we may be touching, we search for its owner which
-				// could be the mesh itself or a multi-mesh object. Once the owner found, we
-				// look for the parent that will point to the ODE object itself.
-				cGenericObject* object = collisionEvent->m_object->getOwner()->getOwner();
-
-
-				// cast to ODE object
-				cODEGenericBody* ODEobject = dynamic_cast<cODEGenericBody*>(object);
-
-				// if ODE object, we apply interaction forces
-				if (ODEobject != NULL)
-				{
-
-					ODEobject->addExternalForceAtPoint(-10 * interactionPoint->getLastComputedForce(),
-						collisionEvent->m_globalPos);
-				}
-			}
 
 		}
-
-	}
-	// update simulation
-	ODEWorld->updateDynamics(timeInterval);
+		// update simulation
+		ODEWorld->updateDynamics(timeInterval);
+	
 }
 
 double cAroundTheClockLevel::toAxisAngleAngle(cMatrix3d m) {

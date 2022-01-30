@@ -16,7 +16,8 @@ public:
     cGridLevel(const std::string a_resourceRoot,
         const int a_numDevices,
         std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
-        std::shared_ptr<cGenericHapticDevice> a_hapticDevice1);
+        std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
+        std::string NC);
 
     virtual ~cGridLevel() {};
 
@@ -35,6 +36,8 @@ public:
     void Start();
     void SaveCanvas();
     void RotateCanvas();
+    void ResetSim(int pattern);
+    void SaveData();
 
 
 public:
@@ -53,6 +56,7 @@ public:
     cVector3d canvasPos;
     // copy of blank canvas texture
     cImagePtr canvasOriginal;
+    cImagePtr canvasTraining;
 
     // selected paint color
     cColorb paintColor;
@@ -76,6 +80,7 @@ public:
     float timerNum;
     cFrequencyCounter frequencyCounter;
     bool start;
+    bool resetHit;
     bool pressed[MAX_DEVICES];
     bool touching[MAX_DEVICES];
 
@@ -86,7 +91,7 @@ public:
     double K_SIZE;
     int BRUSH_SIZE;
 
-    std::map<float, cVector3d> posData[MAX_DEVICES];
+    std::tuple<float, cVector3d> posData[MAX_DEVICES];
     float errorPixel;
     float totalColoredPixels;
     float errorPercent = 0;
@@ -97,6 +102,8 @@ public:
     float forcePercent = 0;
 
     int MAX_PATTERN = 1;
+    float MAX_FORCE = .8;
+    float lastSave = 0.0f;
 
     std::string m_resourceRoot;
 

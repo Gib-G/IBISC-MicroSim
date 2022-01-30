@@ -29,6 +29,7 @@ public:
     double toAxisAngleAngle(cMatrix3d m);
     void SaveData(void);
     void SaveResults(void);
+    void ResetSim(void);
 
 public:
     bool previousframecaught[MAX_DEVICES];

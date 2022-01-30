@@ -13,6 +13,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	double maxStiffness;
 	int w;
+	std::stringstream streamstr;
 	defaultPos = cVector3d(2.7, 0, -6.6);
 
 	if (a_numDevices > 0) {
@@ -148,7 +149,12 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		ODEBody3[i]->createDynamicBox(size, size, size);
 		ODEBody3[i]->disableDynamics();
 		ODEBody2[i]->setMass(0.1);
-
+		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
+		pathname = streamstr.str();
+		streamstr << i << ".csv";
+		tempfile[i].open(streamstr.str());
+		streamstr.str("");
+		streamstr.clear();
 	}
 
 	for (int i = 0; i < 12; i++) {
@@ -446,7 +452,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 				}
 
 			}
-
+			if(start && timerNum > lastSave)SaveData();
 		}
 		// update simulation
 		ODEWorld->updateDynamics(timeInterval);
@@ -701,5 +707,15 @@ void cAroundTheClockLevel::SaveResults() {
 			else myfile[k] << line << "\n";
 		}
 		myfile[k].close();
+	}
+}
+void cAroundTheClockLevel::ResetSim() {
+	for (int k = 0; k < m_numTools; k++) {
+		std::stringstream temp;
+		tempfile[k].close();
+		temp << pathname << k << ".csv";
+		tempfile[k].open(temp.str());
+		temp.str("");
+		temp.clear();
 	}
 }

@@ -741,7 +741,7 @@ void cGridLevel::updateHaptics() {
 		}
 		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 	}
-	if (start && timerNum >= lastSave) SaveData();
+	if (start && timerNum > lastSave) SaveData();
 
 }
 

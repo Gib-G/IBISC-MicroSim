@@ -94,6 +94,20 @@ int width = 0;
 // current height of window
 int height = 0;
 
+//STATES
+//------------------------------------------------------------------------------
+enum MouseStates
+{
+    MOUSE_IDLE,
+    MOUSE_MOVE_CAMERA
+};
+
+// mouse state
+MouseStates mouseState = MOUSE_IDLE;
+
+// last mouse position
+double mouseX, mouseY;
+
 string NumCandidate;
 
 int swapInterval = 1;
@@ -152,6 +166,12 @@ void errorCallback(int error, const char* a_description);
 
 // callback when a key is pressed
 void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods);
+
+// callback to handle mouse click
+void mouseButtonCallback(GLFWwindow* a_window, int a_button, int a_action, int a_mods);
+
+// callback to handle mouse motion
+void mouseMotionCallback(GLFWwindow* a_window, double a_posX, double a_posY);
 
 void ZoomCam(void);
 void UpdatePreferences(string num);
@@ -260,6 +280,12 @@ int main(int argc, char** argv)
 
     // set key callback
     glfwSetKeyCallback(window, keyCallback);
+
+    // set mouse position callback
+    glfwSetCursorPosCallback(window, mouseMotionCallback);
+
+    // set mouse button callback
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
     // set current display context
     glfwMakeContextCurrent(window);
@@ -606,4 +632,51 @@ void ReadPort() {
         }
     }
     if (Serial.connected_) Serial.CloseSerialPort();
+}
+
+//------------------------------------------------------------------------------
+
+void mouseButtonCallback(GLFWwindow* a_window, int a_button, int a_action, int a_mods)
+{
+    if (a_button == GLFW_MOUSE_BUTTON_RIGHT && a_action == GLFW_PRESS)
+    {
+        // store mouse position
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+
+        // update mouse state
+        mouseState = MOUSE_MOVE_CAMERA;
+    }
+
+    else
+    {
+        // update mouse state
+        mouseState = MOUSE_IDLE;
+    }
+}
+
+//------------------------------------------------------------------------------
+
+void mouseMotionCallback(GLFWwindow* a_window, double a_posX, double a_posY)
+{
+    if (mouseState == MOUSE_MOVE_CAMERA)
+    {
+        // compute mouse motion
+        int dx = a_posX - mouseX;
+        int dy = a_posY - mouseY;
+        mouseX = a_posX;
+        mouseY = a_posY;
+        cVector3d cameraPos = levelHandler->mainLevel->m_camera->getLocalPos();
+
+
+        // compute new camera angles
+        double azimuthDeg = levelHandler->mainLevel->m_camera->getSphericalAzimuthDeg() - 0.5 * dx / 3;
+        double polarDeg = levelHandler->mainLevel->m_camera->getSphericalPolarDeg() - 0.5 * dy / 3;
+
+        // assign new angles
+        levelHandler->mainLevel->m_camera->setSphericalAzimuthDeg(azimuthDeg);
+        levelHandler->mainLevel->m_camera->setSphericalPolarDeg(polarDeg);
+
+        levelHandler->mainLevel->m_camera->setLocalPos(cameraPos);
+
+    }
 }

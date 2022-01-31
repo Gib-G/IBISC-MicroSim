@@ -79,17 +79,18 @@ public:
     bool crossing[12];
     bool end1[12];
     bool end2[12];
-    float sphereSize = 0.01;
+    double sphereSize = 0.01;
 
     bool start;
     double timeInterval;
-    float lastSave;
-    float timerNum = 0.0;
+    double lastSave;
+    double timerNum = 0.0;
     int handSwaps = 0;
+    double timerHandSwaps = 0.0;
     int ringsCrossed = 0;
     bool firstCatch =true;
     //Sauvegarde
-    std::tuple<float, cVector3d> posData[MAX_DEVICES];
+    std::tuple<double, cVector3d> posData[MAX_DEVICES];
     std::string NumCandidate;
     std::ofstream myfile[MAX_DEVICES];
     std::ofstream tempfile[MAX_DEVICES];

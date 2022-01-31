@@ -237,11 +237,11 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
 
 
-	 //////////////////////////////////////////////////////////////////////////
-	 // GROUND
-	 //////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////
+	// GROUND
+	//////////////////////////////////////////////////////////////////////////
 
-	 // create a mesh that represents the ground
+	// create a mesh that represents the ground
 	ground = new cMesh();
 	ODEWorld->addChild(ground);
 
@@ -254,7 +254,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	// define some material properties and apply to mesh
 	cMaterial matGround;
-	matGround.setStiffness(maxStiffness*2);
+	matGround.setStiffness(maxStiffness * 2);
 	matGround.setDynamicFriction(0.2);
 	matGround.setStaticFriction(0.0);
 	matGround.setGray();
@@ -327,7 +327,8 @@ void cAroundTheClockLevel::updateGraphics() {
 	currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
-	if(start) timerNum += deltaTime;
+	if (start) timerNum += deltaTime;
+	timerHandSwaps += deltaTime;
 	moveCamera();
 
 
@@ -371,7 +372,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 		// update position and orientation of m_tools[i]
 		m_tools[i]->updateFromDevice();
 		m_tools[i]->setDeviceLocalPos(cClamp(m_tools[i]->getDeviceLocalPos().x(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().y(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().z(), -3.0, -1.5));
-		if (m_tools[i]->getDeviceGlobalPos().z()>-9) {
+		if (m_tools[i]->getDeviceGlobalPos().z() > -9) {
 			m_tools[i]->setDeviceGlobalPos(m_tools[i]->getDeviceGlobalPos().x(), m_tools[i]->getDeviceGlobalPos().y(), cClamp(m_tools[i]->getDeviceGlobalPos().z(), -7.49, 10.0));
 		}
 		m_tools[i]->computeInteractionForces();
@@ -430,7 +431,11 @@ void cAroundTheClockLevel::updateHaptics(void)
 		if (gripperCatchingIndex == i) {
 			start = true;
 			if (vientdegrip == i) {
-				handSwaps++;
+				if (timerHandSwaps > 1.0) {
+					handSwaps++;
+					timerHandSwaps = 0.0;
+					cout << "grip";
+				}
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
 				startrotCube.copyfrom(ODEBody0->getLocalRot());
 				startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
@@ -531,7 +536,6 @@ void cAroundTheClockLevel::updateHaptics(void)
 			}
 
 		}
-		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 	}
 	if (start && timerNum > lastSave)SaveData();
 	if (ringsCrossed == 12 && !saved) {
@@ -539,7 +543,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 	}
 	// update simulation
 	ODEWorld->updateDynamics(timeInterval);
-	
+
 }
 
 double cAroundTheClockLevel::toAxisAngleAngle(cMatrix3d m) {
@@ -782,10 +786,10 @@ void cAroundTheClockLevel::SaveResults() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Nombre de changements de mains"<<"\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Nombre de changements de mains" << "\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
-				myfile[k] << line << " , " << handSwaps <<"\n";
+				myfile[k] << line << " , " << handSwaps << "\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
@@ -805,6 +809,11 @@ void cAroundTheClockLevel::ResetSim() {
 		temp.clear();
 		//remettre les objets à leurs places
 	}
+	for (int i = 0; i < 12; i++) {
+		DetectionPlanesFinished[i] = false;
+	}
+	ringsCrossed = 0;
+	start = false;
 	firstCatch = true;
 	handSwaps = 0;
 	saved = false;

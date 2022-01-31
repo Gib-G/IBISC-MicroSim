@@ -596,7 +596,6 @@ int main(int argc, char* argv[])
 		ODEBody1[i] = new cODEGenericBody(ODEWorld);
 		object1[i] = new cMesh();
 		cCreateRing(object1[i], 0.01, 0.1);
-		object1[i]->createAABBCollisionDetector(toolRadius);
 		object1[i]->setMaterial(mat1);
 		ODEBody1[i]->setImageModel(object1[i]);
 		ODEBody1[i]->createDynamicMesh(true);
@@ -604,6 +603,7 @@ int main(int argc, char* argv[])
 		ODEBody1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12) * 0.7, sin(i * 2 * M_PI / 12) * 0.7, -7);
+		object1[i]->createAABBCollisionDetector(toolRadius);
 		AddDetectionPlane(i, ODEBody1[i]);
 		crossing[i] = false;
 		end1[i] = false;
@@ -656,19 +656,7 @@ int main(int argc, char* argv[])
 	// we create 6 static walls to contains the 3 cubes within a limited workspace
   //  ODEGPlane0 = new cODEGenericBody(ODEWorld);
 	ODEGPlane1 = new cODEGenericBody(ODEWorld);
-	// ODEGPlane2 = new cODEGenericBody(ODEWorld);
-   //  ODEGPlane3 = new cODEGenericBody(ODEWorld);
-	// ODEGPlane4 = new cODEGenericBody(ODEWorld);
-   //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
-
-	//ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
 	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
-	// ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
-	// ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
-   //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
-	// ODEGPlane5->createStaticPlane(cVector3d(-0.8 * w, 0.0, 0.0), cVector3d(1.0, 0.0, 0.0));
-
-
 	 //////////////////////////////////////////////////////////////////////////
 	 // GROUND
 	 //////////////////////////////////////////////////////////////////////////
@@ -1119,23 +1107,31 @@ void updateHaptics(void)
 					}
 
 					bool iltouche = false;
-					for (int z = -1; z <= 1; z += 2) {
-						for (int y = -1; y <= 1; y += 2) {
+					for (int z = -1; z <= 1; z ++) {
+						for (int y = -1; y <= 1; y ++) {
 							double size = 0.4;
-							ODEBody0->setLocalPos(ODEBody0->getLocalPos() + cVector3d(0, y , z ));
-							if (ground->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
+							double step = 0.1;
+							DetectSphere[0]->setLocalPos(DetectSphere[0]->getLocalPos() + cVector3d(0, y * size* step, z * size* step));
+							DetectSphere[4]->setLocalPos(DetectSphere[4]->getLocalPos() + cVector3d(0, y * size * step, z * size * step));
+							if (ground->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getGlobalPos(), recorder, settings)) {
 								iltouche = true;
-								cout << "il touche ODEGPlane1";
+								cout << "il touche ground";
 							}
 							for (int j = 0; j < 12; j++) {
-								if (object1[j]->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
+								object1[j]->setShowCollisionDetector(true, true);
+								if (object1[j]->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getGlobalPos(), recorder, settings)) {
 									iltouche = true;
-									cout << "il touche ODEGBody["<<j<<"],y="<<y<<",z="<<z<<" ";
+									cout << "il touche object1["<<j<<"],y="<<y<<",z="<<z<<" ";
 									object1[j]->m_material->setYellow();
+								}
+								else {
+
+									object1[j]->m_material->setBlue();
 								}
 							}
 
-							ODEBody0->setLocalPos(ODEBody0->getLocalPos() - cVector3d(0, y , z ));
+							DetectSphere[0]->setLocalPos(DetectSphere[0]->getLocalPos() - cVector3d(0, y * size* step, z * size* step));
+							DetectSphere[4]->setLocalPos(DetectSphere[4]->getLocalPos() - cVector3d(0, y * size* step, z * size* step));
 						}
 					}
 					if (iltouche) {

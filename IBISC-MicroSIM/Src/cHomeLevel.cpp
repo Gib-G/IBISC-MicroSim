@@ -68,6 +68,7 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 1, 0), 90);
 	cCreatePanel(gridLevelButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
+	gridLevelButton->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 90);
 	gridLevelButton->translate(cVector3d(-.4, 0.5, -0.45));
 	/*
 	cFontPtr font = NEW_CFONTCALIBRI20();
@@ -88,11 +89,19 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	gridLevelButton->m_texture = cTexture2d::create();
+<<<<<<< HEAD
 	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/gridLevel.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
 		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/gridLevel.png");
+=======
+	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/GridButton.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/GridButton.png");
+>>>>>>> 517966f80389e3df68b01cbe476fa0507f6db43b
 #endif
 	}
 	if (!fileload)
@@ -115,6 +124,7 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	rot.identity();
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 1, 0), 90);
 	cCreatePanel(aroundLevelButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
+	aroundLevelButton->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 90);
 	aroundLevelButton->translate(cVector3d(-.4, 0.5, -0.45));
 	/*
 	cFontPtr font = NEW_CFONTCALIBRI20();
@@ -135,11 +145,19 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	aroundLevelButton->m_texture = cTexture2d::create();
+<<<<<<< HEAD
 	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/aroundLevel.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
 		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/aroundLevel.png");
+=======
+	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/ATCButton.png");
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/ATCButton.png");
+>>>>>>> 517966f80389e3df68b01cbe476fa0507f6db43b
 #endif
 	}
 	if (!fileload)

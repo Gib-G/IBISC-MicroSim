@@ -266,21 +266,21 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 
 	// define some material properties and apply to mesh
 	cMaterial matGround;
-	matGround.setStiffness(maxStiffness);
+	matGround.setStiffness(maxStiffness*2);
 	matGround.setDynamicFriction(0.2);
 	matGround.setStaticFriction(0.0);
 	matGround.setGray();
 	matGround.m_emission.setGrayLevel(0.3);
 	ground->setMaterial(matGround);
-
 	// setup collision detector
 	ground->createAABBCollisionDetector(toolRadius);
 
 	hapticPlane = new cMesh();
-	cCreatePlane(hapticPlane, 3, 3, cVector3d(0, 0, -7.4));
+	cCreatePlane(hapticPlane, 3, 3, cVector3d(0, 0, -7.48));
 	m_world->addChild(hapticPlane);
 	hapticPlane->setMaterial(matGround);
 	hapticPlane->setTransparencyLevel(0, true);
+	hapticPlane->createAABBCollisionDetector(toolRadius);
 }
 
 void cAroundTheClockLevel::moveCamera() {
@@ -336,6 +336,7 @@ void cAroundTheClockLevel::keyCallback(GLFWwindow* a_window, int a_key, int a_sc
 
 void cAroundTheClockLevel::updateGraphics() {
 
+	cout << m_tools[0]->getDeviceGlobalForce().str() << endl;
 	currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
@@ -382,11 +383,10 @@ void cAroundTheClockLevel::updateHaptics(void)
 		// update position and orientation of m_tools[i]
 		m_tools[i]->updateFromDevice();
 		m_tools[i]->setDeviceLocalPos(cClamp(m_tools[i]->getDeviceLocalPos().x(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().y(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().z(), -3.0, -1.5));
-		if (m_tools[i]->getDeviceGlobalPos().z()<-7) {
-			m_tools[i]->setDeviceGlobalPos(m_tools[i]->getDeviceGlobalPos().x(), m_tools[i]->getDeviceGlobalPos().y(), cClamp(m_tools[i]->getDeviceGlobalPos().z(), -7.0, -7.5));
+		if (m_tools[i]->getDeviceGlobalPos().z()>-9) {
+			m_tools[i]->setDeviceGlobalPos(m_tools[i]->getDeviceGlobalPos().x(), m_tools[i]->getDeviceGlobalPos().y(), cClamp(m_tools[i]->getDeviceGlobalPos().z(), -7.49, 10.0));
 		}
 		m_tools[i]->computeInteractionForces();
-
 		// send forces to haptic device
 		m_tools[i]->applyToDevice();
 		caught[i] = true;
@@ -472,29 +472,29 @@ void cAroundTheClockLevel::updateHaptics(void)
 					ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
 				}
 
-				bool iltouche = false;
-				for (int z = -1; z <= 1; z += 2) {
-					for (int y = -1; y <= 1; y += 2) {
-						double size = 0.4;
-						ODEBody0->setLocalPos(ODEBody0->getLocalPos() + cVector3d(0, y, z));
-						if (ground->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
-							iltouche = true;
-							cout << "il touche ODEGPlane1";
-						}
-						for (int j = 0; j < 12; j++) {
-							if (object1[j]->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
-								iltouche = true;
-								cout << "il touche ODEGBody[" << j << "],y=" << y << ",z=" << z << " ";
-								object1[j]->m_material->setYellow();
-							}
-						}
+				//bool iltouche = false;
+				//for (int z = -1; z <= 1; z += 2) {
+				//	for (int y = -1; y <= 1; y += 2) {
+				//		double size = 0.4;
+				//		ODEBody0->setLocalPos(ODEBody0->getLocalPos() + cVector3d(0, y, z));
+				//		if (ground->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
+				//			iltouche = true;
+				//			cout << "il touche ODEGPlane1";
+				//		}
+				//		for (int j = 0; j < 12; j++) {
+				//			if (object1[j]->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
+				//				iltouche = true;
+				//				cout << "il touche ODEGBody[" << j << "],y=" << y << ",z=" << z << " ";
+				//				object1[j]->m_material->setYellow();
+				//			}
+				//		}
 
-						ODEBody0->setLocalPos(ODEBody0->getLocalPos() - cVector3d(0, y, z));
-					}
-				}
-				if (iltouche) {
-					ODEBody0->setLocalRot(temp);
-				}
+				//		ODEBody0->setLocalPos(ODEBody0->getLocalPos() - cVector3d(0, y, z));
+				//	}
+				//}
+				//if (iltouche) {
+				//	ODEBody0->setLocalRot(temp);
+				//}
 
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
 				startrotCube.copyfrom(ODEBody0->getLocalRot());

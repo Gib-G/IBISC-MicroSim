@@ -94,6 +94,7 @@ public:
     std::ofstream myfile[MAX_DEVICES];
     std::ofstream tempfile[MAX_DEVICES];
     std::string pathname;
+    bool saved;
 };
 
 #endif

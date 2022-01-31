@@ -17,7 +17,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	std::stringstream streamstr;
 	NumCandidate = NC;
 	defaultPos = cVector3d(2.7, 0, -6.6);
-
+	saved = false;
 	if (a_numDevices > 0) {
 		cHapticDeviceInfo hapticDeviceInfo = a_hapticDevice0->getSpecifications();
 		double workspaceScaleFactor = m_tools[0]->getWorkspaceScaleFactor();
@@ -233,20 +233,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// 6 ODE INVISIBLE WALLS
 	//////////////////////////////////////////////////////////////////////////
 
-	// we create 6 static walls to contains the 3 cubes within a limited workspace
-  //  ODEGPlane0 = new cODEGenericBody(ODEWorld);
 	ODEGPlane1 = new cODEGenericBody(ODEWorld);
-	// ODEGPlane2 = new cODEGenericBody(ODEWorld);
-   //  ODEGPlane3 = new cODEGenericBody(ODEWorld);
-	// ODEGPlane4 = new cODEGenericBody(ODEWorld);
-   //  ODEGPlane5 = new cODEGenericBody(ODEWorld);
-
-	//ODEGPlane0->createStaticPlane(cVector3d(0.0, 0.0, 2.0 * w), cVector3d(0.0, 0.0, -1.0));
 	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
-	// ODEGPlane2->createStaticPlane(cVector3d(0.0, w, 0.0), cVector3d(0.0, -1.0, 0.0));
-	// ODEGPlane3->createStaticPlane(cVector3d(0.0, -w, 0.0), cVector3d(0.0, 1.0, 0.0));
-   //  ODEGPlane4->createStaticPlane(cVector3d(w, 0.0, 0.0), cVector3d(-1.0, 0.0, 0.0));
-	// ODEGPlane5->createStaticPlane(cVector3d(-0.8 * w, 0.0, 0.0), cVector3d(1.0, 0.0, 0.0));
 
 
 	 //////////////////////////////////////////////////////////////////////////
@@ -336,7 +324,6 @@ void cAroundTheClockLevel::keyCallback(GLFWwindow* a_window, int a_key, int a_sc
 
 void cAroundTheClockLevel::updateGraphics() {
 
-	cout << m_tools[0]->getDeviceGlobalForce().str() << endl;
 	currentFrame = glfwGetTime();
 	deltaTime = currentFrame - lastFrame;
 	lastFrame = currentFrame;
@@ -369,6 +356,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 	bool caught[MAX_DEVICES];
 	int vientdegrip = -1;
 	for (int i = 0; i < m_numTools; i++) {
+		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 		// get status of user switch
 		object2[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
 		object2[i]->setLocalPos(m_tools[i]->m_hapticPointFinger->getLocalPosProxy() + object2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
@@ -442,6 +430,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 		if (gripperCatchingIndex == i) {
 			start = true;
 			if (vientdegrip == i) {
+				handSwaps++;
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
 				startrotCube.copyfrom(ODEBody0->getLocalRot());
 				startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
@@ -450,7 +439,6 @@ void cAroundTheClockLevel::updateHaptics(void)
 				ODEWorld->setGravity(cVector3d(0, 0, 0));
 			}
 			else {
-				handSwaps++;
 				cMatrix3d ObjT0Invert;
 				cMatrix3d ArmT;
 				cMatrix3d ArmT0Invert;
@@ -545,7 +533,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 		}
 	}
 	if (start && timerNum > lastSave)SaveData();
-	if (ringsCrossed == 12) {
+	if (ringsCrossed == 12 && !saved) {
 		SaveResults();
 	}
 	// update simulation
@@ -793,7 +781,7 @@ void cAroundTheClockLevel::SaveResults() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << "Nombre de changements de mains"<<"\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Nombre de changements de mains"<<"\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
 				myfile[k] << line << " , " << handSwaps <<"\n";
@@ -804,6 +792,7 @@ void cAroundTheClockLevel::SaveResults() {
 		myfile[k].close();
 	}
 	firstCatch = true;
+	saved = true;
 }
 void cAroundTheClockLevel::ResetSim() {
 	for (int k = 0; k < m_numTools; k++) {
@@ -817,6 +806,7 @@ void cAroundTheClockLevel::ResetSim() {
 	}
 	firstCatch = true;
 	handSwaps = 0;
+	saved = false;
 }
 
 void cAroundTheClockLevel::Start() {

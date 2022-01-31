@@ -30,6 +30,7 @@ public:
     double toAxisAngleAngle(cMatrix3d m);
     void SaveData(void);
     void SaveResults(void);
+    void Start(void);
     void ResetSim(void);
 
 public:
@@ -84,7 +85,9 @@ public:
     double timeInterval;
     float lastSave;
     float timerNum = 0.0;
-
+    int handSwaps = 0;
+    int ringsCrossed = 0;
+    bool firstCatch =true;
     //Sauvegarde
     std::tuple<float, cVector3d> posData[MAX_DEVICES];
     std::string NumCandidate;

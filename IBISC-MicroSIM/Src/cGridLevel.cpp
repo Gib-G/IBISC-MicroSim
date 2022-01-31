@@ -783,7 +783,10 @@ void cGridLevel::ResetCanvas(int pattern) {
 		for (int x = 0; x < 1024; x++) {
 			for (int y = 0; y < 1024; y++) {
 				cColorb getcolor;
-				if (getcolor != paintColor) {
+				canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
+				cColorb yellow;
+				yellow.setYellow();
+				if (getcolor == yellow) {
 					goalPixels++;
 				}
 			}

@@ -29,8 +29,6 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		maxStiffness = 3;
 	}
 
-	cout << "maxStiffness" << maxStiffness << endl;
-
 	m_world->m_backgroundColor.setWhite();
 
 	m_camera->set(cVector3d(2.5, 0.0, 0.3),    // camera position (eye)
@@ -278,6 +276,11 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// setup collision detector
 	ground->createAABBCollisionDetector(toolRadius);
 
+	hapticPlane = new cMesh();
+	cCreatePlane(hapticPlane, 3, 3, cVector3d(0, 0, -7.4));
+	m_world->addChild(hapticPlane);
+	hapticPlane->setMaterial(matGround);
+	hapticPlane->setTransparencyLevel(0, true);
 }
 
 void cAroundTheClockLevel::moveCamera() {

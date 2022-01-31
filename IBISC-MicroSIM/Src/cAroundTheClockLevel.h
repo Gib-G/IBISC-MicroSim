@@ -60,6 +60,7 @@ public:
     cMesh* object3[MAX_DEVICES];;
     cMesh* ground;
     cMesh* resetButton;
+    cMesh* hapticPlane;
     // ODE objects
     cODEGenericBody* ODEGPlane0;
     cODEGenericBody* ODEGPlane1;

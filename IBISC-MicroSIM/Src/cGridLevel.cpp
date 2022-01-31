@@ -784,8 +784,6 @@ void cGridLevel::ResetCanvas(int pattern) {
 			for (int y = 0; y < 1024; y++) {
 				cColorb getcolor;
 				canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
-				cColorb yellow;
-				yellow.setYellow();
 				if (getcolor == yellow) {
 					goalPixels++;
 				}
@@ -953,7 +951,6 @@ void cGridLevel::Start() {
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
 	rotateButton->setEnabled(false);
-	canvasOriginal->copyTo(canvas->m_texture->m_image);
 }
 
 void cGridLevel::SaveCanvas() {

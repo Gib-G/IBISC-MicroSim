@@ -89,19 +89,12 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	gridLevelButton->m_texture = cTexture2d::create();
-<<<<<<< HEAD
-	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/gridLevel.png");
-	if (!fileload)
-	{
-#if defined(_MSVC)
-		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/gridLevel.png");
-=======
+
 	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/GridButton.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
 		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/GridButton.png");
->>>>>>> 517966f80389e3df68b01cbe476fa0507f6db43b
 #endif
 	}
 	if (!fileload)
@@ -145,19 +138,11 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	aroundLevelButton->m_texture = cTexture2d::create();
-<<<<<<< HEAD
-	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/aroundLevel.png");
-	if (!fileload)
-	{
-#if defined(_MSVC)
-		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/aroundLevel.png");
-=======
 	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/ATCButton.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
 		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/ATCButton.png");
->>>>>>> 517966f80389e3df68b01cbe476fa0507f6db43b
 #endif
 	}
 	if (!fileload)

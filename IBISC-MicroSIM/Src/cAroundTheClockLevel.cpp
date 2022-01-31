@@ -431,6 +431,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 		// DYNAMIC SIMULATION
 		/////////////////////////////////////////////////////////////////////
 		if (gripperCatchingIndex == i) {
+			start = true;
 			if (vientdegrip == i) {
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
 				startrotCube.copyfrom(ODEBody0->getLocalRot());

@@ -402,6 +402,10 @@ void cAroundTheClockLevel::updateHaptics(void)
 		}
 		if (caught[i] && !previousframecaught[i]) {
 			vientdegrip = i;
+			if (firstCatch) {
+				firstCatch = false;
+				Start();
+			}
 		}
 		if (!caught[i]) {
 			previousframecaught[i] = false;
@@ -446,6 +450,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 				ODEWorld->setGravity(cVector3d(0, 0, 0));
 			}
 			else {
+				handSwaps++;
 				cMatrix3d ObjT0Invert;
 				cMatrix3d ArmT;
 				cMatrix3d ArmT0Invert;
@@ -540,6 +545,9 @@ void cAroundTheClockLevel::updateHaptics(void)
 		}
 	}
 	if (start && timerNum > lastSave)SaveData();
+	if (ringsCrossed == 12) {
+		SaveResults();
+	}
 	// update simulation
 	ODEWorld->updateDynamics(timeInterval);
 	
@@ -744,6 +752,7 @@ void cAroundTheClockLevel::ComputeCrossing(cMesh* spheres[], int i) {
 		if (end1[i] && end2[i]) {
 			DetectionPlanes[i]->m_material->m_emission.setGreen();
 			DetectionPlanesFinished[i] = true;
+			ringsCrossed++;
 		}
 		if (!DetectionPlanesFinished[i]) {
 			DetectionPlanes[i]->m_material->m_emission.setRed();
@@ -784,16 +793,17 @@ void cAroundTheClockLevel::SaveResults() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" <<"\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << "Nombre de changements de mains"<<"\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
-				myfile[k] << line << " , " << timerNum <<"\n";
+				myfile[k] << line << " , " << handSwaps <<"\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
 		}
 		myfile[k].close();
 	}
+	firstCatch = true;
 }
 void cAroundTheClockLevel::ResetSim() {
 	for (int k = 0; k < m_numTools; k++) {
@@ -803,5 +813,14 @@ void cAroundTheClockLevel::ResetSim() {
 		tempfile[k].open(temp.str());
 		temp.str("");
 		temp.clear();
+		//remettre les objets à leurs places
 	}
+	firstCatch = true;
+	handSwaps = 0;
+}
+
+void cAroundTheClockLevel::Start() {
+	start = true;
+	resetButton->setEnabled(true);
+	handSwaps = 0;
 }

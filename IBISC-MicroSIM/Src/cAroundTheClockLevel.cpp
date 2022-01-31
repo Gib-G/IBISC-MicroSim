@@ -382,7 +382,9 @@ void cAroundTheClockLevel::updateHaptics(void)
 		// update position and orientation of m_tools[i]
 		m_tools[i]->updateFromDevice();
 		m_tools[i]->setDeviceLocalPos(cClamp(m_tools[i]->getDeviceLocalPos().x(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().y(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().z(), -3.0, -1.5));
-		// compute interaction forces
+		if (m_tools[i]->getDeviceGlobalPos().z()<-7) {
+			m_tools[i]->setDeviceGlobalPos(m_tools[i]->getDeviceGlobalPos().x(), m_tools[i]->getDeviceGlobalPos().y(), cClamp(m_tools[i]->getDeviceGlobalPos().z(), -7.0, -7.5));
+		}
 		m_tools[i]->computeInteractionForces();
 
 		// send forces to haptic device

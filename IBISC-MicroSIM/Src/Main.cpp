@@ -450,9 +450,13 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
 {
 
     // option - exit
-    if ((a_key == GLFW_KEY_ESCAPE) || (a_key == GLFW_KEY_Q))
+    if (a_key == GLFW_KEY_Q)
     {
         glfwSetWindowShouldClose(a_window, GLFW_TRUE);
+
+    }
+    else if (a_key == GLFW_KEY_ESCAPE) {
+        levelHandler->setLevel(m_home);
     }
 
     // option - spacebar

@@ -88,11 +88,11 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	gridLevelButton->m_texture = cTexture2d::create();
-	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/1.png");
+	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/gridLevel.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/1.png");
+		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/gridLevel.png");
 #endif
 	}
 	if (!fileload)
@@ -135,11 +135,11 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	aroundLevelButton->m_texture = cTexture2d::create();
-	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/2.png");
+	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/aroundLevel.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/2.png");
+		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/aroundLevel.png");
 #endif
 	}
 	if (!fileload)
@@ -258,11 +258,6 @@ void cHomeLevel::keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, in
 	{
 		pressedKey = -1;
 		return;
-	}
-	// option - exit
-	else if ((a_key == GLFW_KEY_ESCAPE) || (a_key == GLFW_KEY_Q))
-	{
-		glfwSetWindowShouldClose(a_window, GLFW_TRUE);
 	}
 
 	pressedKey = a_key;

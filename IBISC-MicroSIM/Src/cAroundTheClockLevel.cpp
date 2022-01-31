@@ -327,13 +327,6 @@ void cAroundTheClockLevel::keyCallback(GLFWwindow* a_window, int a_key, int a_sc
 		pressedKey = -1;
 		return;
 	}
-
-	// option - exit
-	else if ((a_key == GLFW_KEY_ESCAPE) || (a_key == GLFW_KEY_Q))
-	{
-		glfwSetWindowShouldClose(a_window, GLFW_TRUE);
-	}
-
 	pressedKey = a_key;
 
 }

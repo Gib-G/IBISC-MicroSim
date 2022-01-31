@@ -810,6 +810,8 @@ void cGridLevel::ResetCanvas(int pattern) {
 }
 bool cGridLevel::PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;
+	cColorb getcolor;
+	cColorb yellow;
 	switch (pattern) {
 	case 1:
 		for (int j = 0; j < numCube; j++) {
@@ -818,6 +820,11 @@ bool cGridLevel::PaintCanvas(int x, int y, int pattern) {
 				break;
 			}
 		}
+		break;
+	case 2:
+		canvas->m_texture->m_image->getPixelColor(x, y, getcolor);
+		yellow.setYellow();
+		if (getcolor == yellow) hit = true;
 		break;
 	default:
 		for (int j = 0; j < numCube; j++) {

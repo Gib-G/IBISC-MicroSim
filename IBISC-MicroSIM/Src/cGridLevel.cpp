@@ -103,6 +103,19 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 
 	// set graphic properties
 	canvas->m_texture = cTexture2d::create();
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/customPattern.jpg"); // Images/grid.jpg
+	if (!fileload)
+	{
+#if defined(_MSVC)
+		fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/customPattern.jpg");
+#endif
+}
+	if (!fileload)
+	{
+		cout << "Error - Texture image failed to load correctly." << endl;
+		close();
+	}
+	customPattern = canvas->m_texture->m_image->copy();
 	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/grid.jpg"); // Images/grid.jpg
 	if (!fileload)
 	{
@@ -759,6 +772,18 @@ void cGridLevel::ResetCanvas(int pattern) {
 					if (getcolor != paintColor) {
 						canvas->m_texture->m_image->setPixelColor(x, y, yellow);
 					}
+					goalPixels++;
+				}
+			}
+		}
+		canvas->m_texture->markForUpdate();
+		break;
+	case 2:
+		customPattern->copyTo(canvas->m_texture->m_image);
+		for (int x = 0; x < 1024; x++) {
+			for (int y = 0; y < 1024; y++) {
+				cColorb getcolor;
+				if (getcolor != paintColor) {
 					goalPixels++;
 				}
 			}

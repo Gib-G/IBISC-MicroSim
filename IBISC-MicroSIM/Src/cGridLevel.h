@@ -58,6 +58,7 @@ public:
     // copy of blank canvas texture
     cImagePtr canvasOriginal;
     cImagePtr canvasTraining;
+    cImagePtr customPattern;
 
     // selected paint color
     cColorb paintColor;
@@ -102,7 +103,7 @@ public:
     float correctPercent = 0;
     float forcePercent = 0;
 
-    int MAX_PATTERN = 1;
+    int MAX_PATTERN = 2;
     float MAX_FORCE = .8;
     float lastSave = 0.0f;
 

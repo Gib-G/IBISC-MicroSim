@@ -531,6 +531,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 			}
 
 		}
+		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 	}
 	if (start && timerNum > lastSave)SaveData();
 	if (ringsCrossed == 12 && !saved) {

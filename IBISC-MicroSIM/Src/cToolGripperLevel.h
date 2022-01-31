@@ -30,6 +30,8 @@ public:
     cToolGripper* m_tool1;
 
     double toolRadius;
+
+    bool pressed[MAX_DEVICES];
 };
 
 #endif

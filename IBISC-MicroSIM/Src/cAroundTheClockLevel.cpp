@@ -72,7 +72,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		// map the physical workspace of the haptic device to a larger virtual workspace.
 		m_tools[i]->setWorkspaceRadius(6);
 		//m_tools[i]->setWorkspaceRadius(12);
-
+		m_tools[i]->m_hapticPointFinger->m_sphereProxy->m_material->m_emission.setBlueCyan();
+		m_tools[i]->m_hapticPointThumb->m_sphereProxy->m_material->m_emission.setBlueCyan();
 		m_tools[i]->translate(0, (1 - 2 * i) * 0, -5);
 		//m_tools[i]->translate(0, (1 - 2 * i) * 12.5, 7);
 		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
@@ -196,7 +197,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	cMaterial mat;
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), cMatrix3d(0, 1, 0, 90));
 	resetButton->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 90);
-	resetButton->translate(cVector3d(-1.5, 0, -6.5));
+	resetButton->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), -30);
+	resetButton->setLocalPos(cVector3d(-1, 0, -6.5));
 	mat.setHapticTriangleSides(true, true);
 	mat.setDynamicFriction(0.2);
 	mat.setStaticFriction(0.2);
@@ -434,7 +436,6 @@ void cAroundTheClockLevel::updateHaptics(void)
 				if (timerHandSwaps > 1.0) {
 					handSwaps++;
 					timerHandSwaps = 0.0;
-					cout << "grip";
 				}
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
 				startrotCube.copyfrom(ODEBody0->getLocalRot());
@@ -811,12 +812,16 @@ void cAroundTheClockLevel::ResetSim() {
 	}
 	for (int i = 0; i < 12; i++) {
 		DetectionPlanesFinished[i] = false;
+		end1[i] = false;
+		end2[i] = false;
+		DetectionPlanes[i]->m_material->m_emission.setRed();
 	}
 	ringsCrossed = 0;
 	start = false;
 	firstCatch = true;
 	handSwaps = 0;
 	saved = false;
+	cout << "fait";
 }
 
 void cAroundTheClockLevel::Start() {

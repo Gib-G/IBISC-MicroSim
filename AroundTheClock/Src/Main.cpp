@@ -508,8 +508,6 @@ int main(int argc, char* argv[])
 	// stiffness properties
 	double maxStiffness = hapticDeviceInfo.m_maxLinearStiffness / workspaceScaleFactor;
 
-	cout << "maxStiffness" << maxStiffness << endl;
-
 	// create an ODE world to simulate dynamic bodies
 	ODEWorld = new cODEWorld(world);
 
@@ -565,7 +563,7 @@ int main(int argc, char* argv[])
 
 	// add mesh to ODE object
 	ODEBody0->setImageModel(object0);
-	ODEBodytest->setImageModel(objecttest);
+	//ODEBodytest->setImageModel(objecttest);
 
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
@@ -676,7 +674,7 @@ int main(int argc, char* argv[])
 	cMaterial matGround;
 	matGround.setStiffness(maxStiffness);
 	matGround.setDynamicFriction(0.2);
-	matGround.setStaticFriction(0.0);
+	matGround.setStaticFriction(0.2);
 	matGround.setGray();
 	matGround.m_emission.setGrayLevel(0.3);
 	ground->setMaterial(matGround);

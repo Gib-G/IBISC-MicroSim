@@ -121,3 +121,18 @@ void cGenericLevel::setTorqueGain(double a_torqueGain)
 {
     m_torqueGain = a_torqueGain;
 }
+
+
+void cGenericLevel::ZoomCamera() {
+    movementVector.zero();
+    if (Zoom_In == 0) {
+        movementVector = m_camera->getUpVector();
+        movementVector.negate();
+    }
+    else if (Zoom_Out == 0) {
+        movementVector = m_camera->getUpVector();
+    }
+    movementVector.mul(deltaTime);
+    movementVector.mul(moveSpeed);
+    m_camera->translate(movementVector);
+}

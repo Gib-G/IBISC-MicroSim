@@ -9,10 +9,12 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	const int a_numDevices,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
 	std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
-	cLevelHandler* levelHandler) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
+	cLevelHandler* levelHandler,
+	std::string NC) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
 
 	m_levelHandler = levelHandler;
-	m_grid = new cGridLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1,"");
+	m_grid = new cGridLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1,NC);
+	m_around = new cAroundTheClockLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1, NC);
 
 	//--------------------------------------------------------------------------
 	// CREATE ENVIRONMENT MAP
@@ -43,6 +45,23 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	cMatrix3d rot;
 	//----------------------------------------------------------------------
 
+	light = new cSpotLight(m_world);
+
+	// add light to world
+	m_world->addChild(light);
+
+	// enable light source
+	light->setEnabled(true);
+
+	// position the light source
+	light->setLocalPos(3.5, 2.0, 2.0);
+
+	// define the direction of the light beam
+	light->setDir(-3.5, -2.0, -2.0);
+
+	// set light cone half angle
+	light->setCutOffAngleDeg(50);
+
 	gridLevelButton = new cMesh();
 	m_world->addChild(gridLevelButton);
 	cMaterial mat;
@@ -69,11 +88,11 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	mat.setTextureLevel(1);
 	mat.setHapticTriangleSides(true, false);
 	gridLevelButton->m_texture = cTexture2d::create();
-	fileload = gridLevelButton->m_texture->loadFromFile(RESOURCE_PATH("../resources/Images/gridLevelButton.png"));
+	fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/1.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/gridLevelButton.png");
+		fileload = gridLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/1.png");
 #endif
 	}
 	if (!fileload)
@@ -91,54 +110,53 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	// compute collision detection algorithm
 	gridLevelButton->createAABBCollisionDetector(toolRadius);
 
+	aroundLevelButton = new cMesh();
+	m_world->addChild(aroundLevelButton);
+	rot.identity();
+	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 1, 0), 90);
+	cCreatePanel(aroundLevelButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
+	aroundLevelButton->translate(cVector3d(-.4, 0.5, -0.45));
+	/*
+	cFontPtr font = NEW_CFONTCALIBRI20();
+	cLabel* label = new cLabel(font);
+	label->m_fontColor.setBlack();
+	label->setText("Reset");
+	aroundLevelButton->addChild(label);*/
 
-	
-	//--------------------------------------------------------------------------
-	// CREATE SHADERS
-	//--------------------------------------------------------------------------
+	aroundLevelButton->m_material->setStiffness(0.5 * maxStiffness);
+	aroundLevelButton->m_material->setStaticFriction(0.30);
+	aroundLevelButton->m_material->setDynamicFriction(0.30);
 
-	// create vertex shader
-	cShaderPtr vertexShader = cShader::create(C_VERTEX_SHADER);
-
-	// load vertex shader from file
-	fileload = vertexShader->loadSourceFile(RESOURCE_PATH("../resources/Shaders/bump.vert"));
+	// compute collision detection algorithm
+	mat.setHapticTriangleSides(true, true);
+	mat.setDynamicFriction(0.2);
+	mat.setStaticFriction(0.2);
+	mat.setStiffness(0.3 * maxStiffness);
+	mat.setTextureLevel(1);
+	mat.setHapticTriangleSides(true, false);
+	aroundLevelButton->m_texture = cTexture2d::create();
+	fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "resources/Images/2.png");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = vertexShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.vert");
+		fileload = aroundLevelButton->m_texture->loadFromFile(ROOT_DIR "Resources/Images/2.png");
 #endif
 	}
-
-	// create fragment shader
-	cShaderPtr fragmentShader = cShader::create(C_FRAGMENT_SHADER);
-
-	// load fragment shader from file
-	fileload = fragmentShader->loadSourceFile(RESOURCE_PATH("../resources/Shaders/bump.frag"));
 	if (!fileload)
 	{
-#if defined(_MSVC)
-		fileload = fragmentShader->loadSourceFile(ROOT_DIR "Resources/Shaders/bump.frag");
-#endif
+		cout << "Error - Texture image failed to load correctly." << endl;
 	}
+	aroundLevelButton->m_texture->setEnvironmentMode(GL_DECAL);
+	// enable texture rendering 
+	aroundLevelButton->setUseTexture(true);
 
-	// create program shader
-	cShaderProgramPtr programShader = cShaderProgram::create();
+	// Since we don't need to see our polygons from both sides, we enable culling.
+	aroundLevelButton->setUseCulling(false, true);
 
-	// assign vertex shader to program shader
-	programShader->attachShader(vertexShader);
 
-	// assign fragment shader to program shader
-	programShader->attachShader(fragmentShader);
-
-	// link program shader
-	programShader->linkProgram();
-
-	// set uniforms
-	programShader->setUniformi("uColorMap", 0);
-	programShader->setUniformi("uShadowMap", 0);
-	programShader->setUniformi("uNormalMap", 2);
-	programShader->setUniformf("uInvRadius", 0.0f);
-
+	// compute collision detection algorithm
+	aroundLevelButton->createAABBCollisionDetector(toolRadius);
+	aroundLevelButton->translate(cVector3d(0, -1,0));
 
 	//--------------------------------------------------------------------------
 	// CREATE ENVIRONMENT GLOBE
@@ -161,11 +179,11 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	// create a texture
 	cTexture2dPtr textureSpace = cTexture2d::create();
 
-	fileload = textureSpace->loadFromFile(RESOURCE_PATH("../resources/Images/sky.jpg"));
+	fileload = textureSpace->loadFromFile(ROOT_DIR "resources/Images/grey.jpg");
 	if (!fileload)
 	{
 #if defined(_MSVC)
-		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/sky.jpg");
+		fileload = textureSpace->loadFromFile(ROOT_DIR "Resources/Images/grey.jpg");
 #endif
 	}
 	if (!fileload)
@@ -306,6 +324,9 @@ void cHomeLevel::updateHaptics() {
 	/////////////////////////////////////////////////////////////////////
 		if (m_tools[i]->isInContact(gridLevelButton) && button == true) {
 			m_levelHandler->setLevel(m_grid);
+		}
+		else if (m_tools[i]->isInContact(aroundLevelButton) && button == true) {
+			m_levelHandler->setLevel(m_around);
 		}
 	}
 

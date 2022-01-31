@@ -508,6 +508,8 @@ int main(int argc, char* argv[])
 	// stiffness properties
 	double maxStiffness = hapticDeviceInfo.m_maxLinearStiffness / workspaceScaleFactor;
 
+	cout << "maxStiffness" << maxStiffness << endl;
+
 	// create an ODE world to simulate dynamic bodies
 	ODEWorld = new cODEWorld(world);
 

@@ -59,6 +59,7 @@ public:
     cMesh* object2[MAX_DEVICES];
     cMesh* object3[MAX_DEVICES];;
     cMesh* ground;
+    cMesh* resetButton;
     // ODE objects
     cODEGenericBody* ODEGPlane0;
     cODEGenericBody* ODEGPlane1;

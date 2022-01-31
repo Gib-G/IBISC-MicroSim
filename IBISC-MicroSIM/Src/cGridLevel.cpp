@@ -23,6 +23,8 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	//--------------------------------------------------------------------------
 	// CREATE ENVIRONMENT MAP
 	//--------------------------------------------------------------------------
+	defaultPos = cVector3d(0.3, 0, 0.5);
+	// position and orient the camera
 
 	////////////////////////////////////////////////////////////////////////////
 	// CREATE GROUND

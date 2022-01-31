@@ -82,6 +82,9 @@ bool camSim = false;
 // haptic thread
 cThread* hapticsThread;
 
+//Arduino Thread
+cThread* ArduinoThread;
+
 // a handle to window display context
 GLFWwindow* window = NULL;
 
@@ -95,6 +98,7 @@ string NumCandidate;
 
 int swapInterval = 1;
 bool fullscreen = false;
+bool arduino = false;
 
 
 //---------------------------------------------------------------------------
@@ -123,6 +127,7 @@ cOVRRenderContext renderContext;
 // oculus device
 cOVRDevice oculusVR;
 
+char com_port[] = "\\\\.\\COM ";
 
 //------------------------------------------------------------------------------
 // DECLARED MACROS
@@ -147,6 +152,13 @@ void errorCallback(int error, const char* a_description);
 
 // callback when a key is pressed
 void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods);
+
+void ZoomCam(void);
+void UpdatePreferences(string num);
+char* FetchPreferences(void);
+
+void ReadPort();
+
 
 
 //==============================================================================
@@ -336,10 +348,10 @@ int main(int argc, char** argv)
     // DEMOS
     //-----------------------------------------------------------------------
     levelHandler = new cLevelHandler(&oculusVR);
-    m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
-    //m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler);
-    m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
-    levelHandler->setLevel(m_grid);
+    //m_grid = new cGridLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
+    m_home = new cHomeLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1, levelHandler,NumCandidate);
+    //m_around = new cAroundTheClockLevel(resourceRoot, numDevices, m_hapticDevice0, m_hapticDevice1,NumCandidate);
+    levelHandler->setLevel(m_home);
 
     //--------------------------------------------------------------------------
     // START SIMULATION
@@ -348,6 +360,9 @@ int main(int argc, char** argv)
     // create a thread which starts the main haptics rendering loop
     hapticsThread = new cThread();
     hapticsThread->start(updateHaptics, CTHREAD_PRIORITY_HAPTICS);
+
+    ArduinoThread = new cThread();
+    ArduinoThread->start(ReadPort, CTHREAD_PRIORITY_GRAPHICS);
 
     // setup callback when application exits
     atexit(close);
@@ -386,6 +401,7 @@ int main(int argc, char** argv)
                 levelHandler->mainLevel->m_camera->m_useCustomModelViewMatrix = true;
                 levelHandler->mainLevel->m_camera->m_modelViewMatrix = modelViewMatrix;
 
+                if (arduino)levelHandler->mainLevel->ZoomCamera();
                 // render world
                 ovrSizei size = oculusVR.getEyeTextureSize(eyeIndex);
                 levelHandler->mainLevel->m_camera->renderView(size.w, size.h, C_STEREO_LEFT_EYE, false);
@@ -400,6 +416,7 @@ int main(int argc, char** argv)
         }
         else {
             //cout << width << " " << height << endl;
+            if (arduino)levelHandler->mainLevel->ZoomCamera();
             levelHandler->mainLevel->m_camera->renderView(width, height);
             levelHandler->mainLevel->updateGraphics();
         }
@@ -488,6 +505,7 @@ void close(void)
 
     // delete resources
     delete hapticsThread;
+    delete ArduinoThread;
     delete levelHandler;
     delete m_first;
     delete m_grid;
@@ -515,4 +533,73 @@ void updateHaptics(void)
 
     // exit haptics thread
     simulationFinished = true;
+}
+
+void UpdatePreferences(string ComPort) {
+    std::stringstream temp;
+    std::ofstream UserInfo;
+    UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
+    UserInfo << ComPort << endl;
+    UserInfo << NumCandidate << endl;
+    UserInfo.close();
+}
+char* FetchPreferences() {
+    std::ifstream UserInfo;
+    std::string comport;
+    UserInfo.open(ROOT_DIR "Resources/CSV/Temp/UserInfo.txt");
+    getline(UserInfo, comport);
+    //getline(UserInfo, NumCandidate);
+    UserInfo.close();
+    for (int i = 0; i < comport.length(); i++) {
+        com_port[7 + i] = comport[i];
+    }
+    for (int j = comport.length() + 7; j < 9; j++) {
+        com_port[j] = '\0';
+    }
+    return com_port;
+}
+
+void ReadPort() {
+    int reply_wait_time = 1;
+    string incoming;
+    int nb_info = 2;
+    DWORD COM_BAUD_RATE = CBR_19200;
+    SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+    if (!Serial.connected_) {
+        string num;
+        cout << "Current Arduino Port : ";
+        getline(cin, num);
+        if (num != "") {
+            UpdatePreferences(num);
+        }
+        SimpleSerial Serial(FetchPreferences(), COM_BAUD_RATE);
+        if (Serial.connected_) {
+            cout << "Zoom through Arduino enabled" << endl;
+        }
+        else {
+            cout << "No Arduino detected" << endl;
+        }
+    }
+    else {
+        cout << "Zoom through Arduino enabled" << endl;
+    }
+    while (!simulationFinished && Serial.connected_) {
+        arduino = true;
+        incoming = Serial.ReadSerialPort(reply_wait_time);
+        if (incoming.length() > 0) {
+            if (incoming == "1") {
+                levelHandler->mainLevel->Zoom_Out = 0;
+                levelHandler->mainLevel->Zoom_In = 1;
+            }
+            else if (incoming == "2") {
+                levelHandler->mainLevel->Zoom_In = 0;
+                levelHandler->mainLevel->Zoom_Out = 1;
+            }
+            else {
+                levelHandler->mainLevel->Zoom_Out = 1;
+                levelHandler->mainLevel->Zoom_In = 1;
+            }
+        }
+    }
+    if (Serial.connected_) Serial.CloseSerialPort();
 }

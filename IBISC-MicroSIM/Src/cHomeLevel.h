@@ -6,6 +6,7 @@
 #include "cLevelHandler.h"
 #include "chai3d.h"
 #include "cGridLevel.h"
+#include "cAroundTheClockLevel.h"
 
 class cHomeLevel : public cToolCursorLevel
 {
@@ -16,7 +17,8 @@ public:
         const int a_numDevices,
         std::shared_ptr<cGenericHapticDevice> a_hapticDevice0,
         std::shared_ptr<cGenericHapticDevice> a_hapticDevice1,
-        cLevelHandler* levelHandler);
+        cLevelHandler* levelHandler,
+        std::string NC);
 
     virtual ~cHomeLevel() {};
 
@@ -32,8 +34,10 @@ public:
 
     cLevelHandler* m_levelHandler;
     cGridLevel* m_grid;
+    cAroundTheClockLevel* m_around;
 
     cMesh* gridLevelButton;
+    cMesh* aroundLevelButton;
     
     cMode state[MAX_DEVICES];
     cGenericObject* selectedObject[MAX_DEVICES];

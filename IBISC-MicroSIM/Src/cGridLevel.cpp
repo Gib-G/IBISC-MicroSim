@@ -294,6 +294,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 		cout << "Error - Texture image failed to load correctly." << endl;
 	}
 	resetButton->m_texture->setEnvironmentMode(GL_DECAL);
+	resetButton->setMaterial(mat);
 	// enable texture rendering 
 	resetButton->setUseTexture(true);
 

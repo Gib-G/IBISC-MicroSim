@@ -32,7 +32,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		maxStiffness = 3;
 	}
 
-	m_world->m_backgroundColor.setWhite();
+	m_world->m_backgroundColor.setGray();
 
 	m_camera->set(cVector3d(2.5, 0.0, 0.3),    // camera position (eye)
 		cVector3d(0.0, 0.0, -0.5),    // lookat position (target)
@@ -263,7 +263,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	matGround.setStiffness(maxStiffness * 2);
 	matGround.setDynamicFriction(0.2);
 	matGround.setStaticFriction(0.0);
-	matGround.setGray();
+	matGround.setGrayDark();
 	matGround.m_emission.setGrayLevel(0.3);
 	ground->setMaterial(matGround);
 	// setup collision detector

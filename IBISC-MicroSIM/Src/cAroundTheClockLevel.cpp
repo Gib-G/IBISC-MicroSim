@@ -16,7 +16,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	int w;
 	std::stringstream streamstr;
 	NumCandidate = NC;
-	defaultPos = cVector3d(0.51, 0.01, -5.18);
+	defaultPos = cVector3d(0.51, 0.01, -3.18);
 	defaultRot.setCol0(cVector3d(0.26, 0, 0.96));
 	defaultRot.setCol1(cVector3d(0.01, 1.00, 0));
 	defaultRot.setCol2(cVector3d(-0.96, 0, 0.26));
@@ -478,7 +478,6 @@ void cAroundTheClockLevel::updateHaptics(void)
 				for (int s = 0; s < 8; s++) {
 						if (ground->computeCollisionDetection(CollisionSphereFront[s]->getLocalPos() + CollisionSphereFront[s]->getGlobalPos(), CollisionSphereBack[s]->getLocalPos() + CollisionSphereBack[s]->getGlobalPos(), recorder, settings)) {
 							iltouche = true;
-							cout << "il touche ground";
 						}
 						for (int j = 0; j < 12; j++) {
 
@@ -486,7 +485,6 @@ void cAroundTheClockLevel::updateHaptics(void)
 							if (ODEBody1[j]->computeCollisionDetection(CollisionSphereFront[s]->getLocalPos() + CollisionSphereFront[s]->getGlobalPos(), CollisionSphereBack[s]->getLocalPos() + CollisionSphereBack[s]->getGlobalPos(), recorder, settings)) {
 								iltouche = true;
 								object1[j]->m_material->setYellow();
-								cout << "il touche object1[" << j;
 							}
 							else {
 								object1[j]->m_material->setBlueRoyal();
@@ -854,7 +852,7 @@ void cAroundTheClockLevel::ResetSim() {
 	firstCatch = true;
 	handSwaps = 0;
 	saved = false;
-
+	resetButton->setEnabled(false);
 	cout << "sim is reset" << endl;
 }
 

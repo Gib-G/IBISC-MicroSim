@@ -40,7 +40,7 @@ cToolCursorLevel::cToolCursorLevel(const std::string a_resourceRoot,
 	{
 		m_tool1 = new cToolCursor(m_world);
 		m_world->addChild(m_tool1);
-		m_tool1->setHapticDevice(shared_ptr<cGenericHapticDevice>(a_hapticDevice0));
+		m_tool1->setHapticDevice(shared_ptr<cGenericHapticDevice>(a_hapticDevice1));
 		m_tool1->setRadius(toolRadius);
 		m_tool1->enableDynamicObjects(true);
 		m_tool1->setWaitForSmallForce(true);

@@ -636,7 +636,6 @@ void cGridLevel::updateHaptics() {
 	frequencyCounter.signal(1);
 	for (int i = 0; i < m_numTools; i++)
 	{
-
 		stylus[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
 		stylus[i]->setLocalPos(m_tools[i]->m_hapticPoint->getLocalPosProxy() + stylus[i]->getLocalRot() * cVector3d(0.1, 0, 0));
 		/////////////////////////////////////////////////////////////////////

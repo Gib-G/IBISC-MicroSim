@@ -187,6 +187,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12) * 0.7, sin(i * 2 * M_PI / 12) * 0.7, -7);
 		AddDetectionPlane(i, ODEBody1[i]);
+		ODEBody1[i]->updateBodyPosition();
 		crossing[i] = false;
 		end1[i] = false;
 		end2[i] = false;
@@ -341,7 +342,6 @@ void cAroundTheClockLevel::updateHaptics(void)
 	/////////////////////////////////////////////////////////////////////
 	// SIMULATION TIME
 	/////////////////////////////////////////////////////////////////////
-
 	// stop the simulation clock
 	simClock.stop();
 	// read the time increment in seconds
@@ -471,29 +471,30 @@ void cAroundTheClockLevel::updateHaptics(void)
 					ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
 				}
 
-				//bool iltouche = false;
-				//for (int z = -1; z <= 1; z += 2) {
-				//	for (int y = -1; y <= 1; y += 2) {
-				//		double size = 0.4;
-				//		ODEBody0->setLocalPos(ODEBody0->getLocalPos() + cVector3d(0, y, z));
-				//		if (ground->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
-				//			iltouche = true;
-				//			cout << "il touche ODEGPlane1";
-				//		}
-				//		for (int j = 0; j < 12; j++) {
-				//			if (object1[j]->computeCollisionDetection(DetectSphere[0]->getGlobalPos(), DetectSphere[4]->getLocalPos(), recorder, settings)) {
-				//				iltouche = true;
-				//				cout << "il touche ODEGBody[" << j << "],y=" << y << ",z=" << z << " ";
-				//				object1[j]->m_material->setYellow();
-				//			}
-				//		}
+				bool iltouche = false;
+				for (int s = 0; s < 8; s++) {
+						if (ground->computeCollisionDetection(CollisionSphereFront[s]->getLocalPos() + CollisionSphereFront[s]->getGlobalPos(), CollisionSphereBack[s]->getLocalPos() + CollisionSphereBack[s]->getGlobalPos(), recorder, settings)) {
+							iltouche = true;
+							cout << "il touche ground";
+						}
+						for (int j = 0; j < 12; j++) {
 
-				//		ODEBody0->setLocalPos(ODEBody0->getLocalPos() - cVector3d(0, y, z));
-				//	}
-				//}
-				//if (iltouche) {
-				//	ODEBody0->setLocalRot(temp);
-				//}
+							ODEBody1[j]->updateBodyPosition();
+							if (ODEBody1[j]->computeCollisionDetection(CollisionSphereFront[s]->getLocalPos() + CollisionSphereFront[s]->getGlobalPos(), CollisionSphereBack[s]->getLocalPos() + CollisionSphereBack[s]->getGlobalPos(), recorder, settings)) {
+								iltouche = true;
+								object1[j]->m_material->setYellow();
+								cout << "il touche object1[" << j;
+							}
+							else {
+								object1[j]->m_material->setBlue();
+							}
+						}
+
+					
+				}
+				if (iltouche) {
+					ODEBody0->setLocalRot(temp);
+				}
 
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
 				startrotCube.copyfrom(ODEBody0->getLocalRot());
@@ -638,6 +639,35 @@ void cAroundTheClockLevel::InitializeNeedleDetect() {
 		ODEBody0->addChild(DetectSphere[i]);
 		DetectSphere[i]->translate(size * (-1 + (double)i / (double)2), 0, 0);
 	}
+	for (int i = 0; i < 8; i++) {
+		CollisionSphereBack[i] = new cMesh();
+		cCreateSphere(CollisionSphereBack[i], sphereSize / 2);
+		ODEBody0->addChild(CollisionSphereBack[i]);
+		CollisionSphereBack[i]->translate(-size, 0, 0);
+		CollisionSphereFront[i] = new cMesh();
+		cCreateSphere(CollisionSphereFront[i], sphereSize / 2);
+		ODEBody0->addChild(CollisionSphereFront[i]);
+		CollisionSphereFront[i]->translate(size, 0, 0);
+	}
+	double offset = 0.001;
+	double pos = size * 0.05 + offset;
+	CollisionSphereBack[0]->translate(0, -pos, -pos);
+	CollisionSphereBack[1]->translate(0, -pos, 0);
+	CollisionSphereBack[2]->translate(0, -pos, pos);
+	CollisionSphereBack[3]->translate(0, 0, -pos);
+	CollisionSphereBack[4]->translate(0, 0, pos);
+	CollisionSphereBack[5]->translate(0, pos, -pos);
+	CollisionSphereBack[6]->translate(0, pos, 0);
+	CollisionSphereBack[7]->translate(0, pos, pos);
+
+	CollisionSphereFront[0]->translate(0, -pos, -pos);
+	CollisionSphereFront[1]->translate(0, -pos, 0);
+	CollisionSphereFront[2]->translate(0, -pos, pos);
+	CollisionSphereFront[3]->translate(0, 0, -pos);
+	CollisionSphereFront[4]->translate(0, 0, pos);
+	CollisionSphereFront[5]->translate(0, pos, -pos);
+	CollisionSphereFront[6]->translate(0, pos, 0);
+	CollisionSphereFront[7]->translate(0, pos, pos);
 }
 
 cVector3d cAroundTheClockLevel::toAxisAngleVec(cMatrix3d m) {

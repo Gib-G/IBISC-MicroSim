@@ -38,6 +38,7 @@ public:
     void RotateCanvas();
     void ResetSim(int pattern);
     void SaveData();
+    virtual void init();
 
 
 public:

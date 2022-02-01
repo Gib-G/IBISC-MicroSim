@@ -16,7 +16,10 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	int w;
 	std::stringstream streamstr;
 	NumCandidate = NC;
-	defaultPos = cVector3d(2.7, 0, -6.6);
+	defaultPos = cVector3d(0.51, 0.01, -5.18);
+	defaultRot.setCol0(cVector3d(0.26, 0, 0.96));
+	defaultRot.setCol1(cVector3d(0.01, 1.00, 0));
+	defaultRot.setCol2(cVector3d(-0.96, 0, 0.26));
 	saved = false;
 	if (a_numDevices > 0) {
 		cHapticDeviceInfo hapticDeviceInfo = a_hapticDevice0->getSpecifications();
@@ -817,10 +820,16 @@ void cAroundTheClockLevel::ResetSim() {
 	firstCatch = true;
 	handSwaps = 0;
 	saved = false;
+
+	cout << "sim is reset" << endl;
 }
 
 void cAroundTheClockLevel::Start() {
 	start = true;
 	resetButton->setEnabled(true);
 	handSwaps = 0;
+}
+
+void cAroundTheClockLevel::init() {
+	ResetSim();
 }

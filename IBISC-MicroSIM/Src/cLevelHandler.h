@@ -12,6 +12,7 @@ public:
 
 public:
 	virtual void setLevel(cGenericLevel* level);
+	virtual void resetCamera();
 
 public:
 	cGenericLevel* mainLevel;

@@ -109,6 +109,7 @@ public:
     double lastFrame;
 
     cVector3d defaultPos;
+    cMatrix3d defaultRot;
 
     int Zoom_In = 1;
     int Zoom_Out = 1;

@@ -45,6 +45,11 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	cMatrix3d rot;
 	//----------------------------------------------------------------------
 
+	defaultPos = cVector3d(1.94, 0, -0.62);
+	defaultRot.setCol0(cVector3d(1,0,0));
+	defaultRot.setCol1(cVector3d(0,1,0));
+	defaultRot.setCol2(cVector3d(0,0,1));
+
 	light = new cSpotLight(m_world);
 
 	// add light to world

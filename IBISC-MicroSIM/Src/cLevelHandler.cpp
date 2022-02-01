@@ -7,6 +7,12 @@ cLevelHandler::cLevelHandler(cOVRDevice* o){
 
 void cLevelHandler::setLevel(cGenericLevel* level) {
 	mainLevel = level;
-	mainLevel->m_camera->setLocalPos(mainLevel->defaultPos);
+	resetCamera();
+	mainLevel->init();
 	oculusVR->recenterPose();
+}
+
+void cLevelHandler::resetCamera() {
+	mainLevel->m_camera->setLocalPos(mainLevel->defaultPos);
+	mainLevel->m_camera->setLocalRot(mainLevel->defaultRot);
 }

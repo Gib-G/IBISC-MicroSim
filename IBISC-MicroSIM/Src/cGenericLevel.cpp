@@ -19,6 +19,7 @@ cGenericLevel::cGenericLevel(const string a_resourceRoot,
     bool fileload;
 
     defaultPos = cVector3d(0, 0, 0);
+    defaultRot = cMatrix3d(cVector3d(0, 0, 0), cVector3d(0, 0, 0), cVector3d(0, 0, 0));
 
     lastFrame = glfwGetTime();
 

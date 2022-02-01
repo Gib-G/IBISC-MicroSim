@@ -24,6 +24,9 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// CREATE ENVIRONMENT MAP
 	//--------------------------------------------------------------------------
 	defaultPos = cVector3d(0.3, 0, 0.5);
+	defaultRot.setCol0(cVector3d(0.24, 0, 0.97));
+	defaultRot.setCol1(cVector3d(0.01, 1.00, 0));
+	defaultRot.setCol2(cVector3d(-0.97, 0, 0.24));
 	// position and orient the camera
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1054,4 +1057,8 @@ void cGridLevel::SaveData() {
 	for (int k = 0; k < m_numTools; k++) {
 		tempfile[k] << std::get<0>(posData[k]) << " , " << std::get<1>(posData[k]) << endl;
 	}
+}
+
+void cGridLevel::init() {
+	ResetSim(pattern);
 }

@@ -32,6 +32,7 @@ public:
     void SaveResults(void);
     void Start(void);
     void ResetSim(void);
+    virtual void init();
 
 public:
     bool previousframecaught[MAX_DEVICES];

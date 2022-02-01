@@ -488,8 +488,9 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
     // option - spacebar
     else if (a_key == GLFW_KEY_ENTER)
     {
-        levelHandler->mainLevel->m_camera->setLocalPos(levelHandler->mainLevel->defaultPos);
+        levelHandler->resetCamera();
         oculusVR.recenterPose();
+
 
     }
     else if (a_key == GLFW_KEY_F && a_action == GLFW_PRESS)

@@ -314,6 +314,8 @@ void cAroundTheClockLevel::moveCamera() {
 	cameraPos.add(movementVector);
 	m_camera->setLocalPos(cameraPos);
 
+	needleFirstSide = NONE;
+
 }
 
 void cAroundTheClockLevel::keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, int a_mods) {
@@ -756,7 +758,8 @@ void cAroundTheClockLevel::AddDetectionPlane(int i, cODEGenericBody* ring) {
 	ODEWorld->addChild(DetectionPlanes[i]);
 	//cCreatePanel(DetectionPlanes[i], 1, 1,.5,8,ring->getLocalPos(),cMatrix3d(1,0,0,0));
 	cCreateCylinder(DetectionPlanes[i], 0.001, 0.1, 32U, 1U, 1U, true, true, cVector3d(0, 0, 0), cMatrix3d(1, 0, 1, M_PI));
-	DetectionPlanes[i]->m_material->setRed();
+
+	i%2==0? DetectionPlanes[i]->m_material->setRed(): DetectionPlanes[i]->m_material->setBlue();
 	DetectionPlanes[i]->setLocalPos(ring->getLocalPos());
 	DetectionPlanes[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 	DetectionPlanes[i]->createAABBCollisionDetector(0.02);
@@ -775,12 +778,43 @@ void cAroundTheClockLevel::ComputeCrossing(cMesh* spheres[], int i) {
 	}
 	else {
 		if (end1[i] && end2[i]) {
-			DetectionPlanes[i]->m_material->m_emission.setGreen();
-			DetectionPlanesFinished[i] = true;
-			ringsCrossed++;
+
+			double dot = 0;
+
+			if (needleFirstSide == END1) {
+
+				cVector3d needleMovementVector = cVector3d(pos0);
+				needleMovementVector -= pos3;
+				cVector3d circleVector = cVector3d(DetectionPlanes[i]->getGlobalPos());
+				circleVector -= cVector3d(0.0, 0.0, -7.5);
+
+				dot = needleMovementVector.dot(circleVector);
+
+
+			}else if(needleFirstSide == END2) {
+			
+				cVector3d needleMovementVector = cVector3d(pos3);
+				needleMovementVector -= pos0;
+				cVector3d circleVector = cVector3d(DetectionPlanes[i]->getGlobalPos());
+				circleVector -= cVector3d(0.0, 0.0, -7.5);
+
+				dot = needleMovementVector.dot(circleVector);
+
+			}
+
+			cout << dot << endl;
+
+			needleFirstSide = NONE;
+
+			if (i % 2 == 0 && dot < 0 || i % 2 == 1 && dot>0) {
+				DetectionPlanes[i]->m_material->m_emission.setGreen();
+				DetectionPlanes[i]->m_material->setGreen();
+				DetectionPlanesFinished[i] = true;
+				ringsCrossed++;
+			}
 		}
 		if (!DetectionPlanesFinished[i]) {
-			DetectionPlanes[i]->m_material->m_emission.setRed();
+			i % 2 == 0 ? DetectionPlanes[i]->m_material->m_emission.setRed() : DetectionPlanes[i]->m_material->m_emission.setBlue();
 			end1[i] = false;
 			end2[i] = false;
 		}
@@ -788,9 +822,12 @@ void cAroundTheClockLevel::ComputeCrossing(cMesh* spheres[], int i) {
 	if (crossing[i]) {
 		if (DetectionPlanes[i]->computeCollisionDetection(pos0, pos1, recorder, settings)) {
 			end1[i] = true;
+			if (needleFirstSide == NONE) needleFirstSide = END1;
+			
 		}
 		if (DetectionPlanes[i]->computeCollisionDetection(pos2, pos3, recorder, settings)) {
 			end2[i] = true;
+			if (needleFirstSide == NONE) needleFirstSide = END2;
 		}
 	}
 }

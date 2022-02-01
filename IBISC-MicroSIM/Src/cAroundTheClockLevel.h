@@ -4,6 +4,13 @@
 #include "cToolGripperLevel.h"
 #include <CODE.h>
 
+enum cNeedleSideMode
+{
+    NONE,
+    END1,
+    END2
+};
+
 class cAroundTheClockLevel : public cToolGripperLevel
 {
 
@@ -82,6 +89,7 @@ public:
     bool crossing[12];
     bool end1[12];
     bool end2[12];
+    cNeedleSideMode needleFirstSide; //side of the needle that touches the circle first: false if end1, true if end2
     double sphereSize = 0.01;
 
     bool start;

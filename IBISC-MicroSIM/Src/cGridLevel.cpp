@@ -335,7 +335,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 
 	// compute collision detection algorithm
 	saveButton->createAABBCollisionDetector(toolRadius);
-
+	saveButton->setEnabled(false);
 	startButton = new cMesh();
 	m_world->addChild(startButton);
 	cCreatePanel(startButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
@@ -957,6 +957,7 @@ void cGridLevel::Start() {
 		timer->setEnabled(false, true);
 	}
 	ResetCanvas(pattern);
+	saveButton->setEnabled(true);
 	startButton->setEnabled(false);
 	changeButton->setEnabled(false);
 	rotateButton->setEnabled(false);
@@ -1005,6 +1006,7 @@ void cGridLevel::SaveCanvas() {
 		startButton->setEnabled(true);
 		changeButton->setEnabled(true);
 		rotateButton->setEnabled(true);
+		saveButton->setEnabled(false);
 		start = false;
 		timerNum = 0;
 	}
@@ -1036,6 +1038,7 @@ void cGridLevel::ResetSim(int pattern) {
 		startButton->setEnabled(true);
 		changeButton->setEnabled(true);
 		rotateButton->setEnabled(true);
+		saveButton->setEnabled(false);
 		start = false;
 		timerNum = 0;
 		DisplayTimer(timerNum);

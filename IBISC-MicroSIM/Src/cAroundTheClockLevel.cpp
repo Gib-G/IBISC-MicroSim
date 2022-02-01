@@ -275,6 +275,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	hapticPlane->setMaterial(matGround);
 	hapticPlane->setTransparencyLevel(0, true);
 	hapticPlane->createAABBCollisionDetector(toolRadius);
+	hapticPlane->setStiffness(maxStiffness * 5);
 }
 
 void cAroundTheClockLevel::moveCamera() {

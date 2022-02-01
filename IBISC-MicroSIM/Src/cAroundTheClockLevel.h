@@ -74,6 +74,8 @@ public:
     cCollisionRecorder recorder;
     cCollisionSettings settings;
     cMesh* DetectSphere[5];
+    cMesh* CollisionSphereBack[8];
+    cMesh* CollisionSphereFront[8];
     cMesh* DetectionPlanes[12];
     bool DetectionPlanesFinished[12];
     cMesh* testPlane;

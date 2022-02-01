@@ -12,6 +12,7 @@ cHomeLevel::cHomeLevel(const std::string a_resourceRoot,
 	cLevelHandler* levelHandler,
 	std::string NC) : cToolCursorLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1) {
 
+	defaultPos = cVector3d(2,0,-0.5);
 	m_levelHandler = levelHandler;
 	m_grid = new cGridLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1,NC);
 	m_around = new cAroundTheClockLevel(a_resourceRoot, a_numDevices, a_hapticDevice0, a_hapticDevice1, NC);

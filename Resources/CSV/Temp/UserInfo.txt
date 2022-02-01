@@ -1,2 +1,2 @@
-void cGridLevel::init() {
+8
 

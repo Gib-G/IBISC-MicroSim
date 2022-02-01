@@ -541,7 +541,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 		cCreateBox(stylus[i], 0.2, 0.01, 0.01);
 		m_tools[i]->addChild(stylus[i]);
 		stylus[i]->m_material->setGray();
-
+		m_tools[i]->translate(0, 0, -0.1);
 
 	}
 

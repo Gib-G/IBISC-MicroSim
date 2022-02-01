@@ -486,7 +486,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 								cout << "il touche object1[" << j;
 							}
 							else {
-								object1[j]->m_material->setBlue();
+								object1[j]->m_material->setBlueRoyal();
 							}
 						}
 

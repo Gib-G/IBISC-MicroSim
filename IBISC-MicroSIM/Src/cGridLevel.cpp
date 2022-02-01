@@ -758,7 +758,8 @@ void cGridLevel::ResetCanvas(int pattern) {
 	for (int k = 0; k < m_numTools; k++) {
 		posData[k] = tuple<float, cVector3d>(0, m_tools[k]->getDeviceGlobalPos());
 	}
-	if (!start) canvasTraining->copyTo(canvas->m_texture->m_image);
+	if (!start && pattern!=2) canvasTraining->copyTo(canvas->m_texture->m_image);
+	else if(pattern ==2) customPattern->copyTo(canvas->m_texture->m_image);
 	else canvasOriginal->copyTo(canvas->m_texture->m_image);
 	cubesize = 1024.0f / numCube;
 	goalPixels = 0;
@@ -781,7 +782,6 @@ void cGridLevel::ResetCanvas(int pattern) {
 		canvas->m_texture->markForUpdate();
 		break;
 	case 2:
-		customPattern->copyTo(canvas->m_texture->m_image);
 		for (int x = 0; x < 1024; x++) {
 			for (int y = 0; y < 1024; y++) {
 				cColorb getcolor;

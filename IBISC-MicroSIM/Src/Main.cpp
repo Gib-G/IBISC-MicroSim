@@ -444,8 +444,9 @@ int main(int argc, char** argv)
             //cout << width << " " << height << endl;
             if (arduino)levelHandler->mainLevel->ZoomCamera();
             levelHandler->mainLevel->m_camera->renderView(width, height);
-            levelHandler->mainLevel->updateGraphics();
         }
+
+        levelHandler->mainLevel->updateGraphics();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

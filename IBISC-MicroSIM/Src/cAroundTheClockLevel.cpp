@@ -364,6 +364,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 	m_world->computeGlobalPositions(true);
 	bool caught[MAX_DEVICES];
 	int vientdegrip = -1;
+	bool grabbingBefore = false;
 	for (int i = 0; i < m_numTools; i++) {
 		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 		// get status of user switch
@@ -404,6 +405,9 @@ void cAroundTheClockLevel::updateHaptics(void)
 				Start();
 			}
 		}
+		if (previousframecaught[i]) {
+			grabbingBefore = true;
+		}
 		if (!caught[i]) {
 			previousframecaught[i] = false;
 		}
@@ -441,6 +445,9 @@ void cAroundTheClockLevel::updateHaptics(void)
 			if (vientdegrip == i) {
 				if (timerHandSwaps > 1.0) {
 					handSwaps++;
+					if (grabbingBefore) {
+						cout << "changement de mains";
+					}
 					timerHandSwaps = 0.0;
 				}
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());

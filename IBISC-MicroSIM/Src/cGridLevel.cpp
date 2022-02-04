@@ -427,7 +427,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	canvasPos = cVector3d(-0.2, .025, -1.05);
 	canvas->translate(canvasPos);
-	Objects = new cMultiMesh();
+	Objects = new cMultiMesh(); // interface complète
 	m_world->addChild(Objects);
 	Objects->addChild(resetButton);
 	Objects->addChild(changeButton);
@@ -528,7 +528,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	// disable material properties and lighting
 	globe->setUseMaterial(false);
 
-
+	// ouverture des fichiers temporaire pour stocker les données de trajectoire
 	for (int i = 0; i < m_numTools; i++)
 	{
 		state[i] = IDLE;
@@ -545,6 +545,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	}
 
 	timerNum = 0;
+	//initialisation des stylets des bras haptiques
 	for (int i = 0; i < m_numTools; i++) {
 		stylus[i] = new cMesh();
 		cCreateBox(stylus[i], 0.2, 0.01, 0.01);
@@ -555,7 +556,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	}
 
 }
-
+// mouvements de caméra au clavier
 void cGridLevel::moveCamera() {
 
 	cVector3d cameraPos = m_camera->getLocalPos();
@@ -623,7 +624,7 @@ void cGridLevel::updateGraphics() {
 
 
 }
-
+// boucle haptique
 void cGridLevel::updateHaptics() {
 
 	/////////////////////////////////////////////////////////////////////
@@ -667,11 +668,11 @@ void cGridLevel::updateHaptics() {
 		m_tools[i]->applyToDevice();
 
 		// get status of user switch
-		bool button = m_tools[i]->getUserSwitch(0);
+		bool button = m_tools[i]->getUserSwitch(0); //info du statut du bouton du bras haptique
 		/////////////////////////////////////////////////////////////////////
 	// INTERACTION WITH CANVAS
 	/////////////////////////////////////////////////////////////////////
-		if (m_tools[i]->isInContact(canvas))
+		if (m_tools[i]->isInContact(canvas)) // au contact du canvas
 		{
 			cCollisionEvent* contact = m_tools[i]->m_hapticPoint->getCollisionEvent(0);
 			if (contact != NULL)
@@ -688,10 +689,11 @@ void cGridLevel::updateHaptics() {
 				canvas->m_texture->m_image->getPixelLocation(texCoord, px, py);
 				size[i] = cClamp((K_SIZE), 1.0, (double)(BRUSH_SIZE));
 				force[i] = m_tools[i]->getDeviceGlobalForce().length();
-				if (resetHit) {
+				if (resetHit) {//reset du canvas à l'issue d'une sauvegarde au premier contact
 					ResetCanvas(pattern);
 					resetHit = false;
 				}
+				//zone de coloriage au contact du canvas
 				for (int x = -BRUSH_SIZE; x < BRUSH_SIZE; x++)
 				{
 					for (int y = -BRUSH_SIZE; y < BRUSH_SIZE; y++)
@@ -703,7 +705,7 @@ void cGridLevel::updateHaptics() {
 							// get color at location
 							cColorb color, newColor;
 							canvas->m_texture->m_image->getPixelColor(px + x, py + y, color);
-							if (color != paintColor && color != errorColor && color != warningColor) {
+							if (color != paintColor && color != errorColor && color != warningColor) {//les couleurs utilisées sont ignorées pour ne pas pouvoir corriger une erreur précédente
 								bool hit;
 								hit = PaintCanvas(px + x, py + y, pattern);
 								if (hit) {
@@ -729,7 +731,8 @@ void cGridLevel::updateHaptics() {
 			}
 		}
 		////////////////////////////////////////////////////////////////////
-		//INTERACTIONS WITH BUTTONS
+		//INTERACTIONS WITH BUTTONS 
+		// Les boutons sont utilisables en appuyant sur le bouton du bras haptique puis en entrant en contact avec l'indicateur du bras
 		////////////////////////////////////////////////////////////////////
 		if (m_tools[i]->getHapticPoint(0)->getNumCollisionEvents() > 0) {
 			touching[i] = true;
@@ -763,7 +766,7 @@ void cGridLevel::updateHaptics() {
 	if (start && timerNum > lastSave) SaveData();
 
 }
-
+// permet de réinitialiser l'état du canvas 
 void cGridLevel::ResetCanvas(int pattern) {
 	for (int k = 0; k < m_numTools; k++) {
 		posData[k] = tuple<float, cVector3d>(0, m_tools[k]->getDeviceGlobalPos());
@@ -820,6 +823,7 @@ void cGridLevel::ResetCanvas(int pattern) {
 		break;
 	}
 }
+// permet de déterminer selon le pattern actuel si le pixel touché est correct ou non
 bool cGridLevel::PaintCanvas(int x, int y, int pattern) {
 	bool hit = false;
 	cColorb getcolor;
@@ -849,12 +853,12 @@ bool cGridLevel::PaintCanvas(int x, int y, int pattern) {
 	}
 	return hit;
 }
-
+// fonction de comparaison de vecteurs 
 bool cGridLevel::CompareVectors(cVector3d v1, cVector3d v2) {
 	if (v1.x() != v2.x() || v1.y() != v2.y() || v1.z() != v2.z()) return false;
 	else return true;
 }
-
+//Actualise les mesures pour les sauvegarder dans le fichier csv
 void cGridLevel::GetResult() {
 	errorPixel = 0;
 	totalColoredPixels = 0;
@@ -887,7 +891,7 @@ void cGridLevel::GetResult() {
 	cout << "Pourcentage de complétion : " << correctPercent << "%" << endl;
 	cout << "Pourcentage d'erreurs dues à la pression appliquée : " << forcePercent << "%" << endl;
 }
-
+//affiche en combien de temps l'épreuve a été effectuée
 void cGridLevel::DisplayTimer(float time) {
 
 	timer->setEnabled(true, true);
@@ -948,7 +952,7 @@ void cGridLevel::DisplayTimer(float time) {
 
 	}
 }
-
+//change le pattern actuel de la grille 
 void cGridLevel::ChangePattern() {
 	pattern = (pattern != MAX_PATTERN ? pattern + 1 : 0);
 	ResetCanvas(pattern);
@@ -959,7 +963,7 @@ void cGridLevel::ChangePattern() {
 	fileload = changeButton->m_texture->loadFromFile(temp.str());
 	changeButton->m_texture->markForUpdate();
 }
-
+// lance l'épreuve  (désactive les boutons inutiles et active le bouton save) et reset le canvas d'entraînement
 void cGridLevel::Start() {
 	timerNum = 0;
 	start = true;
@@ -972,7 +976,8 @@ void cGridLevel::Start() {
 	changeButton->setEnabled(false);
 	rotateButton->setEnabled(false);
 }
-
+// sauvegarde les données dans le fichier csv localisé dans le dossier Ressources/CSV
+// les données sont : le temps, la trajectoire (X,Y,Z), le pourcentage d'erreur, le pourcentage de completion, le pourcentage d'erreur de pression, le pattern et la rotation du plan
 void cGridLevel::SaveCanvas() {
 	std::stringstream temp;
 	GetResult();
@@ -996,7 +1001,7 @@ void cGridLevel::SaveCanvas() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << " , " << "Pourcentage d'erreur de force" << " , " << "Pattern" << " , " << "Rotation du plan" << "\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Temps total" << " , " << "Pourcentage d'erreur" << " , " << "Pourcentage de completion" << " , " << "Pourcentage d'erreur de pression" << " , " << "Pattern" << " , " << "Rotation du plan" << "\n";
 		while (getline(readfile, line)) {
 			if (firstline) {
 				string rotated;
@@ -1021,7 +1026,7 @@ void cGridLevel::SaveCanvas() {
 		timerNum = 0;
 	}
 }
-
+// permet de rotate le canvas pour diversifier l'exercice
 void cGridLevel::RotateCanvas() {
 	double rot = 0;
 	switch (rotation) {
@@ -1042,7 +1047,7 @@ void cGridLevel::RotateCanvas() {
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), rot);
 	canvas->translate(canvasPos);
 }
-
+//reset la simulation (reset de valeurs diverses et reset du canvas)
 void cGridLevel::ResetSim(int pattern) {
 	if (start) {
 		startButton->setEnabled(true);
@@ -1063,7 +1068,7 @@ void cGridLevel::ResetSim(int pattern) {
 	}
 	ResetCanvas(pattern);
 }
-
+// sauvegarde la trajectoire dans un fichier temporaire.
 void cGridLevel::SaveData() {
 	lastSave = timerNum;
 	for (int k = 0; k < m_numTools; k++) {

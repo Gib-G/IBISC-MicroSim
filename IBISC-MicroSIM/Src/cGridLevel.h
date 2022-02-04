@@ -42,6 +42,7 @@ public:
 
 
 public:
+    //Objets de la scène
     cMultiMesh* Objects;
     cMesh* canvas;
     cMesh* board;
@@ -66,7 +67,7 @@ public:
     cColorb paintColor;
     cColorb errorColor;
     cColorb warningColor;
-
+    //Informations relatives aux bras haptiques
     cMode state[MAX_DEVICES];
     cGenericObject* selectedObject[MAX_DEVICES];
     cTransform world_T_object[MAX_DEVICES];
@@ -80,21 +81,21 @@ public:
     double force[MAX_DEVICES];
     double size[MAX_DEVICES];
     double distance[MAX_DEVICES];
-
+    //Variable de temps et booléens d'interaction avec la scène
     float timerNum;
     cFrequencyCounter frequencyCounter;
     bool start;
     bool resetHit;
     bool pressed[MAX_DEVICES];
     bool touching[MAX_DEVICES];
-
+    //Variables du canvas
     int pattern;
     float cubesize; 
     int numCube;
-
+    //variables de la brush
     double K_SIZE;
     int BRUSH_SIZE;
-
+    //Variables du résultat sauvegardé
     std::tuple<float, cVector3d> posData[MAX_DEVICES];
     float errorPixel;
     float totalColoredPixels;
@@ -104,7 +105,7 @@ public:
     float forcePixels;
     float correctPercent = 0;
     float forcePercent = 0;
-
+    //Variables utilitaires
     int MAX_PATTERN = 2;
     float MAX_FORCE = .8;
     float lastSave = 0.0f;
@@ -112,7 +113,7 @@ public:
     std::string m_resourceRoot;
 
     int rotation;
-
+    //Variables de fichiers
     std::string NumCandidate;
     std::ofstream myfile[MAX_DEVICES];
     std::ofstream tempfile[MAX_DEVICES];

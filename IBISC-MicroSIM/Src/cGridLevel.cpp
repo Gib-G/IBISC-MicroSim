@@ -427,6 +427,15 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	canvasPos = cVector3d(-0.2, .025, -1.05);
 	canvas->translate(canvasPos);
+	Objects = new cMultiMesh();
+	m_world->addChild(Objects);
+	Objects->addChild(resetButton);
+	Objects->addChild(changeButton);
+	Objects->addChild(startButton);
+	Objects->addChild(saveButton);
+	Objects->addChild(rotateButton);
+	Objects->addChild(canvas);
+	Objects->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 90);
 	//--------------------------------------------------------------------------
 	// CREATE SHADERS
 	//--------------------------------------------------------------------------

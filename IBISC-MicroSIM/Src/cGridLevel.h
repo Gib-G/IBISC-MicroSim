@@ -42,6 +42,7 @@ public:
 
 
 public:
+    cMultiMesh* Objects;
     cMesh* canvas;
     cMesh* board;
     cMesh* timer1, * timer2, * timer3, * timer4;

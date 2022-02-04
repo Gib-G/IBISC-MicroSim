@@ -57,26 +57,19 @@ public:
     cODEWorld* ODEWorld;
 
     // ODE objects
-    cODEGenericBody* ODEBody0;
-    cODEGenericBody* ODEBodytest;
-    cODEGenericBody* ODEBody1[12];
-    cODEGenericBody* ODEBody2[MAX_DEVICES];
-    cODEGenericBody* ODEBody3[MAX_DEVICES];;
+    cODEGenericBody* ODENeedle;
+    cODEGenericBody* ODENeedleNoRotationSupport;
+    cODEGenericBody* ODERing[12];
     cMesh* object0;
     cMesh* objecttest;
     cMesh* object1[12];
-    cMesh* object2[MAX_DEVICES];
-    cMesh* object3[MAX_DEVICES];;
+    cMesh* stylusFingerBody[MAX_DEVICES];
+    cMesh* stylusThumbBody[MAX_DEVICES];;
     cMesh* ground;
     cMesh* resetButton;
     cMesh* hapticPlane;
     // ODE objects
-    cODEGenericBody* ODEGPlane0;
-    cODEGenericBody* ODEGPlane1;
-    cODEGenericBody* ODEGPlane2;
-    cODEGenericBody* ODEGPlane3;
-    cODEGenericBody* ODEGPlane4;
-    cODEGenericBody* ODEGPlane5;
+    cODEGenericBody* ODEGround;
 
     cCollisionRecorder recorder;
     cCollisionSettings settings;
@@ -85,7 +78,6 @@ public:
     cMesh* CollisionSphereFront[8];
     cMesh* DetectionPlanes[12];
     bool DetectionPlanesFinished[12];
-    cMesh* testPlane;
     bool crossing[12];
     bool end1[12];
     bool end2[12];
@@ -97,6 +89,7 @@ public:
     double lastSave;
     double timerNum = 0.0;
     int handSwaps = 0;
+    int grabNumber = 0;
     double timerHandSwaps = 0.0;
     int ringsCrossed = 0;
     bool firstCatch =true;

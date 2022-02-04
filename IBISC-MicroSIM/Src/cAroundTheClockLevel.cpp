@@ -49,14 +49,13 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	light->setEnabled(true);
 
 	// position the light source
-	light->setLocalPos(0.0, 0.0, 1.2);
+	light->setLocalPos(-2, 0.0, 1.2);
 
 	// define the direction of the light beam
-	light->setDir(0.0, 0.0, -1.0);
+	light->setDir(0.5, 0.0, -1.0);
 
 	// set uniform concentration level of light 
 	light->setSpotExponent(0.0);
-
 	// enable this light source to generate shadows
 	light->setShadowMapEnabled(true);
 
@@ -70,15 +69,15 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	double toolRadius = 0.01;
 	for (int i = 0; i < m_numTools; i++) {
 		// define a radius for the tool
-		m_tools[i]->setGripperWorkspaceScale(.06);
-		//m_tools[i]->setGripperWorkspaceScale(.03);
+		//m_tools[i]->setGripperWorkspaceScale(.06);
+		m_tools[i]->setGripperWorkspaceScale(.03);
 		// map the physical workspace of the haptic device to a larger virtual workspace.
-		m_tools[i]->setWorkspaceRadius(6);
-		//m_tools[i]->setWorkspaceRadius(12);
+		//m_tools[i]->setWorkspaceRadius(6);
+		m_tools[i]->setWorkspaceRadius(12);
 		m_tools[i]->m_hapticPointFinger->m_sphereProxy->m_material->m_emission.setBlueCyan();
 		m_tools[i]->m_hapticPointThumb->m_sphereProxy->m_material->m_emission.setBlueCyan();
-		m_tools[i]->translate(0, (1 - 2 * i) * 0, -5);
-		//m_tools[i]->translate(0, (1 - 2 * i) * 12.5, 7);
+		//m_tools[i]->translate(0, (1 - 2 * i) * 0, -5);
+		m_tools[i]->translate(0, (1 - 2 * i) * 12.5, 7);
 		streamstr << ROOT_DIR "Resources/CSV/Temp/temp_" << "trajectory-Arm_";
 		pathname = streamstr.str();
 		streamstr << i << ".csv";
@@ -113,8 +112,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// 3 ODE BLOCKS
 	//////////////////////////////////////////////////////////////////////////
 	// create a new ODE object that is automatically added to the ODE world
-	ODEBody0 = new cODEGenericBody(ODEWorld);
-	ODEBodytest = new cODEGenericBody(ODEWorld);
+	ODENeedle = new cODEGenericBody(ODEWorld);
+	ODENeedleNoRotationSupport = new cODEGenericBody(ODEWorld);
 
 	// create a virtual mesh  that will be used for the geometry representation of the dynamic body
 	object0 = new cMesh();
@@ -149,48 +148,48 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	objecttest->m_material->setGreen();
 
 	// add mesh to ODE object
-	ODEBody0->setImageModel(object0);
-	ODEBodytest->setImageModel(objecttest);
+	ODENeedle->setImageModel(object0);
+	ODENeedleNoRotationSupport->setImageModel(objecttest);
 
 	// create a dynamic model of the ODE object. Here we decide to use a box just like
 	// the object mesh we just defined
-	ODEBody0->createDynamicBox(size * 2, size * 0.1, size * 0.1);
-	ODEBodytest->createDynamicBox(size * 2, size * 0.1, size * 0.1);
+	ODENeedle->createDynamicBox(size * 2, size * 0.1, size * 0.1);
+	ODENeedleNoRotationSupport->createDynamicBox(size * 2, size * 0.1, size * 0.1);
 
 	// define some mass properties for each cube
-	ODEBody0->setMass(0.01);
-	ODEBodytest->setMass(0.01);
+	ODENeedle->setMass(0.01);
+	ODENeedleNoRotationSupport->setMass(0.01);
 	InitializeNeedleDetect();
 	// set position of each cube
-	ODEBody0->setLocalPos(0.0, -0.6, -0.5);
-	ODEBodytest->setLocalPos(0.0, 0.6, -0.5);
+	ODENeedle->setLocalPos(0.0, -0.6, -0.5);
+	ODENeedleNoRotationSupport->setLocalPos(0.0, 0.6, -0.5);
 
 	for (int i = 0; i < m_numTools; i++) {
-		object2[i] = new cMesh();
-		cCreateBox(object2[i], size, 0.01, 0.01);
-		object2[i]->setMaterial(mat2);
-		m_tools[i]->addChild(object2[i]);
-		object3[i] = new cMesh();
-		cCreateBox(object3[i], size, 0.01, 0.01);
-		object3[i]->setMaterial(mat2);
-		m_tools[i]->addChild(object3[i]);
+		stylusFingerBody[i] = new cMesh();
+		cCreateBox(stylusFingerBody[i], size, 0.01, 0.01);
+		stylusFingerBody[i]->setMaterial(mat2);
+		m_tools[i]->addChild(stylusFingerBody[i]);
+		stylusThumbBody[i] = new cMesh();
+		cCreateBox(stylusThumbBody[i], size, 0.01, 0.01);
+		stylusThumbBody[i]->setMaterial(mat2);
+		m_tools[i]->addChild(stylusThumbBody[i]);
 		pressed[i] = false;
 	}
 
 	for (int i = 0; i < 12; i++) {
-		ODEBody1[i] = new cODEGenericBody(ODEWorld);
+		ODERing[i] = new cODEGenericBody(ODEWorld);
 		object1[i] = new cMesh();
 		cCreateRing(object1[i], 0.01, 0.1);
 		object1[i]->createAABBCollisionDetector(toolRadius);
 		object1[i]->setMaterial(mat1);
-		ODEBody1[i]->setImageModel(object1[i]);
-		ODEBody1[i]->createDynamicMesh(true);
-		ODEBody1[i]->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
-		ODEBody1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
+		ODERing[i]->setImageModel(object1[i]);
+		ODERing[i]->createDynamicMesh(true);
+		ODERing[i]->rotateAboutGlobalAxisRad(1, 0, 1, M_PI);
+		ODERing[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
 		object1[i]->rotateAboutGlobalAxisRad(0, 0, 1, i * 2 * M_PI / 12);
-		ODEBody1[i]->setLocalPos(cos(i * 2 * M_PI / 12) * 0.7, sin(i * 2 * M_PI / 12) * 0.7, -7);
-		AddDetectionPlane(i, ODEBody1[i]);
-		ODEBody1[i]->updateBodyPosition();
+		ODERing[i]->setLocalPos(cos(i * 2 * M_PI / 12) * 0.7, sin(i * 2 * M_PI / 12) * 0.7, -7);
+		AddDetectionPlane(i, ODERing[i]);
+		ODERing[i]->updateBodyPosition();
 		crossing[i] = false;
 		end1[i] = false;
 		end2[i] = false;
@@ -239,8 +238,8 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	// 6 ODE INVISIBLE WALLS
 	//////////////////////////////////////////////////////////////////////////
 
-	ODEGPlane1 = new cODEGenericBody(ODEWorld);
-	ODEGPlane1->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
+	ODEGround = new cODEGenericBody(ODEWorld);
+	ODEGround->createStaticPlane(cVector3d(0.0, 0.0, -7.5), cVector3d(0.0, 0.0, 1.0));
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -275,7 +274,7 @@ cAroundTheClockLevel::cAroundTheClockLevel(const std::string a_resourceRoot,
 	hapticPlane->setMaterial(matGround);
 	hapticPlane->setTransparencyLevel(0, true);
 	hapticPlane->createAABBCollisionDetector(toolRadius);
-	hapticPlane->setStiffness(maxStiffness * 5);
+	hapticPlane->setStiffness(maxStiffness * 3);
 }
 
 void cAroundTheClockLevel::moveCamera() {
@@ -368,10 +367,10 @@ void cAroundTheClockLevel::updateHaptics(void)
 	for (int i = 0; i < m_numTools; i++) {
 		if (start) posData[i] = tuple<float, cVector3d>(timerNum, m_tools[i]->getDeviceGlobalPos());
 		// get status of user switch
-		object2[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
-		object2[i]->setLocalPos(m_tools[i]->m_hapticPointFinger->getLocalPosProxy() + object2[i]->getLocalRot() * cVector3d(0.2, 0, 0));
-		object3[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
-		object3[i]->setLocalPos(m_tools[i]->m_hapticPointThumb->getLocalPosProxy() + object3[i]->getLocalRot() * cVector3d(0.2, 0, 0));
+		stylusFingerBody[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
+		stylusFingerBody[i]->setLocalPos(m_tools[i]->m_hapticPointFinger->getLocalPosProxy() + stylusFingerBody[i]->getLocalRot() * cVector3d(0.2, 0, 0));
+		stylusThumbBody[i]->setLocalRot(m_tools[i]->getDeviceLocalRot());
+		stylusThumbBody[i]->setLocalPos(m_tools[i]->m_hapticPointThumb->getLocalPosProxy() + stylusThumbBody[i]->getLocalRot() * cVector3d(0.2, 0, 0));
 		/////////////////////////////////////////////////////////////////////
 		// HAPTIC FORCE COMPUTATION
 		/////////////////////////////////////////////////////////////////////
@@ -380,7 +379,7 @@ void cAroundTheClockLevel::updateHaptics(void)
 
 		// update position and orientation of m_tools[i]
 		m_tools[i]->updateFromDevice();
-		m_tools[i]->setDeviceLocalPos(cClamp(m_tools[i]->getDeviceLocalPos().x(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().y(), -1.5, 1.5), cClamp(m_tools[i]->getDeviceLocalPos().z(), -3.0, -1.5));
+		m_tools[i]->setDeviceGlobalPos(cClamp(m_tools[i]->getDeviceGlobalPos().x(), -3.0, 3.0), cClamp(m_tools[i]->getDeviceGlobalPos().y(), -3.0, 3.0), cClamp(m_tools[i]->getDeviceGlobalPos().z(), -10.5, -5.5));
 		if (m_tools[i]->getDeviceGlobalPos().z() > -9) {
 			m_tools[i]->setDeviceGlobalPos(m_tools[i]->getDeviceGlobalPos().x(), m_tools[i]->getDeviceGlobalPos().y(), cClamp(m_tools[i]->getDeviceGlobalPos().z(), -7.49, 10.0));
 		}
@@ -443,17 +442,19 @@ void cAroundTheClockLevel::updateHaptics(void)
 		if (gripperCatchingIndex == i) {
 			start = true;
 			if (vientdegrip == i) {
-				if (timerHandSwaps > 1.0) {
-					handSwaps++;
+				if (timerHandSwaps > 0.5) {
+					grabNumber++;
+					cout << "on est là";
 					if (grabbingBefore) {
 						cout << "changement de mains";
+						handSwaps++;
 					}
 					timerHandSwaps = 0.0;
 				}
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
-				startrotCube.copyfrom(ODEBody0->getLocalRot());
+				startrotCube.copyfrom(ODENeedle->getLocalRot());
 				startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
-				startposCube.copyfrom(ODEBody0->getLocalPos());
+				startposCube.copyfrom(ODENeedle->getLocalPos());
 				previousframecaught[i] = true;
 				ODEWorld->setGravity(cVector3d(0, 0, 0));
 			}
@@ -474,17 +475,17 @@ void cAroundTheClockLevel::updateHaptics(void)
 				if (isnan(rotangle) || rotangle > 0.174533) {
 					rotangle = 0;
 				}
-				cMatrix3d temp = ODEBody0->getLocalRot();
+				cMatrix3d temp = ODENeedle->getLocalRot();
 				bool test = false;
 				if (test) {
-					ODEBody0->setLocalRot(startrotCube);
-					ODEBody0->rotateAboutLocalAxisRad(rotvec, rotangle);
+					ODENeedle->setLocalRot(startrotCube);
+					ODENeedle->rotateAboutLocalAxisRad(rotvec, rotangle);
 				}
 				else {
-					ODEBody0->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
+					ODENeedle->setLocalRot(startrotCube * ObjT0Invert * ArmT * ArmT0Invert * ObjT0);
 				}
 
-				bool iltouche = false;
+				/*bool iltouche = false;
 				for (int s = 0; s < 8; s++) {
 						if (ground->computeCollisionDetection(CollisionSphereFront[s]->getLocalPos() + CollisionSphereFront[s]->getGlobalPos(), CollisionSphereBack[s]->getLocalPos() + CollisionSphereBack[s]->getGlobalPos(), recorder, settings)) {
 							iltouche = true;
@@ -505,12 +506,12 @@ void cAroundTheClockLevel::updateHaptics(void)
 				}
 				if (iltouche) {
 					ODEBody0->setLocalRot(temp);
-				}
+				}*/
 
 				startrotGripper[i].copyfrom(m_tools[i]->getDeviceGlobalRot());
-				startrotCube.copyfrom(ODEBody0->getLocalRot());
+				startrotCube.copyfrom(ODENeedle->getLocalRot());
 				startposGripper[i].copyfrom(m_tools[i]->getDeviceLocalPos());
-				startposCube.copyfrom(ODEBody0->getLocalPos());
+				startposCube.copyfrom(ODENeedle->getLocalPos());
 			}
 
 		}
@@ -647,17 +648,17 @@ void cAroundTheClockLevel::InitializeNeedleDetect() {
 	for (int i = 0; i < 5; i++) {
 		DetectSphere[i] = new cMesh();
 		cCreateSphere(DetectSphere[i], sphereSize);
-		ODEBody0->addChild(DetectSphere[i]);
+		ODENeedle->addChild(DetectSphere[i]);
 		DetectSphere[i]->translate(size * (-1 + (double)i / (double)2), 0, 0);
 	}
 	for (int i = 0; i < 8; i++) {
 		CollisionSphereBack[i] = new cMesh();
 		cCreateSphere(CollisionSphereBack[i], sphereSize / 2);
-		ODEBody0->addChild(CollisionSphereBack[i]);
+		ODENeedle->addChild(CollisionSphereBack[i]);
 		CollisionSphereBack[i]->translate(-size, 0, 0);
 		CollisionSphereFront[i] = new cMesh();
 		cCreateSphere(CollisionSphereFront[i], sphereSize / 2);
-		ODEBody0->addChild(CollisionSphereFront[i]);
+		ODENeedle->addChild(CollisionSphereFront[i]);
 		CollisionSphereFront[i]->translate(size, 0, 0);
 	}
 	double offset = 0.001;
@@ -863,10 +864,10 @@ void cAroundTheClockLevel::SaveResults() {
 		readfile.open(temp.str());
 		temp.str("");
 		temp.clear();
-		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Nombre de changements de mains" << "\n";
+		myfile[k] << "Temps" << " , " << "Position - x" << " , " << "Position - y" << " , " << "Position - z" << " , " << "Nombre de changements de mains , Nombre d'attrapage  \n";
 		while (getline(readfile, line)) {
 			if (firstline) {
-				myfile[k] << line << " , " << handSwaps << "\n";
+				myfile[k] << line << " , " << handSwaps << " , " << grabNumber << "\n";
 				firstline = false;
 			}
 			else myfile[k] << line << "\n";
@@ -898,6 +899,8 @@ void cAroundTheClockLevel::ResetSim() {
 	handSwaps = 0;
 	saved = false;
 	resetButton->setEnabled(false);
+	ODENeedle->setLocalPos(0.0, 0.0, -5.5);
+	ODENeedle->setLocalRot(cIdentity3d());
 	cout << "sim is reset" << endl;
 }
 

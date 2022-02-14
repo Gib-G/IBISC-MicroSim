@@ -83,16 +83,8 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 		maxStiffness = 3;
 	}
 
-	//
-	//Needle
-	//
 	bool fileload;
 	double size;
-	/*board = new cMesh();
-	cCreatePlane(board, 1, 1, cVector3d(-1, 0, -1));
-	board->rotateAboutGlobalAxisRad(cVector3d(0, 1, 0), cDegToRad(130));
-	board->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));
-	m_world->addChild(board);*/
 	canvas = new cMesh();
 	cCreatePlane(canvas, 1, 1);
 	m_world->addChild(canvas);
@@ -100,13 +92,10 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	canvas->createBruteForceCollisionDetector();
 	canvas->setFriction(0.3, 0.3, true);
 	canvas->rotateAboutGlobalAxisDeg(cVector3d(1, 0, 0), 20);
-	/*
-	canvas->rotateAboutGlobalAxisRad(cVector3d(0, 1, 0), cDegToRad(90));
-	canvas->rotateAboutGlobalAxisRad(cVector3d(1, 0, 0), cDegToRad(90));*/
 
 	// set graphic properties
 	canvas->m_texture = cTexture2d::create();
-	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/customPattern.png"); // Images/grid.jpg
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/customPattern.png"); // Images/customPattern.png
 	if (!fileload)
 	{
 #if defined(_MSVC)
@@ -132,7 +121,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 		close();
 	}
 	canvasOriginal = canvas->m_texture->m_image->copy();
-	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg"); // Images/grid.jpg
+	fileload = canvas->m_texture->loadFromFile(ROOT_DIR "Resources/Images/traininggrid.jpg"); // Images/traininggrid.jpg
 	if (!fileload)
 	{
 #if defined(_MSVC)
@@ -267,13 +256,7 @@ cGridLevel::cGridLevel(const std::string a_resourceRoot,
 	rot.rotateAboutGlobalAxisDeg(cVector3d(0, 0, 1), 90);
 	cCreatePanel(resetButton, .5, .5, .1, 8, cVector3d(0, 0, 0), rot);
 	resetButton->translate(cVector3d(-.6, 0.8, -1.25));
-	/*
-	cFontPtr font = NEW_CFONTCALIBRI20();
-	cLabel* label = new cLabel(font);
-	label->m_fontColor.setBlack();
-	label->setText("Reset");
-	resetButton->addChild(label);*/
-
+	
 	// compute collision detection algorithm
 	mat.setHapticTriangleSides(true, true);
 	mat.setDynamicFriction(0.2);
